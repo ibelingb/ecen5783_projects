@@ -14,17 +14,19 @@ import sys
 import Adafruit_DHT
 
 # Using the DHT22 Temperature and Humidity sensor, connected to GPIO pin 4 on the RPi.
-sensor = Adafruit_DHT.DHT22
-pin = 4
+SENSOR = Adafruit_DHT.DHT22
+PIN = 4
 
 # TODO - add docstring
 def sampleDth22():
 	# Read temperature and humidity data from the DHT22 sensor
-	humidity, temperature = Adafruit_DHT.read(sensor, pin)
+	humidity, temperature = Adafruit_DHT.read(SENSOR, PIN)
 
-	# Print sensor values (if available)
-	if humidity is not None and temperature is not None:
-		print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
-	else:
-		print('Failed to get reading. Try again!')
-		sys.exit(1)
+	# Print error if sensor values unavailable
+
+	if humidity is None:
+		print('Failed to sample humidity sensor.')
+	if temperature is None:
+		print('Failed to sample temperature sensor.')
+		
+	return humidity, temperature

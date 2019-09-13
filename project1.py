@@ -14,15 +14,40 @@
 
 """
 
+import sys
+import time, threading
+
 from sensor import sampleDth22
 
 __author__ = "Brian Ibeling"
 
-def main(args):
-	
-	
-	sampleDth22();
+# Constants
+PERIOD_SEC = 5 # TODO - update to 15 sec
+MAX_SAMPLE_COUNTS = 5 # TODO - update to 30
+# Variables
+sampleCount = 0 # Variable to track number of data sample executions
 
+# Method to execute timer every 15 seconds to sample DTH22 sensor
+def periodicDth22Sample():
+	global sampleCount
+	sampleCount = sampleCount + 1;
+	
+	# Sample DTH22 sensor
+	humidity, temperature  = sampleDth22()
+	
+	# Print received value
+	if humidity is not None and temperature is not None:
+		print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
+	
+	# Trigger timer if timer executed less than MAX_SAMPLE_COUNTS times
+	if(sampleCount < MAX_SAMPLE_COUNTS):
+		threading.Timer(PERIOD_SEC, periodicDth22Sample).start()
+	
+	return 0
+
+
+def main(args):
+	periodicDth22Sample()
 	
 	return 0
 
