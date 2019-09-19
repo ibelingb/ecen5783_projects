@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 #
 # ECEN5783
 # Author: Brian Ibeling
@@ -6,21 +6,20 @@
 
 """ project1.py: Main python file for EID Project1 to store and display DHT22 data in a QT GUI.
 
-	TODO - project overview
+    TODO - project overview
 
-	+ Resources and Citations +
-	I used the following examples and tutorials to assist with development of this project's SW.
-		- https://github.com/adafruit/Adafruit_Python_DHT
-		- https://pythonspot.com/mysql-with-python/
-		- https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
-		- http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm
+    + Resources and Citations +
+    I used the following examples and tutorials to assist with development of this project's SW.
+        - https://github.com/adafruit/Adafruit_Python_DHT
+        - https://pythonspot.com/mysql-with-python/
+        - https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
+        - http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm
 
 """
 
-import sys
-import time, threading
-from sensor import sampleDth22
-from db import initializeMySql
+import sys, time, threading
+from db import *
+from sensor import *
 
 __author__ = "Brian Ibeling"
 
@@ -35,30 +34,33 @@ sampleCount = 0 # Variable to track number of data sample executions
 
 # Method to execute timer every 15 seconds to sample DTH22 sensor
 def periodicDth22Sample():
-	global sampleCount
-	sampleCount = sampleCount + 1;
-	
-	# Sample DTH22 sensor
-	humidity, temperature = sampleDth22()
-	
-	# Print received value
-	if humidity is not None and temperature is not None:
-		print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
-	
-	# Trigger timer if timer executed less than MAX_SAMPLE_COUNTS times
-	if(sampleCount < MAX_SAMPLE_COUNTS):
-		threading.Timer(PERIOD_SEC, periodicDth22Sample).start()
-	
-	return 0
+    global sampleCount
+    sampleCount = sampleCount + 1;
+    
+    # Sample DTH22 sensor
+    humidity, temperature = sampleDth22()
+    
+    # Load sensor values into DB
+    insertSensorData(temperature, humidity)
+    
+    # Print received value
+    if humidity is not None and temperature is not None:
+        print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
+    
+    # Trigger timer if timer executed less than MAX_SAMPLE_COUNTS times
+    if(sampleCount < MAX_SAMPLE_COUNTS):
+        threading.Timer(PERIOD_SEC, periodicDth22Sample).start()
+    
+    return 0
 
 #-----------------------------------------------------------------------
 def main(args):
-	# Initialize connection to mySQL DB and create/open table for sensor data
-	initializeMySql()
-	
-	periodicDth22Sample()
-	
-	return 0
+    # Initialize connection to mySQL DB and create/open table for sensor data
+    initializeDatabase()
+    
+    periodicDth22Sample()
+    
+    return 0
 
 if __name__ == '__main__':
     import sys
