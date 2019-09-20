@@ -6,7 +6,7 @@
     This leverages the Adafruit DHT example code, cited below.
 
     + Resources and Citations +
-    I used the following example code to assist with development of this SW.
+    The following resources were used to assist with development of this SW.
         - https://github.com/adafruit/Adafruit_Python_DHT
 """
 

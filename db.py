@@ -5,7 +5,7 @@
     TODO
 
     + Resources and Citations +
-    I used the following example code to assist with development of this SW.
+    The following resources were used to assist with development of this SW.
         - https://pythonspot.com/mysql-with-python/
         - https://softwareengineering.stackexchange.com/questions/261933/using-one-database-connection-across-multiple-functions-in-python
         
