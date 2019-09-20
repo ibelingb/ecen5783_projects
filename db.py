@@ -8,7 +8,7 @@
     The following resources were used to assist with development of this SW.
         - https://pythonspot.com/mysql-with-python/
         - https://softwareengineering.stackexchange.com/questions/261933/using-one-database-connection-across-multiple-functions-in-python
-        
+        - http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm        
         
 """
 

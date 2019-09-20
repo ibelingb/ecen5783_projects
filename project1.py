@@ -11,10 +11,6 @@
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
         - https://github.com/adafruit/Adafruit_Python_DHT
-        - https://pythonspot.com/mysql-with-python/
-        - https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
-        - http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm
-        - https://www.baldengineer.com/raspberry-pi-gui-tutorial.html
 
 """
 
