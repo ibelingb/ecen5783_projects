@@ -40,12 +40,12 @@ def periodicDth22Sample():
     # Sample DTH22 sensor
     humidity, temperature = sampleDth22()
     
-    # Load sensor values into DB
-    insertSensorData(temperature, humidity)
-    
-    # Print received value
+    # Verify data received
     if humidity is not None and temperature is not None:
-        print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
+        # Load sensor values into DB and print values
+        insertSensorData(temperature, humidity)
+        print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))    
+
     
     # Trigger timer if timer executed less than MAX_SAMPLE_COUNTS times
     if(sampleCount < MAX_SAMPLE_COUNTS):

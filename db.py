@@ -7,6 +7,8 @@
     + Resources and Citations +
     I used the following example code to assist with development of this SW.
         - https://pythonspot.com/mysql-with-python/
+        - https://softwareengineering.stackexchange.com/questions/261933/using-one-database-connection-across-multiple-functions-in-python
+        
         
 """
 
@@ -27,18 +29,17 @@ def initializeDatabase():
     cur.execute("USE project1")    
     
     # Create table to store DTH22 Temp and humidity sensor data by timestamp
-    cur.execute("CREATE TABLE IF NOT EXISTS sensors (id INT(11) NOT NULL AUTO_INCREMENT, \
-                timestamp TIMESTAMP, temp FLOAT(3,1), humidity FLOAT(3,1), PRIMARY KEY (id))")
+    cur.execute("CREATE TABLE IF NOT EXISTS sensors \
+               (timestamp TIMESTAMP, temp FLOAT(3,1), humidity FLOAT(3,1), PRIMARY KEY (timestamp))")
     
     # Select data from table via SQL query
     cur.execute("SELECT * FROM sensors")
     
     # TODO - add check if dataset returned is empty - ignore. 
-    # if(cur.rowcount != 0) :
-    
-    # Print data currently in table
-    for row in cur.fetchall() :
-        print (row[0], " ", row[1], " ", row[2], " ", row[3])
+    if(cur.rowcount != 0) :    
+        # Print data currently in table
+        for row in cur.fetchall() :
+            print (row[0], " ", row[1], " ", row[2])
 
     db.commit()
     
@@ -54,7 +55,7 @@ def insertSensorData(temp: float, humidity: float):
     cur = db.cursor()
     
     # Write received sensor values to database
-    cur.execute("INSERT INTO sensors(timestamp, temp, humidity) VALUES (1, %s, %s)" % (temp, humidity))
+    cur.execute("INSERT INTO sensors(timestamp, temp, humidity) VALUES (NULL, %s, %s)" % (temp, humidity))
     
     db.commit()
     
