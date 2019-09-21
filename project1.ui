@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="ReadSensorButton">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -59,7 +59,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="GraphHumidityButton">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -72,7 +72,7 @@
      <string>Graph Recent Humidity</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
+   <widget class="QPushButton" name="GraphTempButton">
     <property name="geometry">
      <rect>
       <x>10</x>

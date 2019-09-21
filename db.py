@@ -8,13 +8,14 @@
     The following resources were used to assist with development of this SW.
         - https://pythonspot.com/mysql-with-python/
         - https://softwareengineering.stackexchange.com/questions/261933/using-one-database-connection-across-multiple-functions-in-python
-        - http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm        
+        - http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm
+        - https://stackoverflow.com/questions/28365580/typeerror-int-object-is-not-iterable-python
         
 """
 
 import sys
 import MySQLdb
-
+#-----------------------------------------------------------------------
 def initializeDatabase():
     db = MySQLdb.connect(host="localhost",
                         user="piuser",
@@ -31,19 +32,11 @@ def initializeDatabase():
     # Create table to store DTH22 Temp and humidity sensor data by timestamp
     cur.execute("CREATE TABLE IF NOT EXISTS sensors \
                (timestamp TIMESTAMP, temp FLOAT(3,1), humidity FLOAT(3,1), PRIMARY KEY (timestamp))")
-    
-    # Select data from table via SQL query
-    cur.execute("SELECT * FROM sensors")
-    
-    #if(cur.rowcount != 0) :    
-    #    # Print data currently in table
-    #    for row in cur.fetchall() :
-    #        print (row[0], " ", row[1], " ", row[2])
 
     db.commit()
     
     return 0
-
+#-----------------------------------------------------------------------
 def insertSensorData(temp: float, humidity: float):
     db = MySQLdb.connect(host="localhost",
                         user="piuser",
@@ -59,7 +52,54 @@ def insertSensorData(temp: float, humidity: float):
     db.commit()
     
     return 0
-
-def getLatestSensorData():
+#-----------------------------------------------------------------------
+def getRecentTempData(numSamples: int):
+    timestampArray = [None] * numSamples
+    tempArray = [None] * numSamples
     
-    return humidity, temp
+    
+    db = MySQLdb.connect(host="localhost",
+                        user="piuser",
+                        passwd="password",
+                        db="project1")
+    
+    # Create a Cursor object to execute queries
+    cur = db.cursor()
+    
+    # Select data from table via SQL query
+    cur.execute("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT %s", (numSamples,))
+    
+    # Populate received data into respective arrays
+    i = 0
+    if(cur.rowcount != 0) :    
+        for row in cur.fetchall() :
+            timestampArray[i] = row[0]
+            tempArray[i] = row[1]
+            i += 1
+    
+    return timestampArray, tempArray
+#-----------------------------------------------------------------------
+def getRecentHumidityData(numSamples: int):
+    timestampArray = [None] * numSamples
+    humidityArray = [None] * numSamples
+    
+    db = MySQLdb.connect(host="localhost",
+                        user="piuser",
+                        passwd="password",
+                        db="project1")
+    
+    # Create a Cursor object to execute queries
+    cur = db.cursor()
+    
+    # Select data from table via SQL query
+    cur.execute("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT %s", (numSamples,))
+    
+    # Populate received data into respective arrays
+    i = 0
+    if(cur.rowcount != 0) :    
+        for row in cur.fetchall() :
+            timestampArray[i] = row[0]
+            humidityArray[i] = row[2]
+            i += 1
+    
+    return timestampArray, humidityArray

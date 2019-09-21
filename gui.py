@@ -17,6 +17,7 @@ import project1_gui
 from db import *
 from sensor import *
 
+#-----------------------------------------------------------------------
 # Class for project1 GUI
 class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
     def __init__(self):
@@ -24,7 +25,9 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.setupUi(self)
         
         # Button press hooks
-        self.pushButton.clicked.connect(lambda: self.buttonPressCurrData())
+        self.ReadSensorButton.clicked.connect(lambda: self.buttonPressCurrData())
+        self.GraphTempButton.clicked.connect(lambda: self.buttonPressGraphTemp())
+        self.GraphHumidityButton.clicked.connect(lambda: self.buttonPressGraphHumidity())
 
     def updateCurrentSensorData(self, text: str):
         self.CurrentSensorData.setText(text)
@@ -39,3 +42,27 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
             self.updateCurrentSensorData('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
         else:
             self.updateCurrentSensorData('Failed to Read Sensor Data')
+
+    def buttonPressGraphTemp(self):
+        timestamp, temp = getRecentTempData(10)
+
+        for value in timestamp:
+            print(value)
+        for value in temp:
+            print(value)
+        
+        return 0
+
+    def buttonPressGraphHumidity(self):
+        numValues = 10
+        timestamp, humidity = getRecentHumidityData(numValues)
+        
+        for value in timestamp:
+            print(value)
+        for value in humidity:
+            print(value)
+            
+            
+        return 0
+
+#-----------------------------------------------------------------------
