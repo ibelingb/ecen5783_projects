@@ -25,9 +25,17 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         
         # Button press hooks
         self.pushButton.clicked.connect(lambda: self.buttonPressCurrData())
-    
-    def buttonPressCurrData(self):
-        print("Print Current Data")
 
     def updateCurrentSensorData(self, text: str):
-        self.currentSensorData.setText(text)
+        self.CurrentSensorData.setText(text)
+
+    def updateStatusLine(self, text: str):
+        self.StatusLine.setText(text)
+
+    def buttonPressCurrData(self):
+        # Sample DTH22 sensor
+        humidity, temperature = sampleDth22()
+        if humidity is not None and temperature is not None and humidity < 100:
+            self.updateCurrentSensorData('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
+        else:
+            self.updateCurrentSensorData('Failed to Read Sensor Data')

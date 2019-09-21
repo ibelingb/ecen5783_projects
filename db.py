@@ -35,11 +35,10 @@ def initializeDatabase():
     # Select data from table via SQL query
     cur.execute("SELECT * FROM sensors")
     
-    # TODO - add check if dataset returned is empty - ignore. 
-    if(cur.rowcount != 0) :    
-        # Print data currently in table
-        for row in cur.fetchall() :
-            print (row[0], " ", row[1], " ", row[2])
+    #if(cur.rowcount != 0) :    
+    #    # Print data currently in table
+    #    for row in cur.fetchall() :
+    #        print (row[0], " ", row[1], " ", row[2])
 
     db.commit()
     

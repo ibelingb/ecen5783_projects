@@ -22,14 +22,6 @@ PIN = 4
 def sampleDth22():
     # Read temperature and humidity data from the DHT22 sensor
     humidity, temperature = Adafruit_DHT.read(SENSOR, PIN)
-
-    # Print error if sensor values unavailable
-
-    if humidity is None:
-        print('Failed to sample humidity sensor.')
-    if temperature is None:
-        print('Failed to sample temperature sensor.')
-        
     return humidity, temperature
 
 #-----------------------------------------------------------------------
