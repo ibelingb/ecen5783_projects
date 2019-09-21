@@ -28,6 +28,9 @@ MAX_SAMPLE_COUNTS = 5 # TODO - update to 30
 #-----------------------------------------------------------------------
 # Variables
 sampleCount = 0 # Variable to track number of data sample executions
+
+app = QApplication(sys.argv)
+mainWindowInstance = MainWindow()
 #-----------------------------------------------------------------------
 
 # Method to execute timer every 15 seconds to sample DTH22 sensor
@@ -38,12 +41,12 @@ def periodicDth22Sample():
     # Sample DTH22 sensor
     humidity, temperature = sampleDth22()
     
-    # Verify data received
+    # If sensor data received, insert to DB and update GUI
     if humidity is not None and temperature is not None:
-        # Load sensor values into DB and print values
         insertSensorData(temperature, humidity)
-        print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))    
-
+        sensorDataString = 'Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity)
+        mainWindowInstance.updateCurrentSensorData(sensorDataString)
+        print(sensorDataString)
     
     # Trigger timer if timer executed less than MAX_SAMPLE_COUNTS times
     if(sampleCount < MAX_SAMPLE_COUNTS):
@@ -52,10 +55,19 @@ def periodicDth22Sample():
     return 0
 
 #-----------------------------------------------------------------------
+# Method to launch GUI
+def startGui():
+    app = QApplication(sys.argv)
+    mainWindowInstance.show()
+    app.exec_()
+    #sys.exit(app.exec_())
+
+#-----------------------------------------------------------------------
 def main(args):
     # Initialize connection to mySQL DB and create/open table for sensor data
-    #initializeDatabase()
-    #periodicDth22Sample()
+    initializeDatabase()
+    
+    periodicDth22Sample()
     
     # Start GUI application
     startGui()

@@ -60,3 +60,7 @@ def insertSensorData(temp: float, humidity: float):
     db.commit()
     
     return 0
+
+def getLatestSensorData():
+    
+    return humidity, temp

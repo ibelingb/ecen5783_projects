@@ -25,15 +25,9 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         
         # Button press hooks
         self.pushButton.clicked.connect(lambda: self.buttonPressCurrData())
-        
+    
     def buttonPressCurrData(self):
         print("Print Current Data")
 
-# Method to launch GUI
-def startGui():
-    app = QApplication(sys.argv)
-    form = MainWindow()
-    form.show()
-    sys.exit(app.exec_())
-    
-    
+    def updateCurrentSensorData(self, text: str):
+        self.currentSensorData.setText(text)
