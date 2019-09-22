@@ -12,7 +12,9 @@ Prior to running the downloaded application, it is required that a MySQL server 
 > sudo /usr/bin/mysql -u root -p
 3. Create the 'piuser' user by exeucting the following commands from MySQL:
 > mariaDB> CREATE USER 'piuser'@'localhost' IDENTIFIED BY 'BestPasswordEver';
+
 > mariaDB> GRANT ALL PRIVILEGES ON * . * TO 'piuser'@'localhost';
+
 > mariaDB> FLUSH PRIVILEGES;
 4. Create the 'project1' database by executing the following command from MySQL:
 > mariaDB> CREATE DATABASE project1;
