@@ -62,8 +62,6 @@ def periodicDth22Sample():
 def startGui():
     g_mainWindowInstance.show()
     g_mainWindowInstance.updateStatusLine('Application Started')
-    g_mainWindowInstance.updateCurrentSensorData('')
-    g_mainWindowInstance.GraphLabel.setText('')
     sys.exit(g_qtApp.exec_())
 
 #-----------------------------------------------------------------------

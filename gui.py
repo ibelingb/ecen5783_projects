@@ -14,11 +14,10 @@
 import sys
 import PyQt5
 from PyQt5.QtWidgets import *
-
+from PyQt5 import QtGui
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
 import project1_gui
@@ -39,6 +38,10 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
 
     def updateCurrentSensorData(self, text: str):
         self.CurrentSensorData.setText(text)
+        # Clear italic font from user instruction to display sensor data
+        myFont = QtGui.QFont()
+        myFont.setItalic(False)
+        self.CurrentSensorData.setFont(myFont)
 
     def updateStatusLine(self, text: str):
         self.StatusLine.setText(text)
@@ -54,6 +57,8 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
     def buttonPressGraphTemp(self):
         # Get last N number of temperature samples captured in DB, data returned in arrays.
         timestamp, temp = getRecentTempData(10)
+
+        self.GraphLabel.setText('')
 
         # Generate plot of last 10 values retrieved from DB - save as image
         plt.cla() # Clear plot to remove previous generated plot
