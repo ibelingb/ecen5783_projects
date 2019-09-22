@@ -105,7 +105,7 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         # Generate plot of last 10 values retrieved from DB - save as image
         plt.cla() # Clear plot to remove previous generated plot
         plt.plot(timestamp, temp)
-        plt.title('Last 10 Samples DHT22 Temperature Samples')
+        plt.title('Last 10 Samples DHT22 Temperature Sensor')
         plt.ylabel('Temperature (deg C)')
         plt.xlabel('Timestamp')
         plt.grid(True)  
@@ -134,7 +134,7 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         # Generate plot of last 10 values retrieved from DB - save as image
         plt.cla() # Clear plot to remove previous generated plot
         plt.plot(timestamp, humidity)
-        plt.title('Last 10 Samples DHT22 Humidity Samples')
+        plt.title('Last 10 Samples DHT22 Humidity Sensor')
         plt.ylabel('Humidity (%)')
         plt.xlabel('Timestamp')
         plt.grid(True)  

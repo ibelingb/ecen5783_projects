@@ -20,7 +20,7 @@ __author__ = "Brian Ibeling"
 
 HOSTNAME="localhost"
 USERNAME="piuser"
-PASSWORD="password"
+PASSWORD="BestPasswordEver"
 DATABASE="project1"
 
 #-----------------------------------------------------------------------
@@ -75,6 +75,11 @@ def getRecentTempData(numSamples: int):
     # Select data from table via SQL query
     cur.execute("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT %s", (numSamples,))
     
+    # If the number of samples captured is less than numSamples, update array size accordingly
+    if(cur.rowcount < numSamples):
+        timestampArray = [None] * cur.rowcount
+        tempArray = [None] * cur.rowcount
+    
     # Populate received data into respective arrays
     i = 0
     if(cur.rowcount != 0) :    
@@ -96,6 +101,11 @@ def getRecentHumidityData(numSamples: int):
     
     # Select data from table via SQL query
     cur.execute("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT %s", (numSamples,))
+    
+    # If the number of samples captured is less than numSamples, update array size accordingly
+    if(cur.rowcount < numSamples):
+        timestampArray = [None] * cur.rowcount
+        humidityArray = [None] * cur.rowcount
     
     # Populate received data into respective arrays
     i = 0
