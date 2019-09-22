@@ -11,6 +11,7 @@
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
         - https://github.com/adafruit/Adafruit_Python_DHT
+        - https://docs.python.org/2/library/threading.html
 
 """
 
@@ -31,11 +32,12 @@ MAX_SAMPLE_COUNTS = 30
 g_sampleCount = 0 # Variable to track number of data sample executions
 g_qtApp = QApplication(sys.argv) # Start QT Application
 g_mainWindowInstance = MainWindow() # Create GUI class instance
+g_timer = threading.Timer(TIMER_START_DELAY_SEC, print) # tmr inst to allow timer cancel when GUI closed
 #-----------------------------------------------------------------------
 
 # Method to execute timer every PERIOD_SEC seconds to sample DTH22 sensor
 def periodicDth22Sample():
-    global g_sampleCount
+    global g_sampleCount, g_timer
     g_sampleCount = g_sampleCount + 1;
     
     # Sample DTH22 sensor
@@ -56,7 +58,8 @@ def periodicDth22Sample():
     # Trigger next timer if timer executed less than MAX_SAMPLE_COUNTS times.
     # Otherwise, report sensor sampling complete.
     if(g_sampleCount < MAX_SAMPLE_COUNTS):
-        threading.Timer(PERIOD_SEC, periodicDth22Sample).start()
+        g_timer = threading.Timer(PERIOD_SEC, periodicDth22Sample)
+        g_timer.start()
     else:
         g_mainWindowInstance.updateStatusLine('Sensor Sampling Complete.')
     
@@ -67,19 +70,25 @@ def periodicDth22Sample():
 def startGui():
     g_mainWindowInstance.show()
     g_mainWindowInstance.updateStatusLine('Application Started')
-    sys.exit(g_qtApp.exec_())
+    g_qtApp.exec_()
 
 #-----------------------------------------------------------------------
 def main(args):
+    global g_timer
+
     # Initialize connection to mySQL DB and create/open table for sensor data
     initializeDatabase()
-    
+
     # Start periodic sampling of sensor data with short delay
     # Delay allows GUI to start before first sample is captured
-    threading.Timer(TIMER_START_DELAY_SEC, periodicDth22Sample).start()
+    g_timer = threading.Timer(TIMER_START_DELAY_SEC, periodicDth22Sample)
+    g_timer.start()
     
     # Start GUI application
     startGui()
+    
+    # Cancel sensor sampling timer to allow app to close properly
+    g_timer.cancel()
     
     return 0
 
