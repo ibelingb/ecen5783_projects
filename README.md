@@ -4,7 +4,7 @@ Author: Brian Ibeling
 Date: 9/23/2019
 
 # Install and Execution Instructions
-## Database Install
+## Database Install and User Creation
 Prior to running the downloaded application, it is required that a MySQL server instance is available, the 'project1' database is created, and the user 'piuser' is created and can access the database. Please follow the steps below:
 
 1. NOTE: For development of this project, the MariaDB MySQL server was used.
