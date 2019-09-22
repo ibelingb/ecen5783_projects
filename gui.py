@@ -8,6 +8,7 @@
     The following resources were used to assist with development of this SW.
         - https://www.baldengineer.com/raspberry-pi-gui-tutorial.html
         - https://matplotlib.org/tutorials/introductory/pyplot.html
+        - https://stackoverflow.com/questions/4090383/plotting-unix-timestamps-in-matplotlib
 """
 
 import sys
@@ -16,6 +17,8 @@ from PyQt5.QtWidgets import *
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.dates as md
+import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
 import project1_gui
@@ -52,37 +55,34 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         # Get last N number of temperature samples captured in DB, data returned in arrays.
         timestamp, temp = getRecentTempData(10)
 
-        for value in timestamp:
-            print(value)
-        for value in temp:
-            print(value)
-
         # Generate plot of last 10 values retrieved from DB - save as image
         plt.cla() # Clear plot to remove previous generated plot
         plt.plot(timestamp, temp)
         plt.title('Last 10 Samples DHT22 Temperature Samples')
         plt.ylabel('Temperature (deg C)')
         plt.xlabel('Timestamp')
-        plt.grid(True)
-        plt.savefig("temp_graph.png")
+        plt.grid(True)  
+        # Adjust X-axis timestamp to display fully
+        plt.subplots_adjust(bottom=0.4)
+        plt.xticks(rotation=90)
+        plt.xticks(timestamp)
+        ax=plt.gca()
+        xfmt = md.DateFormatter('%Y-%m-%d %H:%M:%S')
+        ax.xaxis.set_major_formatter(xfmt)
+        plt.savefig("temp_graph.png") # Save plot image
         
         # Display saved plot image
         graph = QLabel(self.GraphLabel)
         graph.clear()
         graph.setPixmap(QPixmap("temp_graph.png"))
         graph.show()
-        self.GraphLabel.resize(800, 600)
+        self.GraphLabel.resize(1000, 1000)
         
         return 0
 
     def buttonPressGraphHumidity(self):
         # Get last N number of humidity samples captured in DB, data returned in arrays.
         timestamp, humidity = getRecentHumidityData(10)
-        
-        for value in timestamp:
-            print(value)
-        for value in humidity:
-            print(value)
 
         # Generate plot of last 10 values retrieved from DB - save as image
         plt.cla() # Clear plot to remove previous generated plot
@@ -90,15 +90,22 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         plt.title('Last 10 Samples DHT22 Humidity Samples')
         plt.ylabel('Humidity (%)')
         plt.xlabel('Timestamp')
-        plt.grid(True)
-        plt.savefig("humidity_graph.png")
+        plt.grid(True)  
+        # Adjust X-axis timestamp to display fully
+        plt.subplots_adjust(bottom=0.4)
+        plt.xticks(rotation=90)
+        plt.xticks(timestamp)
+        ax=plt.gca()
+        xfmt = md.DateFormatter('%Y-%m-%d %H:%M:%S')
+        ax.xaxis.set_major_formatter(xfmt)
+        plt.savefig("humidity_graph.png") # Save plot image
         
         # Display saved plot image
         graph = QLabel(self.GraphLabel)
         graph.clear()
         graph.setPixmap(QPixmap("humidity_graph.png"))
         graph.show()
-        self.GraphLabel.resize(800, 600)
+        self.GraphLabel.resize(1000, 1000)
         
         return 0
 
