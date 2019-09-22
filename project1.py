@@ -53,7 +53,7 @@ def periodicDth22Sample():
         g_mainWindowInstance.checkTempLimit()
         g_mainWindowInstance.checkHumidityLimit()
     else:
-        g_mainWindowInstance.updateStatusLine('Failed to Read Sensor Data')
+        g_mainWindowInstance.updateStatusLine('Failed to Read Sensor Data', True)
     
     # Trigger next timer if timer executed less than MAX_SAMPLE_COUNTS times.
     # Otherwise, report sensor sampling complete.

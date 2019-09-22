@@ -45,45 +45,64 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.ReadSensorButton.clicked.connect(lambda: self.buttonPressCurrData())
         self.GraphTempButton.clicked.connect(lambda: self.buttonPressGraphTemp())
         self.GraphHumidityButton.clicked.connect(lambda: self.buttonPressGraphHumidity())
-
-    def updateCurrentSensorData(self, text: str):
-        self.CurrentSensorData.setText(text)
+#-----------------------------------------------------------------------
+    def updateCurrentSensorData(self, text: str, error = False):
         # Clear italic font from user instruction to display sensor data
         myFont = QtGui.QFont()
         myFont.setItalic(False)
         self.CurrentSensorData.setFont(myFont)
-
-    def updateStatusLine(self, text: str):
-        self.StatusLine.setText(text)
         
+        # Set text color on error
+        if error is True:
+            self.CurrentSensorData.setStyleSheet('color: red')
+        else:
+            self.CurrentSensorData.setStyleSheet('color: none')
+        
+        self.CurrentSensorData.setText(text)
+#-----------------------------------------------------------------------
+    def updateStatusLine(self, text: str, error = False):
+        # Set text color on error
+        if error is True:
+            self.StatusLine.setStyleSheet('color: red')
+        else:
+            self.StatusLine.setStyleSheet('color: none')
+            
+        self.StatusLine.setText(text)
+#-----------------------------------------------------------------------
     def updateTempLimitStatus(self, text: str):
         # Clear Italic font, set text
         myFont = QtGui.QFont()
         myFont.setItalic(False)
         self.TempLimitStatus.setFont(myFont)
+        
         self.TempLimitStatus.setText(text)
-    
+#-----------------------------------------------------------------------    
     def updateHumidLimitStatus(self, text: str):
         # Clear Italic font, set text
         myFont = QtGui.QFont()
         myFont.setItalic(False)
         self.HumidLimitStatus.setFont(myFont)
+        
         self.HumidLimitStatus.setText(text)
-
+#-----------------------------------------------------------------------
     def checkTempLimit(self):
         if self.latestTempReading is not None:
             if self.latestTempReading > self.TempLimitSpinBox.value():
                 self.updateTempLimitStatus("Over Temp Limit")
+                self.TempLimitStatus.setStyleSheet('color: red')
             else:
                 self.updateTempLimitStatus("Temp within limits")
-
+                self.TempLimitStatus.setStyleSheet('color: green')
+#-----------------------------------------------------------------------
     def checkHumidityLimit(self):
         if self.latestHumidReading is not None:
             if self.latestHumidReading > self.HumidLimitSpinBox.value():
                 self.updateHumidLimitStatus("Over Humidity Limit")
+                self.HumidLimitStatus.setStyleSheet('color: red')
             else:
                 self.updateHumidLimitStatus("Humidity within limits")
-
+                self.HumidLimitStatus.setStyleSheet('color: green')
+#-----------------------------------------------------------------------
     def buttonPressCurrData(self):
         # Sample DTH22 sensor, check temp/humidity upper limit
         humidity, temperature = sampleDth22()
@@ -94,8 +113,8 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
             self.checkTempLimit()
             self.checkHumidityLimit()
         else:
-            self.updateCurrentSensorData('Failed to Read Sensor Data')
-
+            self.updateCurrentSensorData('Failed to Read Sensor Data', True)
+#-----------------------------------------------------------------------
     def buttonPressGraphTemp(self):
         # Get last N number of temperature samples captured in DB, data returned in arrays.
         timestamp, temp = getRecentTempData(10)
@@ -126,7 +145,7 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.GraphLabel.resize(1000, 1000)
         
         return 0
-
+#-----------------------------------------------------------------------
     def buttonPressGraphHumidity(self):
         # Get last N number of humidity samples captured in DB, data returned in arrays.
         timestamp, humidity = getRecentHumidityData(10)
@@ -155,5 +174,4 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.GraphLabel.resize(1000, 1000)
         
         return 0
-
 #-----------------------------------------------------------------------
