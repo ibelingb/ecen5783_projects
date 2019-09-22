@@ -13,6 +13,8 @@
 import sys
 import Adafruit_DHT
 
+__author__ = "Brian Ibeling"
+
 # Using the DHT22 Temperature and Humidity sensor, connected to GPIO pin 4 on the RPi.
 SENSOR = Adafruit_DHT.DHT22
 PIN = 4

@@ -9,6 +9,7 @@
         - https://www.baldengineer.com/raspberry-pi-gui-tutorial.html
         - https://matplotlib.org/tutorials/introductory/pyplot.html
         - https://stackoverflow.com/questions/4090383/plotting-unix-timestamps-in-matplotlib
+        - https://www.tutorialspoint.com/pyqt/pyqt_qspinbox_widget.htm
 """
 
 import sys
@@ -24,12 +25,21 @@ import project1_gui
 from db import *
 from sensor import *
 
+__author__ = "Brian Ibeling"
+
 #-----------------------------------------------------------------------
 # Class for project1 GUI
 class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
+        
+        self.latestTempReading = None
+        self.latestHumidReading = None
+        
+        # Temp/Humid Limit setting on-change callback functions
+        self.TempLimitSpinBox.valueChanged.connect(self.checkTempLimit)
+        self.HumidLimitSpinBox.valueChanged.connect(self.checkHumidityLimit)
         
         # Button press hooks
         self.ReadSensorButton.clicked.connect(lambda: self.buttonPressCurrData())
@@ -45,12 +55,44 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
 
     def updateStatusLine(self, text: str):
         self.StatusLine.setText(text)
+        
+    def updateTempLimitStatus(self, text: str):
+        # Clear Italic font, set text
+        myFont = QtGui.QFont()
+        myFont.setItalic(False)
+        self.TempLimitStatus.setFont(myFont)
+        self.TempLimitStatus.setText(text)
+    
+    def updateHumidLimitStatus(self, text: str):
+        # Clear Italic font, set text
+        myFont = QtGui.QFont()
+        myFont.setItalic(False)
+        self.HumidLimitStatus.setFont(myFont)
+        self.HumidLimitStatus.setText(text)
+
+    def checkTempLimit(self):
+        if self.latestTempReading is not None:
+            if self.latestTempReading > self.TempLimitSpinBox.value():
+                self.updateTempLimitStatus("Over Temp Limit")
+            else:
+                self.updateTempLimitStatus("Temp within limits")
+
+    def checkHumidityLimit(self):
+        if self.latestHumidReading is not None:
+            if self.latestHumidReading > self.HumidLimitSpinBox.value():
+                self.updateHumidLimitStatus("Over Humidity Limit")
+            else:
+                self.updateHumidLimitStatus("Humidity within limits")
 
     def buttonPressCurrData(self):
-        # Sample DTH22 sensor
+        # Sample DTH22 sensor, check temp/humidity upper limit
         humidity, temperature = sampleDth22()
         if humidity is not None and temperature is not None and humidity < 100:
-            self.updateCurrentSensorData('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
+            self.updateCurrentSensorData('Temp={0:0.1f}C  Humidity={1:0.1f}%'.format(temperature, humidity))
+            self.latestTempReading = temperature
+            self.latestHumidReading = humidity
+            self.checkTempLimit()
+            self.checkHumidityLimit()
         else:
             self.updateCurrentSensorData('Failed to Read Sensor Data')
 

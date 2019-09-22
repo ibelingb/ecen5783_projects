@@ -15,6 +15,9 @@
 
 import sys
 import MySQLdb
+
+__author__ = "Brian Ibeling"
+
 #-----------------------------------------------------------------------
 def initializeDatabase():
     db = MySQLdb.connect(host="localhost",
