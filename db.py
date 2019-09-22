@@ -18,12 +18,22 @@ import MySQLdb
 
 __author__ = "Brian Ibeling"
 
+HOSTNAME="localhost"
+USERNAME="piuser"
+PASSWORD="password"
+DATABASE="project1"
+
+#-----------------------------------------------------------------------
+def getDbConnection():
+    # Connect to DB with default credentials
+    db = MySQLdb.connect(host=HOSTNAME,
+                        user=USERNAME,
+                        passwd=PASSWORD,
+                        db=DATABASE)
+    return db
 #-----------------------------------------------------------------------
 def initializeDatabase():
-    db = MySQLdb.connect(host="localhost",
-                        user="piuser",
-                        passwd="password",
-                        db="project1")
+    db = getDbConnection()
     
     # Create a Cursor object to execute queries
     cur = db.cursor()
@@ -41,10 +51,7 @@ def initializeDatabase():
     return 0
 #-----------------------------------------------------------------------
 def insertSensorData(temp: float, humidity: float):
-    db = MySQLdb.connect(host="localhost",
-                        user="piuser",
-                        passwd="password",
-                        db="project1")
+    db = getDbConnection()
     
     # Create a Cursor object to execute queries
     cur = db.cursor()
@@ -60,11 +67,7 @@ def getRecentTempData(numSamples: int):
     timestampArray = [None] * numSamples
     tempArray = [None] * numSamples
     
-    
-    db = MySQLdb.connect(host="localhost",
-                        user="piuser",
-                        passwd="password",
-                        db="project1")
+    db = getDbConnection()
     
     # Create a Cursor object to execute queries
     cur = db.cursor()
@@ -86,10 +89,7 @@ def getRecentHumidityData(numSamples: int):
     timestampArray = [None] * numSamples
     humidityArray = [None] * numSamples
     
-    db = MySQLdb.connect(host="localhost",
-                        user="piuser",
-                        passwd="password",
-                        db="project1")
+    db = getDbConnection()
     
     # Create a Cursor object to execute queries
     cur = db.cursor()
@@ -106,3 +106,4 @@ def getRecentHumidityData(numSamples: int):
             i += 1
     
     return timestampArray, humidityArray
+#-----------------------------------------------------------------------
