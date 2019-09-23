@@ -2,7 +2,9 @@
 
 """ db.py: Interface for MySQL Database instance to hold timestamped sensor data
 
-    TODO
+    db.py provides an interface for the MySQL database storing timestamped DTH22 sensor data.
+    Initialization and connection to the MySQL DB is specified by the credential provided at
+    the top of this file.
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
@@ -10,7 +12,6 @@
         - https://softwareengineering.stackexchange.com/questions/261933/using-one-database-connection-across-multiple-functions-in-python
         - http://g2pc1.bu.edu/~qzpeng/manual/MySQL%20Commands.htm
         - https://stackoverflow.com/questions/28365580/typeerror-int-object-is-not-iterable-python
-        
 """
 
 import sys
@@ -25,7 +26,7 @@ DATABASE="project1"
 
 #-----------------------------------------------------------------------
 def getDbConnection():
-    # Connect to DB with default credentials
+    """ Connect to MySQL DB with default credentials """
     db = MySQLdb.connect(host=HOSTNAME,
                         user=USERNAME,
                         passwd=PASSWORD,
@@ -33,6 +34,10 @@ def getDbConnection():
     return db
 #-----------------------------------------------------------------------
 def initializeDatabase():
+    """ Establish connection to project1 DB, creating one if it does not exist. 
+        Also creates the sensors table, which includes a timestamp column as the primary key, with
+        temperature and humidity stored as floating point values as the additional columns.
+    """
     db = getDbConnection()
     
     # Create a Cursor object to execute queries
@@ -51,6 +56,10 @@ def initializeDatabase():
     return 0
 #-----------------------------------------------------------------------
 def insertSensorData(temp: float, humidity: float):
+    """ Insertion of temperature and humidity data to the sensors table within the project1 DB.
+        - @temp (float)     : Temperature value to write to DB, stored as degrees celcius.
+        - @humidity (float) : Humidity value to write to DB, stored as a percentage.
+    """
     db = getDbConnection()
     
     # Create a Cursor object to execute queries
@@ -64,6 +73,13 @@ def insertSensorData(temp: float, humidity: float):
     return 0
 #-----------------------------------------------------------------------
 def getRecentTempData(numSamples: int):
+    """ Method to retrieve the last [numSamples] temperature values from the sensors table 
+        of the Project1 DB as an array of values.
+        If the requested number of samples is greater than the number of samples available,
+        only the number of samples available is returned.
+        - @numSamples (int) : The number of temperature samples to return.
+        - @return: timestampArray[numSamples], tempArray[numSamples]
+    """
     timestampArray = [None] * numSamples
     tempArray = [None] * numSamples
     
@@ -91,6 +107,13 @@ def getRecentTempData(numSamples: int):
     return timestampArray, tempArray
 #-----------------------------------------------------------------------
 def getRecentHumidityData(numSamples: int):
+    """ Method to retrieve the last [numSamples] humidity values from the sensors table 
+        of the Project1 DB as an array of values.
+        If the requested number of samples is greater than the number of samples available,
+        only the number of samples available is returned.
+        - @numSamples (int) : The number of humidity samples to return.
+        - @return: timestampArray[numSamples], humidityArray[numSamples]
+    """
     timestampArray = [None] * numSamples
     humidityArray = [None] * numSamples
     

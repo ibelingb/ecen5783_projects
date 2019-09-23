@@ -21,7 +21,7 @@ PIN = 4
 
 #-----------------------------------------------------------------------
 def sampleDth22():
-    # Read temperature and humidity data from the DHT22 sensor
+    """ Read humidity and temperature data from the DHT22 sensor, returning data in that order """
     humidity, temperature = Adafruit_DHT.read(SENSOR, PIN)
     return humidity, temperature
 

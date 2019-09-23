@@ -25,8 +25,10 @@ To run the application, simply type the following from the clone project reposit
 
 
 # Project Work
-
+All code developed for this project was done by myself. My partner (Connor Shapiro) will be available for Project 2 onward.
 
 # Project Additions
-
-
+- Added error text highlighting for when the sensor failed to be read properly or if the returned sensors values exceeded the specified limits. Additionally, highlights green if sensors values are within nominal limits.
+- Status to indicate when the sensor sampling timer was complete (after 30 collected samples).
+- Added the creation of the project1 DB table to be generated dynamically if one doesn't exist.
+- If less than 10 entries in DB table, graphs will only display the data available.

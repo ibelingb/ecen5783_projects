@@ -2,7 +2,9 @@
 
 """ gui.py: User Interface to display/request timestamped sensor data
 
-    TODO
+    GUI interface which utilizes the generated PyQt interface to display temperature and 
+    humidity data samples directly from the DTH22 device, as well as read from the MySQL
+    sensors database.
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
@@ -31,6 +33,9 @@ __author__ = "Brian Ibeling"
 # Class for project1 GUI
 class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
     def __init__(self):
+        """ Constructor for GUI Class object.
+            Also creates the button and sensor limit input function call hooks.
+        """
         super(self.__class__, self).__init__()
         self.setupUi(self)
         
@@ -47,6 +52,10 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.GraphHumidityButton.clicked.connect(lambda: self.buttonPressGraphHumidity())
 #-----------------------------------------------------------------------
     def updateCurrentSensorData(self, text: str, error = False):
+        """ Method to update the Current Sensor data string output text and color
+            - text (str) : String to update field to.
+            - error (Bool) : Error flag to indicate if displayed text should be highlighted red.
+        """
         # Clear italic font from user instruction to display sensor data
         myFont = QtGui.QFont()
         myFont.setItalic(False)
@@ -61,6 +70,10 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.CurrentSensorData.setText(text)
 #-----------------------------------------------------------------------
     def updateStatusLine(self, text: str, error = False):
+        """ Method to update the Sensor Timer status string output text and color
+            - text (str) : String to update field to.
+            - error (Bool) : Error flag to indicate if displayed text should be highlighted red.
+        """
         # Set text color on error
         if error is True:
             self.StatusLine.setStyleSheet('color: red')
@@ -70,6 +83,10 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.StatusLine.setText(text)
 #-----------------------------------------------------------------------
     def updateTempLimitStatus(self, text: str):
+        """ Method to update the Temp Limit status string output text and color
+            - text (str) : String to update field to.
+            - error (Bool) : Flag to indicate if displayed text should be highlighted red.
+        """
         # Clear Italic font, set text
         myFont = QtGui.QFont()
         myFont.setItalic(False)
@@ -78,6 +95,10 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.TempLimitStatus.setText(text)
 #-----------------------------------------------------------------------    
     def updateHumidLimitStatus(self, text: str):
+        """ Method to update the Humidity Limit status string output text and color
+            - text (str) : String to update field to.
+            - error (Bool) : Flag to indicate if displayed text should be highlighted red.
+        """
         # Clear Italic font, set text
         myFont = QtGui.QFont()
         myFont.setItalic(False)
@@ -86,7 +107,11 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         self.HumidLimitStatus.setText(text)
 #-----------------------------------------------------------------------
     def checkTempLimit(self):
+        """ Method to compare retrived temperature data against the user specified limit set.
+            Will trigger each time new data is read from the sensor or if the temp limit is updated.
+        """
         if self.latestTempReading is not None:
+            # Compare latest temperature data captured against the temp limit set.
             if self.latestTempReading > self.TempLimitSpinBox.value():
                 self.updateTempLimitStatus("Over Temp Limit")
                 self.TempLimitStatus.setStyleSheet('color: red')
@@ -95,7 +120,11 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
                 self.TempLimitStatus.setStyleSheet('color: green')
 #-----------------------------------------------------------------------
     def checkHumidityLimit(self):
+        """ Method to compare retrived humidity data against the user specified limit set.
+            Will trigger each time new data is read from the sensor or if the humidity limit is updated.
+        """
         if self.latestHumidReading is not None:
+            # Compare latest humidity data captured against the temp limit set.
             if self.latestHumidReading > self.HumidLimitSpinBox.value():
                 self.updateHumidLimitStatus("Over Humidity Limit")
                 self.HumidLimitStatus.setStyleSheet('color: red')
@@ -104,7 +133,12 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
                 self.HumidLimitStatus.setStyleSheet('color: green')
 #-----------------------------------------------------------------------
     def buttonPressCurrData(self):
-        # Sample DTH22 sensor, check temp/humidity upper limit
+        """ Hook for if the "Get Current Data" button is pressed by the user.
+            Will read temperature and humidity data the from DTH22 device, checking limits for each 
+            to determine if limit alarms are triggered.
+            In the event sensor data fails to be read properly, display an error string.
+        """
+        # Sample DTH22 sensor, check temp/humidity upper limits
         humidity, temperature = sampleDth22()
         if humidity is not None and temperature is not None and humidity < 100:
             self.updateCurrentSensorData('Temp={0:0.1f}C  Humidity={1:0.1f}%'.format(temperature, humidity))
@@ -116,9 +150,11 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
             self.updateCurrentSensorData('Failed to Read Sensor Data', True)
 #-----------------------------------------------------------------------
     def buttonPressGraphTemp(self):
+        """ Graph the 10 latest temperature entries from the sensors DB. """
         # Get last N number of temperature samples captured in DB, data returned in arrays.
         timestamp, temp = getRecentTempData(10)
 
+        # Clear user help text on app startup
         self.GraphLabel.setText('')
 
         # Generate plot of last 10 values retrieved from DB - save as image
@@ -147,8 +183,12 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
         return 0
 #-----------------------------------------------------------------------
     def buttonPressGraphHumidity(self):
+        """ Graph the 10 latest temperature entries from the sensors DB. """
         # Get last N number of humidity samples captured in DB, data returned in arrays.
         timestamp, humidity = getRecentHumidityData(10)
+
+        # Clear user help text on app startup
+        self.GraphLabel.setText('')
 
         # Generate plot of last 10 values retrieved from DB - save as image
         plt.cla() # Clear plot to remove previous generated plot
