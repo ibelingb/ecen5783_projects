@@ -1,7 +1,7 @@
 # ECEN 5783 - Embedded Interface Design Project 1
-Title: ECEN 5783 Embedded Interface Design Project 1
-Author: Brian Ibeling
-Date: 9/23/2019
+Title: ECEN 5783 Embedded Interface Design Project 1  
+Author: Brian Ibeling  
+Date: 9/23/2019  
 
 # Install and Execution Instructions
 ## Database Install and User Creation
