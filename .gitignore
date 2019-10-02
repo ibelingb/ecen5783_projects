@@ -1,2 +1,3 @@
 *.pyc
 *.png
+package-lock.json
