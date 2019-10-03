@@ -34,7 +34,7 @@ function getLatestSensorData(numSamples, callback) {
   
   mysqlCon.query(query, function (err, result, fields) {
     if (err) throw err;
-    return callback(result[0]);
+    return callback(result);
   });
 }
 
@@ -58,12 +58,10 @@ wsServer.on('request', function(request) {
       console.log('Received Message:', message.utf8Data);
 
       getLatestSensorData(3, function(result){
-        console.log(result);
-        connection.send(result);
+        console.log(JSON.stringify(result));
+        connection.send(JSON.stringify(result));
       });
 
-      //console.log(data);
-      //connection.send(data);
     });
     connection.on('close', function(reasonCode, description) {
         console.log('Client has disconnected.');
