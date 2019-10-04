@@ -1,18 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>WebSocket Playground</title>
+  <title>Project2 Client Webpage</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 <body>
+
+<div class="widget">
+  <h1>ECEN5873 Project-2 Client Webpage</h1>
+  <input onclick="getLatestDbData()" type="submit" value="Display Latest DB Data">
+  <p id="latestDbData">Awaiting data request</p>
+  <input onclick="getCurrentSensorData()" type="submit" value="Display Current Sensor Data">
+  <p id="currentSensorData">Awaiting data request</p>
+</div>
+
 </body>
 <script>
+
 //const ws = new WebSocket('ws://localhost:9898/');
 const ws = new WebSocket('ws://192.168.1.153:9898/');
+
 ws.onopen = function() {
-    console.log('WebSocket Client Connected');
-    ws.send('Hi this is web client.');
+  console.log('WebSocket Client Connected');
 };
+
 ws.onmessage = function(e) {
-  console.log(JSON.parse(e.data));
+  document.getElementById("latestDbData").innerHTML = "Timestamp: " + JSON.parse(e.data).timestamp + " Temp: " + JSON.parse(e.data).temp + " Humidity: " + JSON.parse(e.data).humidity;
 };
+
+function getLatestDbData() {
+  ws.send('getLatestDbData');
+}
+
+function getCurrentSensorData() {
+  //TODO: Call to Tornado WebSocket to retrieve Sensor data
+  document.getElementById("currentSensorData").innerHTML = "Coming soon!"
+}
+
 </script>

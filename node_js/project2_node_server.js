@@ -20,12 +20,11 @@ var mysqlCon = mysql.createConnection({
 
 mysqlCon.connect(function(err) {
   if (err) throw err;
-  console.log("Connected!");
   var query = "SELECT * FROM sensors"
-  //var query = "SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 10"
+
+  console.log("MySQL DB connected");
   mysqlCon.query(query, function (err, result, fields) {
     if (err) throw err;
-    //console.log(result);
   });
 });
 
@@ -40,33 +39,42 @@ function getLatestSensorData(numSamples, callback) {
 
 
 //-------------------------------------------------
-// Node.js WebSocket server 
+// Initialize Node.js WebSocket server 
 const http = require('http');
 const WebSocketServer = require('websocket').server;
-
 const server = http.createServer();
 server.listen(9898);
-
 const wsServer = new WebSocketServer({
     httpServer: server
 });
 
+// The following handles interactions between the WS server and WS clients
 wsServer.on('request', function(request) {
+    // Establish new client connection
     const connection = request.accept(null, request.origin);
+    console.log("Client has connected.");
 
+    // Handle data requests from clients
     connection.on('message', function(message) {
       console.log('Received Message:', message.utf8Data);
 
-      getLatestSensorData(3, function(result){
-        console.log(JSON.stringify(result));
-        connection.send(JSON.stringify(result));
-      });
+      if(message.utf8Data == "getLatestDbData") {        
+        getLatestSensorData(1, function(result){
+          connection.send(JSON.stringify(result[0]));
+        });
+      }
 
     });
+
+    // On client disconnect event
     connection.on('close', function(reasonCode, description) {
         console.log('Client has disconnected.');
     });
 });
+
+wsServer.onmessage = function(e) {
+
+}
 
 //-------------------------------------------------
 
