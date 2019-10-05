@@ -28,17 +28,23 @@ mysqlCon.connect(function(err) {
   });
 });
 
-function getLatestSensorData(numSamples, callback) {
+function getSensorData(numSamples, callback) {
   var query = ("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT " + numSamples);
   
   mysqlCon.query(query, function (err, result, fields) {
     if (err) throw err;
-    return callback(result);
+    return callback(result, result.length);
   });
 }
 
 
 //-------------------------------------------------
+// Create empty dataPacket object for client response data
+var dataPacket = {cmdResponse: "", numSensorSamples: "0"};
+var key = "sensorSamples";
+dataPacket[key] = [];
+var i = 0;
+
 // Initialize Node.js WebSocket server 
 const http = require('http');
 const WebSocketServer = require('websocket').server;
@@ -56,14 +62,31 @@ wsServer.on('request', function(request) {
 
     // Handle data requests from clients
     connection.on('message', function(message) {
-      console.log('Received Message:', message.utf8Data);
 
-      if(message.utf8Data == "getLatestDbData") {        
-        getLatestSensorData(1, function(result){
-          connection.send(JSON.stringify(result[0]));
+      // Clear dataPacket from last request
+      dataPacket.numSensorSamples = '0';
+      dataPacket[key] = [];
+
+      if(message.utf8Data == "getLatestDbData") 
+      {
+        dataPacket.cmdResponse = "getLatestDbData";
+        getSensorData(1, function(sensorSamples, numSamplesReturned){
+          dataPacket.numSensorSamples = numSamplesReturned;
+          dataPacket[key].push(sensorSamples[0]);
+          connection.send(JSON.stringify(dataPacket));
+        });
+      } 
+      else if (message.utf8Data == "getLast10Samples") 
+      {
+        dataPacket.cmdResponse = "getLast10Samples";
+        getSensorData(10, function(sensorSamples, numSamplesReturned){
+          dataPacket.numSensorSamples = numSamplesReturned;
+          for(i=0; i<numSamplesReturned; i++) {
+            dataPacket[key].push(sensorSamples[i]);
+          }
+          connection.send(JSON.stringify(dataPacket));
         });
       }
-
     });
 
     // On client disconnect event
@@ -71,10 +94,6 @@ wsServer.on('request', function(request) {
         console.log('Client has disconnected.');
     });
 });
-
-wsServer.onmessage = function(e) {
-
-}
 
 //-------------------------------------------------
 

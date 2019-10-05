@@ -15,6 +15,8 @@
   <p id="latestDbData">Awaiting data request</p>
   <input onclick="getCurrentSensorData()" type="submit" value="Display Current Sensor Data">
   <p id="currentSensorData">Awaiting data request</p>
+  <input onclick="testNetworkSpeed()" type="submit" value="Test Network Responsiveness">
+  <p id="networkSpeed">Awaiting data request</p>
 </div>
 
 </body>
@@ -28,7 +30,23 @@ ws.onopen = function() {
 };
 
 ws.onmessage = function(e) {
-  document.getElementById("latestDbData").innerHTML = "Timestamp: " + JSON.parse(e.data).timestamp + " Temp: " + JSON.parse(e.data).temp + " Humidity: " + JSON.parse(e.data).humidity;
+  console.log(JSON.parse(e.data));
+  nodeServerData = JSON.parse(e.data);
+  
+  if(nodeServerData.cmdResponse == "getLatestDbData") {
+	if(nodeServerData.numSensorSamples > 0) {
+	  document.getElementById("latestDbData").innerHTML = 
+		"Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
+		" | Temp: " + nodeServerData.sensorSamples[0].temp + 
+		" | Humidity: " + nodeServerData.sensorSamples[0].humidity;
+	} else {
+	  document.getElementById("latestDbData").innerHTML = "No mySQL Data Available.";
+	}
+  } 
+  else if(nodeServerData.cmdResponse == "getLast10Samples")
+  {
+	// TODO
+  }
 };
 
 function getLatestDbData() {
@@ -38,6 +56,16 @@ function getLatestDbData() {
 function getCurrentSensorData() {
   //TODO: Call to Tornado WebSocket to retrieve Sensor data
   document.getElementById("currentSensorData").innerHTML = "Coming soon!"
+}
+
+function testNetworkSpeed() {
+  // Request data via NodeJS server
+  ws.send('getLast10Samples');
+  
+  // Request data via Tornado server
+  // TODO
+  
+  // TODO: Create table to display data
 }
 
 </script>
