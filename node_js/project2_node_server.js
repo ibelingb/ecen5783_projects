@@ -2,8 +2,9 @@
 File: project2_node_server.js
 Author: Brian Ibeling
 Date: 10/2/2019
-
-TODO: Add description
+Description: NodeJS WebSocket server instance to provide an interface between the Project1 MySQL
+             database and the Project2 HTML webpage. Server begins by connecting to the project1
+             database 
 
   + Resources and Citations +
   The following resources were used to assist with development of this SW.
@@ -14,37 +15,38 @@ TODO: Add description
     - https://stackoverflow.com/questions/34385499/how-to-create-json-object-node-js
 */
 
-//-------------------------------------------------
+//-----------------------------------------------------------------------------------
 var mysql = require('mysql');
 
+// Establish connection to project1 MySQL DB and provide variable to be used for NodeJS SQL queries.
 var mysqlCon = mysql.createConnection({
   host: "localhost",
   user: "piuser",
   password: "BestPasswordEver",
   database: "project1"
 });
-
 mysqlCon.connect(function(err) {
-  if (err) throw err;
-  var query = "SELECT * FROM sensors"
-
+  if (err) {
+    console.log("ERROR: NodeJS Server failed to connect to MySQL DB.");
+    return;
+  }
   console.log("MySQL DB connected");
-  mysqlCon.query(query, function (err, result, fields) {
-    if (err) throw err;
-  });
 });
 
 function getSensorData(numSamples, callback) {
   var query = ("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT " + numSamples);
   
   mysqlCon.query(query, function (err, result, fields) {
-    if (err) throw err;
+    if (err) {
+      console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB");
+      return callback(result, 0);
+    }
     return callback(result, result.length);
   });
 }
 
 
-//-------------------------------------------------
+//-----------------------------------------------------------------------------------
 // Create empty dataPacket object for client response data
 var dataPacket = {cmdResponse: "", numSensorSamples: "0"};
 var key = "sensorSamples";
@@ -78,7 +80,8 @@ wsServer.on('request', function(request) {
         dataPacket.cmdResponse = "getLatestDbData";
         getSensorData(1, function(sensorSamples, numSamplesReturned){
           dataPacket.numSensorSamples = numSamplesReturned;
-          dataPacket[key].push(sensorSamples[0]);
+          if(numSamplesReturned > 0)
+            dataPacket[key].push(sensorSamples[0]);
           connection.send(JSON.stringify(dataPacket));
         });
       } 
@@ -101,5 +104,4 @@ wsServer.on('request', function(request) {
     });
 });
 
-//-------------------------------------------------
-
+//-----------------------------------------------------------------------------------

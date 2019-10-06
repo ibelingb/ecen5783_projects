@@ -142,6 +142,7 @@ var nodeTestStarttime;
 var nodeTestEndtime;
 var tornadoTestStarttime;
 var tornadoTestEndtime;
+var nodeJSServerConnError = false;
 
 //const ws = new WebSocket('ws://localhost:9898/');
 const ws = new WebSocket('ws://192.168.1.153:9898/');
@@ -150,18 +151,29 @@ ws.onopen = function() {
   console.log('WebSocket Client Connected');
 };
 
+ws.onerror = function(e) {
+  alert("Failed to connect to NodeJS Server")
+  nodeJSServerConnError = true;
+};
+
 ws.onmessage = function(e) {
+  var dataAvailable = true;
   console.log(JSON.parse(e.data));
   nodeServerData = JSON.parse(e.data);
   
+  if(nodeServerData.numSensorSamples == 0) {
+	alert("Failed to retrieve data from NodeJS Server")
+	dataAvailable = false;
+  }
+  
   if(nodeServerData.cmdResponse == "getLatestDbData") {
-	if(nodeServerData.numSensorSamples > 0) {
+	if(dataAvailable) {
 	  document.getElementById("latestDbData").innerHTML = 
 		"Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
 		" | Temp: " + nodeServerData.sensorSamples[0].temp + 
 		" | Humidity: " + nodeServerData.sensorSamples[0].humidity;
 	} else {
-	  document.getElementById("latestDbData").innerHTML = "No mySQL Data Available.";
+	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
 	}
   }
   else if(nodeServerData.cmdResponse == "getLast10Samples")
@@ -176,14 +188,18 @@ ws.onmessage = function(e) {
 	  document.getElementById("timestamp" + i).innerHTML = "-";
 	  document.getElementById("nodeHumidity" + i).innerHTML = "-";
 	}
+	
+	nodeTestEndtime = new Date();
+	populateNodeSpeedTestTable(dataAvailable);
   }
-  
-  nodeTestEndtime = new Date();
-  populateNodeSpeedTestTable();
 };
 
 function getLatestDbData() {
-  ws.send('getLatestDbData');
+  if(!nodeJSServerConnError) {
+	  ws.send('getLatestDbData');
+  } else {
+	  alert("Failed to connect to NodeJS Server")
+  }
 }
 
 function getCurrentSensorData() {
@@ -194,19 +210,32 @@ function getCurrentSensorData() {
 function testNetworkSpeed() {
   // Request data via NodeJS server and populate HTML table
   nodeTestStarttime = new Date();
-  ws.send('getLast10Samples');
+  if(!nodeJSServerConnError) {
+	  ws.send('getLast10Samples');
+  } else {
+	  alert("Failed to connect to NodeJS Server")
+  }
   
   // Request data via Tornado server
   var tornadoTestStarttime = new Date();
   // TODO - Add Tornado request to retrieve last 10 values
   // TODO - Set tornadoTestEndtime variable once Tornado server returns MySQL data
+  // TODO - Handle error case in the event Tornado fails to read data from MySQL DB
+  // TODO - Overwrite Timestamp column of Humidity Table when Tornado Server data returned; ignore if error
 }
 
-function populateNodeSpeedTestTable(){
-  // Calculate and format timing for NodeJS server speed test
-  document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
-  document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
-  document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
+function populateNodeSpeedTestTable(dataAvailable){
+  if(dataAvailable) {
+	// Calculate and format timing for NodeJS server speed test
+	document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
+	document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
+	document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
+  } else {
+	// Failed to read data from MySQL DB - clear NodeJS server speed test table entries
+	document.getElementById("SpeedTestStarttime0").innerHTML = "-";
+	document.getElementById("SpeedTestEndtime0").innerHTML = "-";
+	document.getElementById("SpeedTestTotal0").innerHTML = "-";
+  }
 }
 
 function populateTornadoSpeedTestTable(){
