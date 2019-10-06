@@ -47,4 +47,5 @@ Connor Shaprio
 
 # Project Additions
 - Error handling between HTML client and NodeJS server on server/SQL error events.
+- Startup script will create MySQL project1 DB and 'sensors' table instance if it doesn't exist. Helps to ensure NodeJS successfully connects.
 - Stop script added to kill server-side applications.
