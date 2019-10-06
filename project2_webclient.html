@@ -5,7 +5,15 @@ ECEN 5783 - Embedded Interface Design
 10/6/2019
 Authors: Brian Ibeling and Connor Shapiro
 
+The project2_webclient.html page provides a browser-based HTML client interface to communicate 
+with the NodeJS and Tornado WebSocket servers which communicate with the Python Application and
+MySQL database from Project1. HTML page contains several buttons to read SQL data and determine 
 
+The HTML page monitors and reports to the user the following error conditions:
+  - Connection between HTML client and NodeJS server is lost/unavailable.
+  - Data requested from NodeJS server fails to return MySQL sensor data to HTML client.
+    >> Due to no data being available in SQL DB, or NodeJS fails to read from SQL DB.
+  - 
 
 + Resources and Citations +
 The following resources were used to assist with development of this SW.
@@ -46,6 +54,8 @@ tr:nth-child(even) {
 <body>
 
 <div class="widget">
+  <!-- Define Webpage heading with buttons and text fields for latest DB data, current Sensor data, 
+       and test server responsiveness -->
   <h1>ECEN5873 Project-2 Client Webpage</h1>
   <input onclick="getLatestDbData()" type="submit" value="Display Latest DB Data">
   <p id="latestDbData">Awaiting data request</p>
@@ -53,90 +63,92 @@ tr:nth-child(even) {
   <p id="currentSensorData">Awaiting data request</p>
   <input onclick="testNetworkSpeed()" type="submit" value="Test Network Responsiveness">  
 
-<h2>Server Speed Test Summary</h2>
-<table>
-  <tr>
-    <th>Server</th>
-    <th>Start Time</th>
-    <th>End Time</th>
-	<th>Total Time (msec)</th>
-  </tr>
-  <tr>
-    <td id=SpeedTestServer0>NodeJS</td>
-    <td id=SpeedTestStarttime0>-</td>
-    <td id=SpeedTestEndtime0>-</td>
-	<td id=SpeedTestTotal0>-</td>
-  </tr>  <tr>
-    <td id=SpeedTestServer1>Tornado</td>
-    <td id=SpeedTestStarttime1>-</td>
-    <td id=SpeedTestEndtime1>-</td>
-	<td id=SpeedTestTotal1>-</td>
-  </tr>
-</table>
+  <!-- Define Server Speed Test Summary Table -->
+  <h2>Server Speed Test Summary</h2>
+  <table>
+    <tr>
+      <th>Server</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+	  <th>Total Time (msec)</th>
+    </tr>
+    <tr>
+      <td id=SpeedTestServer0>NodeJS</td>
+      <td id=SpeedTestStarttime0>-</td>
+      <td id=SpeedTestEndtime0>-</td>
+	  <td id=SpeedTestTotal0>-</td>
+    </tr>  <tr>
+      <td id=SpeedTestServer1>Tornado</td>
+      <td id=SpeedTestStarttime1>-</td>
+      <td id=SpeedTestEndtime1>-</td>
+	  <td id=SpeedTestTotal1>-</td>
+    </tr>
+  </table>
   
-<h2>Speed Test Humidity Table</h2>
-<table>
-  <tr>
-    <th>Timestamp</th>
-    <th>Humidity (NodeJS)</th>
-    <th>Humidity (Tornado)</th>
-  </tr>
-  <tr>
-    <td id=timestamp0>-</td>
-    <td id=nodeHumidity0>-</td>
-    <td id=tornadoHumidity0>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp1>-</td>
-    <td id=nodeHumidity1>-</td>
-    <td id=tornadoHumidity1>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp2>-</td>
-    <td id=nodeHumidity2>-</td>
-    <td id=tornadoHumidity2>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp3>-</td>
-    <td id=nodeHumidity3>-</td>
-    <td id=tornadoHumidity3>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp4>-</td>
-    <td id=nodeHumidity4>-</td>
-    <td id=tornadoHumidity4>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp5>-</td>
-    <td id=nodeHumidity5>-</td>
-    <td id=tornadoHumidity5>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp6>-</td>
-    <td id=nodeHumidity6>-</td>
-    <td id=tornadoHumidity6>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp7>-</td>
-    <td id=nodeHumidity7>-</td>
-    <td id=tornadoHumidity7>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp8>-</td>
-    <td id=nodeHumidity8>-</td>
-    <td id=tornadoHumidity8>-</td>
-  </tr>
-  <tr>
-    <td id=timestamp9>-</td>
-    <td id=nodeHumidity9>-</td>
-    <td id=tornadoHumidity9>-</td>
-  </tr>
-</table>
-  
+  <!-- Define Speed Test Humidity Table -->
+  <h2>Speed Test Humidity Table</h2>
+  <table>
+    <tr>
+      <th>Timestamp</th>
+      <th>Humidity (NodeJS)</th>
+      <th>Humidity (Tornado)</th>
+    </tr>
+    <tr>
+      <td id=timestamp0>-</td>
+      <td id=nodeHumidity0>-</td>
+      <td id=tornadoHumidity0>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp1>-</td>
+      <td id=nodeHumidity1>-</td>
+      <td id=tornadoHumidity1>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp2>-</td>
+      <td id=nodeHumidity2>-</td>
+      <td id=tornadoHumidity2>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp3>-</td>
+      <td id=nodeHumidity3>-</td>
+      <td id=tornadoHumidity3>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp4>-</td>
+      <td id=nodeHumidity4>-</td>
+      <td id=tornadoHumidity4>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp5>-</td>
+      <td id=nodeHumidity5>-</td>
+      <td id=tornadoHumidity5>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp6>-</td>
+      <td id=nodeHumidity6>-</td>
+      <td id=tornadoHumidity6>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp7>-</td>
+      <td id=nodeHumidity7>-</td>
+      <td id=tornadoHumidity7>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp8>-</td>
+      <td id=nodeHumidity8>-</td>
+      <td id=tornadoHumidity8>-</td>
+    </tr>
+    <tr>
+      <td id=timestamp9>-</td>
+      <td id=nodeHumidity9>-</td>
+      <td id=tornadoHumidity9>-</td>
+    </tr>
+  </table>
 </div>
-
 </body>
 <script>
+// ------------------------------------------------------------------------------------
+// JS variables used to track client-server responsiveness and connection status
 var i = 0;
 var nodeTestStarttime;
 var nodeTestEndtime;
@@ -144,28 +156,38 @@ var tornadoTestStarttime;
 var tornadoTestEndtime;
 var nodeJSServerConnError = false;
 
-//const ws = new WebSocket('ws://localhost:9898/');
+// Establish WebSocket connection to Raspberry Pi NodeJS serv
 const ws = new WebSocket('ws://192.168.1.153:9898/');
 
+// ------------------------------------------------------------------------------------
+// Method for NodeJS WebSocket Connection initialization event 
 ws.onopen = function() {
   console.log('WebSocket Client Connected');
 };
 
+// ------------------------------------------------------------------------------------
+// Method for NodeJS WebSocket Connection error event - Update connection status
 ws.onerror = function(e) {
   alert("Failed to connect to NodeJS Server")
   nodeJSServerConnError = true;
 };
 
+// ------------------------------------------------------------------------------------
+// Method for NodeJS WebSocket Message received event.
+// Handle JSON formatted string passed from NodeJS WebSocket server to HTML client.
+// Based on nodeServerData.cmdResponse field, update corresponding HTML client webpage fields/tables.
 ws.onmessage = function(e) {
-  var dataAvailable = true;
-  console.log(JSON.parse(e.data));
+  var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
+  console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
   nodeServerData = JSON.parse(e.data);
-  
+ 
+  // Check if data received from NodeJS/SQL DB - used for error handling in message types below.
   if(nodeServerData.numSensorSamples == 0) {
 	alert("Failed to retrieve data from NodeJS Server")
 	dataAvailable = false;
   }
-  
+ 
+  // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
   if(nodeServerData.cmdResponse == "getLatestDbData") {
 	if(dataAvailable) {
 	  document.getElementById("latestDbData").innerHTML = 
@@ -177,8 +199,8 @@ ws.onmessage = function(e) {
 	}
   }
   else if(nodeServerData.cmdResponse == "getLast10Samples")
-  {
-	// Populate table with values returned from MySQL via NodeJS WebSocket
+  { // Handle getLast10Samples event - populate corresponding tables with returned data.
+	// Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
 	for(i=0; i<nodeServerData.numSensorSamples; i++) {
 	  document.getElementById("timestamp" + i).innerHTML = nodeServerData.sensorSamples[i].timestamp;
 	  document.getElementById("nodeHumidity" + i).innerHTML = nodeServerData.sensorSamples[i].humidity;
@@ -188,25 +210,34 @@ ws.onmessage = function(e) {
 	  document.getElementById("timestamp" + i).innerHTML = "-";
 	  document.getElementById("nodeHumidity" + i).innerHTML = "-";
 	}
-	
+
+  // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
 	nodeTestEndtime = new Date();
 	populateNodeSpeedTestTable(dataAvailable);
   }
 };
 
+// ------------------------------------------------------------------------------------
+// Wrapper function called when "Display Latest DB Data" button is pressed.
 function getLatestDbData() {
+  // Determine if NodeJS server connection is active; if true, send SQL data request
   if(!nodeJSServerConnError) {
 	  ws.send('getLatestDbData');
   } else {
+	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
 	  alert("Failed to connect to NodeJS Server")
   }
 }
 
+// ------------------------------------------------------------------------------------
+// Wrapper function called when "Display Current Sensor Data" button is pressed.
 function getCurrentSensorData() {
   //TODO: Call to Tornado WebSocket to retrieve Sensor data
   document.getElementById("currentSensorData").innerHTML = "Coming soon!";
 }
 
+// ------------------------------------------------------------------------------------
+// Wrapper function called when "Test Network Responsiveness" button is pressed.
 function testNetworkSpeed() {
   // Request data via NodeJS server and populate HTML table
   nodeTestStarttime = new Date();
@@ -224,6 +255,8 @@ function testNetworkSpeed() {
   // TODO - Overwrite Timestamp column of Humidity Table when Tornado Server data returned; ignore if error
 }
 
+// ------------------------------------------------------------------------------------
+// Method to populate NodeJS row of Server Speed Test Summary Table
 function populateNodeSpeedTestTable(dataAvailable){
   if(dataAvailable) {
 	// Calculate and format timing for NodeJS server speed test
@@ -238,11 +271,14 @@ function populateNodeSpeedTestTable(dataAvailable){
   }
 }
 
+// ------------------------------------------------------------------------------------
+// Method to populate Tornado row of Server Speed Test Summary Table
 function populateTornadoSpeedTestTable(){
   // Calculate and format timing for Tornado server speed test
   document.getElementById("SpeedTestStarttime1").innerHTML = tornadoTestStarttime.toISOString();
   document.getElementById("SpeedTestEndtime1").innerHTML = tornadoTestEndtime.toISOString();
   document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
 }
+// ------------------------------------------------------------------------------------
 
 </script>

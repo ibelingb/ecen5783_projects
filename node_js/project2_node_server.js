@@ -33,10 +33,15 @@ mysqlCon.connect(function(err) {
   console.log("MySQL DB connected");
 });
 
+//-----------------------------------------------------------------------------------
+// Query and return sensor data from Project1 SQL sensors DB table based on numSamples parameter provided.
+// @numSamples - Number of SQL sensors table entries to retrieve and return
+// @return - JSON object with array of SQL sensors table data entries and num table entries returned.
 function getSensorData(numSamples, callback) {
   var query = ("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT " + numSamples);
   
   mysqlCon.query(query, function (err, result, fields) {
+    // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
     if (err) {
       console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB");
       return callback(result, 0);
@@ -45,8 +50,8 @@ function getSensorData(numSamples, callback) {
   });
 }
 
-
 //-----------------------------------------------------------------------------------
+// Variables for NodeJS WebSocket-Client interaction
 // Create empty dataPacket object for client response data
 var dataPacket = {cmdResponse: "", numSensorSamples: "0"};
 var key = "sensorSamples";
@@ -62,19 +67,25 @@ const wsServer = new WebSocketServer({
     httpServer: server
 });
 
-// The following handles interactions between the WS server and WS clients
+// The following handles interactions between the WS server and WebSocket clients
 wsServer.on('request', function(request) {
-    // Establish new client connection
+    // Establish new client connection - log event to terminal
     const connection = request.accept(null, request.origin);
     console.log("Client has connected.");
 
-    // Handle data requests from clients
+    // Data request received from HTML client
+    // Read request type and return corresponding data in JSON formatted string
+    // Each JSON formatting string returned to client contains:
+    //  - The type of request being handled (cmdResponse)
+    //  - the number of SQL data entries retrieved and being returned (numSensorSamples)
+    //  - An array of the SQL entries requested (sensorSamples)
     connection.on('message', function(message) {
 
       // Clear dataPacket from last request
       dataPacket.numSensorSamples = '0';
       dataPacket[key] = [];
 
+      // Client request for latest data entry in SQL DB.
       if(message.utf8Data == "getLatestDbData") 
       {
         dataPacket.cmdResponse = "getLatestDbData";
@@ -84,7 +95,8 @@ wsServer.on('request', function(request) {
             dataPacket[key].push(sensorSamples[0]);
           connection.send(JSON.stringify(dataPacket));
         });
-      } 
+      }
+      // Client request for last 10 data entries in SQL DB.
       else if (message.utf8Data == "getLast10Samples") 
       {
         dataPacket.cmdResponse = "getLast10Samples";
@@ -98,7 +110,7 @@ wsServer.on('request', function(request) {
       }
     });
 
-    // On client disconnect event
+    // On client disconnect event - log event to terminal
     connection.on('close', function(reasonCode, description) {
         console.log('Client has disconnected.');
     });
