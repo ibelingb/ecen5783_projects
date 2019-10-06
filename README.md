@@ -1,6 +1,6 @@
 # ECEN 5783 - Embedded Interface Design Project 2
-Title: ECEN 5783 Embedded Interface Design Project 2
-Author: Brian Ibeling and Connor Shapiro
+Title: ECEN 5783 Embedded Interface Design Project 2  
+Author: Brian Ibeling and Connor Shapiro  
 Date: 10/6/2019  
 
 # Install and Execution Instructions
@@ -26,8 +26,8 @@ To start the server-side applications, simply type the following from the cloned
 To launch the web-based client, simply open the following file from a browser on a RPi/PC remotely connected to server RPi.
   > project2_webclient.html
 
-NOTE: Server-side RPi server applications required to be started before launching web-based client.
-NOTE: May be required to update IP address of server-side RPi on ~line 160 of project2_webclient.html.
+NOTE: Server-side RPi server applications required to be started before launching web-based client.  
+NOTE: May be required to update IP address of server-side RPi on ~line 160 of project2_webclient.html.  
 
 To stop the server-side applications, simply type the following from the cloned project repository directory.
   > ./stopApp.sh
@@ -42,8 +42,8 @@ Brian Ibeling
 - HTML Webpage Speed Test table population and speed test time calulcations
 - HTML Webpage Client-NodeJS server error handling
 
-Connor Shaprio
-- 
+Connor Shaprio  
+- TODO
 
 # Project Additions
 - Error handling between HTML client and NodeJS server on server/SQL error events.
