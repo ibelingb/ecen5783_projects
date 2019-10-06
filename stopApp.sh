@@ -5,10 +5,10 @@
 # Description: Script to kill launched project1/2 processes.
 
 # Kill launched python applciation
-kill -15 `pidof python3`
+kill -15 `pidof python3` &
 
 # Kill launched NodeJS Server application
-kill -15 `pidof node`
+kill -15 `pidof node` &
 
 # Kill launched Tornado Server application
 ## TODO

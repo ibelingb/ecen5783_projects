@@ -1,4 +1,21 @@
 <!DOCTYPE html>
+<!--
+Project 2 HTML page
+ECEN 5783 - Embedded Interface Design
+10/6/2019
+Authors: Brian Ibeling and Connor Shapiro
+
+
+
++ Resources and Citations +
+The following resources were used to assist with development of this SW.
+  - https://jqueryui.com/button/
+  - https://www.w3schools.com/html/html_tables.asp
+  - https://www.w3schools.com/jsref/jsref_gettime.asp
+  - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds
+  - https://stackoverflow.com/questions/3552461/how-to-format-a-javascript-date
+-->
+
 <html>
 <head>
   <title>Project2 Client Webpage</title>
@@ -186,17 +203,17 @@ function testNetworkSpeed() {
 }
 
 function populateNodeSpeedTestTable(){
-  // Calculate and format timing for each server speed test
+  // Calculate and format timing for NodeJS server speed test
   document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
   document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
   document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
 }
 
 function populateTornadoSpeedTestTable(){
-  // Calculate and format timing for each server speed test
-  document.getElementById("SpeedTestStarttime0").innerHTML = tornadoTestStarttime.toISOString();
-  document.getElementById("SpeedTestEndtime0").innerHTML = tornadoTestEndtime.toISOString();
-  document.getElementById("SpeedTestTotal0").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
+  // Calculate and format timing for Tornado server speed test
+  document.getElementById("SpeedTestStarttime1").innerHTML = tornadoTestStarttime.toISOString();
+  document.getElementById("SpeedTestEndtime1").innerHTML = tornadoTestEndtime.toISOString();
+  document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
 }
 
 </script>

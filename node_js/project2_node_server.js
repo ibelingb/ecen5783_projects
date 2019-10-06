@@ -5,10 +5,16 @@ Date: 10/2/2019
 
 TODO: Add description
 
+  + Resources and Citations +
+  The following resources were used to assist with development of this SW.
+    - https://www.w3schools.com/nodejs/nodejs_mysql_select.asp
+    - https://www.pubnub.com/blog/nodejs-websocket-programming-examples/
+    - https://stackoverflow.com/questions/31875621/how-to-properly-return-a-result-from-mysql-with-node
+    - https://stackoverflow.com/questions/11151632/passing-an-object-to-client-in-node-express-ejs/18106721
+    - https://stackoverflow.com/questions/34385499/how-to-create-json-object-node-js
 */
 
 //-------------------------------------------------
-// TODO: Move mysql function to separate NodeJS file
 var mysql = require('mysql');
 
 var mysqlCon = mysql.createConnection({
