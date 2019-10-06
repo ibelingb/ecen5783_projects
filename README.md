@@ -1,7 +1,7 @@
-# ECEN 5783 - Embedded Interface Design Project 1
-Title: ECEN 5783 Embedded Interface Design Project 1  
-Author: Brian Ibeling  
-Date: 9/23/2019  
+# ECEN 5783 - Embedded Interface Design Project 2
+Title: ECEN 5783 Embedded Interface Design Project 2
+Author: Brian Ibeling and Connor Shapiro
+Date: 10/6/2019  
 
 # Install and Execution Instructions
 ## Database Install and User Creation
@@ -19,16 +19,31 @@ Prior to running the downloaded application, it is required that a MySQL server 
 4. Create the 'project1' database by executing the following command from MySQL:
   > mariaDB> CREATE DATABASE project1;
 
-## Starting the Application
-To run the application, simply type the following from the clone project repository directory.
-> python3 project1.py
+## Starting and Stopping the Application
+To start the server-side applications, simply type the following from the cloned project repository directory.
+> ./startApp.sh
 
+To launch the web-based client, simply open the following file from a browser on a RPi/PC remotely connected to server RPi.
+> project2_webclient.html
+NOTE: Server-side RPi server applications required to be started before launching web-based client.
+NOTE: May be required to update IP address of server-side RPi on ~line 160 of project2_webclient.html.
+
+To stop the server-side applications, simply type the following from the cloned project repository directory.
+> ./stopApp.sh
 
 # Project Work
-All code developed for this project was done by myself. My partner (Connor Shapiro) will be available for Project 2 onward.
+Brian Ibeling
+- Project1 contributions
+- NodeJS Server Instance with MySQL connection and interface
+- NodeJS Server and Webpage client JSON Packet definition and interactions
+- HTML Webpage design and layout
+- HTML Webpage button layout and interactions
+- HTML Webpage Speed Test table population and speed test time calulcations
+- HTML Webpage Client-NodeJS server error handling
+
+Connor Shaprio
+- 
 
 # Project Additions
-- Added error text highlighting for when the sensor failed to be read properly or if the returned sensors values exceeded the specified limits. Additionally, highlights green if sensors values are within nominal limits.
-- Status to indicate when the sensor sampling timer was complete (after 30 collected samples).
-- Added the creation of the project1 DB table to be generated dynamically if one doesn't exist.
-- If less than 10 entries in DB table, graphs will only display the data available.
+- Error handling between HTML client and NodeJS server on server/SQL error events.
+- Stop script added to kill server-side applications.
