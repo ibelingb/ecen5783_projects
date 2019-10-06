@@ -6,6 +6,25 @@
   <link rel="stylesheet" href="/resources/demos/style.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 70%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 5px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+  
 </head>
 <body>
 
@@ -15,12 +34,97 @@
   <p id="latestDbData">Awaiting data request</p>
   <input onclick="getCurrentSensorData()" type="submit" value="Display Current Sensor Data">
   <p id="currentSensorData">Awaiting data request</p>
-  <input onclick="testNetworkSpeed()" type="submit" value="Test Network Responsiveness">
-  <p id="networkSpeed">Awaiting data request</p>
+  <input onclick="testNetworkSpeed()" type="submit" value="Test Network Responsiveness">  
+
+<h2>Server Speed Test Summary</h2>
+<table>
+  <tr>
+    <th>Server</th>
+    <th>Start Time</th>
+    <th>End Time</th>
+	<th>Total Time (msec)</th>
+  </tr>
+  <tr>
+    <td id=SpeedTestServer0>NodeJS</td>
+    <td id=SpeedTestStarttime0>-</td>
+    <td id=SpeedTestEndtime0>-</td>
+	<td id=SpeedTestTotal0>-</td>
+  </tr>  <tr>
+    <td id=SpeedTestServer1>Tornado</td>
+    <td id=SpeedTestStarttime1>-</td>
+    <td id=SpeedTestEndtime1>-</td>
+	<td id=SpeedTestTotal1>-</td>
+  </tr>
+</table>
+  
+<h2>Speed Test Humidity Table</h2>
+<table>
+  <tr>
+    <th>Timestamp</th>
+    <th>Humidity (NodeJS)</th>
+    <th>Humidity (Tornado)</th>
+  </tr>
+  <tr>
+    <td id=timestamp0>-</td>
+    <td id=nodeHumidity0>-</td>
+    <td id=tornadoHumidity0>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp1>-</td>
+    <td id=nodeHumidity1>-</td>
+    <td id=tornadoHumidity1>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp2>-</td>
+    <td id=nodeHumidity2>-</td>
+    <td id=tornadoHumidity2>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp3>-</td>
+    <td id=nodeHumidity3>-</td>
+    <td id=tornadoHumidity3>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp4>-</td>
+    <td id=nodeHumidity4>-</td>
+    <td id=tornadoHumidity4>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp5>-</td>
+    <td id=nodeHumidity5>-</td>
+    <td id=tornadoHumidity5>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp6>-</td>
+    <td id=nodeHumidity6>-</td>
+    <td id=tornadoHumidity6>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp7>-</td>
+    <td id=nodeHumidity7>-</td>
+    <td id=tornadoHumidity7>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp8>-</td>
+    <td id=nodeHumidity8>-</td>
+    <td id=tornadoHumidity8>-</td>
+  </tr>
+  <tr>
+    <td id=timestamp9>-</td>
+    <td id=nodeHumidity9>-</td>
+    <td id=tornadoHumidity9>-</td>
+  </tr>
+</table>
+  
 </div>
 
 </body>
 <script>
+var i = 0;
+var nodeTestStarttime;
+var nodeTestEndtime;
+var tornadoTestStarttime;
+var tornadoTestEndtime;
 
 //const ws = new WebSocket('ws://localhost:9898/');
 const ws = new WebSocket('ws://192.168.1.153:9898/');
@@ -42,11 +146,23 @@ ws.onmessage = function(e) {
 	} else {
 	  document.getElementById("latestDbData").innerHTML = "No mySQL Data Available.";
 	}
-  } 
+  }
   else if(nodeServerData.cmdResponse == "getLast10Samples")
   {
-	// TODO
+	// Populate table with values returned from MySQL via NodeJS WebSocket
+	for(i=0; i<nodeServerData.numSensorSamples; i++) {
+	  document.getElementById("timestamp" + i).innerHTML = nodeServerData.sensorSamples[i].timestamp;
+	  document.getElementById("nodeHumidity" + i).innerHTML = nodeServerData.sensorSamples[i].humidity;
+	}
+	// If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
+	for(i=nodeServerData.numSensorSamples; i<10; i++) {
+	  document.getElementById("timestamp" + i).innerHTML = "-";
+	  document.getElementById("nodeHumidity" + i).innerHTML = "-";
+	}
   }
+  
+  nodeTestEndtime = new Date();
+  populateNodeSpeedTestTable();
 };
 
 function getLatestDbData() {
@@ -55,17 +171,32 @@ function getLatestDbData() {
 
 function getCurrentSensorData() {
   //TODO: Call to Tornado WebSocket to retrieve Sensor data
-  document.getElementById("currentSensorData").innerHTML = "Coming soon!"
+  document.getElementById("currentSensorData").innerHTML = "Coming soon!";
 }
 
 function testNetworkSpeed() {
-  // Request data via NodeJS server
+  // Request data via NodeJS server and populate HTML table
+  nodeTestStarttime = new Date();
   ws.send('getLast10Samples');
   
   // Request data via Tornado server
-  // TODO
-  
-  // TODO: Create table to display data
+  var tornadoTestStarttime = new Date();
+  // TODO - Add Tornado request to retrieve last 10 values
+  // TODO - Set tornadoTestEndtime variable once Tornado server returns MySQL data
+}
+
+function populateNodeSpeedTestTable(){
+  // Calculate and format timing for each server speed test
+  document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
+  document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
+  document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
+}
+
+function populateTornadoSpeedTestTable(){
+  // Calculate and format timing for each server speed test
+  document.getElementById("SpeedTestStarttime0").innerHTML = tornadoTestStarttime.toISOString();
+  document.getElementById("SpeedTestEndtime0").innerHTML = tornadoTestEndtime.toISOString();
+  document.getElementById("SpeedTestTotal0").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
 }
 
 </script>
