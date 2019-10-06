@@ -25,6 +25,7 @@ To start the server-side applications, simply type the following from the cloned
 
 To launch the web-based client, simply open the following file from a browser on a RPi/PC remotely connected to server RPi.
   > project2_webclient.html
+
 NOTE: Server-side RPi server applications required to be started before launching web-based client.
 NOTE: May be required to update IP address of server-side RPi on ~line 160 of project2_webclient.html.
 
