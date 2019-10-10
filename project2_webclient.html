@@ -161,7 +161,7 @@ var webServerConnError = false;
 const jsws = new WebSocket('ws://raspberrypi:9898/');
 
 // Establish WebSocket connection to Raspberry Pi webserver
-const wsws = new WebSocket('ws://raspberrypi:9897/');
+const wsws = new WebSocket('ws://192.168.0.47:9897/ws');
 
 // ------------------------------------------------------------------------------------
 // Method for NodeJS WebSocket Connection initialization event 
@@ -234,7 +234,7 @@ jsws.onmessage = function(e) {
 // ------------------------------------------------------------------------------------
 // Method for Webserver WebSocket Message received event.
 // Handle raw string from (test) webserver
-jsws.onmessage = function(e) {
+wsws.onmessage = function(e) {
   var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
   console.log(e.data); // Allows user to view/debug data from webpage console. 
 };
