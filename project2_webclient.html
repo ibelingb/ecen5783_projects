@@ -155,28 +155,42 @@ var nodeTestEndtime;
 var tornadoTestStarttime;
 var tornadoTestEndtime;
 var nodeJSServerConnError = false;
+var webServerConnError = false;
 
 // Establish WebSocket connection to Raspberry Pi NodeJS serv
-const ws = new WebSocket('ws://192.168.1.153:9898/');
+const jsws = new WebSocket('ws://raspberrypi:9898/');
+
+// Establish WebSocket connection to Raspberry Pi webserver
+const wsws = new WebSocket('ws://raspberrypi:9897/');
 
 // ------------------------------------------------------------------------------------
 // Method for NodeJS WebSocket Connection initialization event 
-ws.onopen = function() {
-  console.log('WebSocket Client Connected');
+jsws.onopen = function() {
+  console.log('node.JS WebSocket Client Connected');
+};
+
+// Method for webserver WebSocket Connection initialization event 
+wsws.onopen = function() {
+  console.log('Webserver WebSocket Client Connected');
 };
 
 // ------------------------------------------------------------------------------------
 // Method for NodeJS WebSocket Connection error event - Update connection status
-ws.onerror = function(e) {
+jsws.onerror = function(e) {
   alert("Failed to connect to NodeJS Server")
   nodeJSServerConnError = true;
+};
+
+wsws.onerror = function(e) {
+  alert("Failed to connect to Webserver")
+  webServerConnError = true;
 };
 
 // ------------------------------------------------------------------------------------
 // Method for NodeJS WebSocket Message received event.
 // Handle JSON formatted string passed from NodeJS WebSocket server to HTML client.
 // Based on nodeServerData.cmdResponse field, update corresponding HTML client webpage fields/tables.
-ws.onmessage = function(e) {
+jsws.onmessage = function(e) {
   var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
   console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
   nodeServerData = JSON.parse(e.data);
@@ -218,11 +232,19 @@ ws.onmessage = function(e) {
 };
 
 // ------------------------------------------------------------------------------------
+// Method for Webserver WebSocket Message received event.
+// Handle raw string from (test) webserver
+jsws.onmessage = function(e) {
+  var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
+  console.log(e.data); // Allows user to view/debug data from webpage console. 
+};
+
+// ------------------------------------------------------------------------------------
 // Wrapper function called when "Display Latest DB Data" button is pressed.
 function getLatestDbData() {
   // Determine if NodeJS server connection is active; if true, send SQL data request
   if(!nodeJSServerConnError) {
-	  ws.send('getLatestDbData');
+	  jsws.send('getLatestDbData');
   } else {
 	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
 	  alert("Failed to connect to NodeJS Server")
@@ -232,7 +254,7 @@ function getLatestDbData() {
 // ------------------------------------------------------------------------------------
 // Wrapper function called when "Display Current Sensor Data" button is pressed.
 function getCurrentSensorData() {
-  //TODO: Call to Tornado WebSocket to retrieve Sensor data
+  wsws.send('reqCurrentReading');
   document.getElementById("currentSensorData").innerHTML = "Coming soon!";
 }
 
@@ -242,7 +264,7 @@ function testNetworkSpeed() {
   // Request data via NodeJS server and populate HTML table
   nodeTestStarttime = new Date();
   if(!nodeJSServerConnError) {
-	  ws.send('getLast10Samples');
+	  jsws.send('getLast10Samples');
   } else {
 	  alert("Failed to connect to NodeJS Server")
   }
