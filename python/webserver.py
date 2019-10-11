@@ -27,23 +27,28 @@ __author__ = "Connor Shapiro"
 
 class WSHandler(tornado.websocket.WebSocketHandler):
 
-  def open(self):
-    syslog.syslog('WebSocket connection opened.\n')
+    def open(self):
+        syslog.syslog('WebSocket connection opened.\n')
 
-  def on_message(self, message):
-    syslog.syslog('Message received via WebSocket connection.\n')
-    if ("reqCurrentReading" == message):
-      syslog.syslog('Message received via WebSocket connection.\n')
-      hum, temp = sampleDth22()
-      messageResponse = "Current humidity is " + str(hum) + ". Current temperature is " + str(temp) + '\n'
-    self.write_message(messageResponse)
+    def on_message(self, message):
+        syslog.syslog('Message received via WebSocket connection.\n')
+        if ("reqCurrentReading" == message):
+            syslog.syslog('Message received via WebSocket connection.\n')
+            hum, temp = sampleDth22()
+            messageResponse = "Current humidity is " + str(hum) + ". Current temperature is " + str(temp) + '\n'
+        self.write_message(messageResponse)
+        print(' ')
 
-  def on_close(self):
-    syslog.syslog('WebSocket connection closed.\n')
+    def on_close(self):
+        syslog.syslog('WebSocket connection closed.\n')
+
+    def check_origin(self, origin):
+        return True
+
 
 application = tornado.web.Application([(r'/ws', WSHandler),])
 
 if __name__ == "__main__":
-  http_server = tornado.httpserver.HTTPServer(application)
-  http_server.listen(9897)
-  tornado.ioloop.IOLoop.instance().start()
+    http_server = tornado.httpserver.HTTPServer(application)
+    http_server.listen(9897)
+    tornado.ioloop.IOLoop.instance().start()
