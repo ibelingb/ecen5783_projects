@@ -45,7 +45,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     return True
 
 
-def start_webserver(self):
+def start_webserver():
   application = tornado.web.Application([(r'/ws', WSHandler),])
   http_server = tornado.httpserver.HTTPServer(application)
   http_server.listen(9897)
