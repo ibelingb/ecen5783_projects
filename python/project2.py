@@ -25,6 +25,7 @@ from db import *
 from sensor import *
 from gui import *
 from quamash import QEventLoop, QThreadExecutor
+import webserver
 
 __author__ = "Brian Ibeling & Connor Shapiro"
 
@@ -46,7 +47,7 @@ def periodicDth22Sample():
       Timer will expire after MAX_SAMPLE_COUNTS have occurred.
   """
   global g_sampleCount, g_timer
-  g_sampleCount = g_sampleCount + 1;
+  g_sampleCount += g_sampleCount + 1
   
   # Sample DTH22 sensor
   humidity, temperature = sampleDth22()
@@ -83,6 +84,8 @@ def startGui():
   
   loop = QEventLoop(g_qtApp)
   asyncio.set_event_loop(loop)
+
+  webserver.start_webserver()
 
   with loop:
     loop.run_forever()
