@@ -37,14 +37,12 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             hum, temp = sampleDth22()
             messageResponse = "Current humidity is " + str(hum) + ". Current temperature is " + str(temp) + '\n'
         self.write_message(messageResponse)
-        print(' ')
 
     def on_close(self):
         syslog.syslog('WebSocket connection closed.\n')
 
     def check_origin(self, origin):
         return True
-
 
 application = tornado.web.Application([(r'/ws', WSHandler),])
 
