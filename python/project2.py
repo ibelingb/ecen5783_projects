@@ -79,7 +79,13 @@ def startGui():
   """ Launch the main application GUI and update the status line to specify app has started. """
   g_mainWindowInstance.show()
   g_mainWindowInstance.updateStatusLine('Application Started')
-  g_qtApp.exec_()
+  # g_qtApp.exec_()
+  
+  loop = QEventLoop(g_qtApp)
+  asyncio.set_event_loop(loop)
+
+  with loop:
+    loop.run_forever()
 
 #-----------------------------------------------------------------------
 def main(args):
@@ -101,12 +107,7 @@ def main(args):
   g_timer.start()
   
   # Start GUI application
-  # startGui()
-  loop = QEventLoop(g_qtApp)
-  asyncio.set_event_loop(loop)
-
-  with loop:
-    loop.run_forever()
+  startGui()
   
   # Cancel sensor sampling timer to allow app to close properly
   g_timer.cancel()
