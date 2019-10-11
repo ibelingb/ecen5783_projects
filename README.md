@@ -19,6 +19,11 @@ Prior to running the downloaded application, it is required that a MySQL server 
 4. Create the 'project1' database by executing the following command from MySQL:
   > mariaDB> CREATE DATABASE project1;
 
+## Required Python Libraries
+Before running the server-side applications, the following packages must be installed via pip3:
+  > tornado
+  > quamash
+
 ## Starting and Stopping the Application
 To start the server-side applications, simply type the following from the cloned project repository directory.
   > ./startApp.sh
@@ -43,7 +48,10 @@ Brian Ibeling
 - HTML Webpage Client-NodeJS server error handling
 
 Connor Shaprio  
-- TODO
+- Tornado Webserver Python module
+- Modification of Project1 to integrate with Tornado webserver
+- Tornado Webserver error handling
+- HTML Webpage Webserver interface
 
 # Project Additions
 - Error handling between HTML client and NodeJS server on server/SQL error events.

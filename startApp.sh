@@ -9,14 +9,10 @@
 mysql --user="piuser" --password="BestPasswordEver" --execute="CREATE DATABASE IF NOT EXISTS project1; USE project1; \
       CREATE TABLE IF NOT EXISTS sensors (timestamp TIMESTAMP, temp FLOAT(3,1), humidity FLOAT(3,1), PRIMARY KEY (timestamp))"
 
-# Start python applciation
+# Start python applciation and Tornado webserver
 echo "Launching Python GUI..."
 python3 python/project1.py &
 
 # Start NodeJS Server applciation
 echo "Launching NodeJS Server..."
 node node_js/project2_node_server.js &
-
-# Start Tornado Server applciation
-echo "Launching Tornado Server..."
-python3 python/webserver.py &

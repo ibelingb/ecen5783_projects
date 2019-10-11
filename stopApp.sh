@@ -4,14 +4,10 @@
 # Authors: Brian Ibeling and Connor Shapiro
 # Description: Script to kill launched project1/2 processes.
 
-# Kill launched python GUI applciation
+# Kill launched python GUI application & Tornado webserver
 echo "Killing python GUI..."
 kill -15 `pidof python3` &
 
 # Kill launched NodeJS Server application
 echo "Killing NodeJS Server..."
 kill -15 `pidof node` &
-
-# Kill launched Tornado Server application
-echo "Killing Tornado Server..."
-## TODO
