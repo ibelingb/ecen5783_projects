@@ -44,6 +44,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
+
 application = tornado.web.Application([(r'/ws', WSHandler),])
 
 if __name__ == "__main__":
