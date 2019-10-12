@@ -71,7 +71,7 @@ const wsServer = new WebSocketServer({
 wsServer.on('request', function(request) {
     // Establish new client connection - log event to terminal
     const connection = request.accept(null, request.origin);
-    console.log("Client has connected.");
+    console.log("NodeJS Client has connected.");
 
     // Data request received from HTML client
     // Read request type and return corresponding data in JSON formatted string
@@ -112,7 +112,7 @@ wsServer.on('request', function(request) {
 
     // On client disconnect event - log event to terminal
     connection.on('close', function(reasonCode, description) {
-        console.log('Client has disconnected.');
+        console.log('NodeJS Client has disconnected.');
     });
 });
 
