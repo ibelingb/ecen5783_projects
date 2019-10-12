@@ -19,9 +19,10 @@ import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
-from sensor import *
 import syslog
 import json
+import db
+from sensor import *
 
 __author__ = "Connor Shapiro"
 
@@ -30,14 +31,19 @@ MAX_RETRIES = 3
 class WSHandler(tornado.websocket.WebSocketHandler):
 
   def open(self):
-    syslog.syslog('WebSocket connection opened.\n')
+    syslog.syslog('WebSocket connection opened.')
 
   def on_message(self, message):
-    syslog.syslog('Message received via WebSocket connection.\n')
+    syslog.syslog('Message received via WebSocket connection.')
+    messageResponseRaw = [{'cmdResponse': message, 'numSensorSamples': 0}]
 
-    # Expect plaintext request messages from the HTML client
-    if ("reqCurrentReading" == message):
-      syslog.syslog('Sensor reading requested. Beginning sensor reading.\n')
+    ''' Expect plaintext request messages from the HTML client.
+        Handle these with an if/else block
+    '''
+
+    # Provide on-demand reading
+    if ("getLatestDbData" == message):
+      syslog.syslog('Sensor reading requested. Beginning sensor reading.')
       finishedReading = False
       retryCount = 0  # Track n of sensor readings (may need more than 1)
       sensorError = False
@@ -52,26 +58,40 @@ class WSHandler(tornado.websocket.WebSocketHandler):
           if (MAX_RETRIES == retryCount):
             finishedReading = True
             sensorError = True
-            
       if sensorError:
         syslog.syslog('Sensor reading failed after ' + str(MAX_RETRIES) + 
-                      ' attempts.\n')
-        messageResponse = json.dumps({'error': 1,
-                                      'errorType': 'sensorHardware'})
+                      ' attempts.')
+        messageResponseRaw.append({'error': 'sensorHardware'})
       else:
-        syslog.syslog('Sensor reading succeeded.\n')
-        messageResponse = json.dumps({'error': 0, 'humidity': humidity,
-                                      'temperature': temperature})
+        syslog.syslog('Sensor reading succeeded.')
+        messageResponseRaw.append({'humidity': humidity,
+                                      'temperature': temperature}) 
 
-    elif ("reqSpeedTest" == message):
-      pass
+    # Provide data for speed test
+    elif ("getLast10Samples" == message):
+      timestamp, temperature, humidity = db.getRecentSensorData(10)
+      if not ((len(timestamp) == len(temperature))
+              and (len(timestamp) == len(humidity))):
+        messageResponseRaw.append({'error': 'badMySQLRetrieval'})
+      else:
+        numSensorSamples = len(timestamp)
+        # TODO - Update numSensorSamples in messageResponseRaw
+        for i in range(numSensorSamples):
+          messageResponseRaw.append({'timestamp': timestamp[i],
+                                     'temperature': temperature[i],
+                                     'humidity': humidity[i]})
+
+    # Handle bad request
     else:
-      messageResponse = json.dumps({'error': 1, 'errorType': 'invalidRequest'})
+      syslog.syslog('Received an unexpected request from HTML client.')
+      messageResponseRaw.append({'error': 'invalidRequest'})
 
-    self.write_message(messageResponse)
+    # Format & send response
+    messageResponseJSON = json.dumps(messageResponseRaw)
+    self.write_message(messageResponseJSON)
 
   def on_close(self):
-    syslog.syslog('WebSocket connection closed.\n')
+    syslog.syslog('WebSocket connection closed.')
 
   def check_origin(self, origin):
     return True
