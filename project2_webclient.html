@@ -57,6 +57,10 @@ tr:nth-child(even) {
   <!-- Define Webpage heading with buttons and text fields for latest DB data, current Sensor data, 
        and test server responsiveness -->
   <h1>ECEN5873 Project-2 Client Webpage</h1>
+  <p>Display Temperature as:</p>
+  <input type="radio" name="tempUnits" id="celsius" value="celsius" onchange="updatePageTemp();" checked="checked"> Celsius<br>
+  <input type="radio" name="tempUnits" id="fahrenheit" value="fahrenheit" onchange="updatePageTemp();"> Fahrenheit<br>
+  <br>
   <input onclick="getLatestDbData()" type="submit" value="Display Latest DB Data">
   <p id="latestDbData">Awaiting data request</p>
   <input onclick="getCurrentSensorData()" type="submit" value="Display Current Sensor Data">
@@ -90,8 +94,8 @@ tr:nth-child(even) {
   <table>
     <tr>
       <th>Timestamp</th>
-      <th>Humidity (NodeJS)</th>
-      <th>Humidity (Tornado)</th>
+      <th>% Humidity (NodeJS)</th>
+      <th>% Humidity (Tornado)</th>
     </tr>
     <tr>
       <td id=timestamp0>-</td>
@@ -156,6 +160,10 @@ var tornadoTestStarttime;
 var tornadoTestEndtime;
 var nodeJSServerConnError = false;
 var webServerConnError = false;
+var latestDbDataObject = false;
+
+// Verify Checkbox selected properly
+document.getElementById("celsius").checked = true;
 
 // Establish WebSocket connection to Raspberry Pi NodeJS serv
 const jsws = new WebSocket('ws://raspberrypi:9898/');
@@ -204,12 +212,15 @@ jsws.onmessage = function(e) {
   // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
   if(nodeServerData.cmdResponse == "getLatestDbData") {
 	if(dataAvailable) {
+	  latestDbDataObject = nodeServerData.sensorSamples[0];
+	  
 	  document.getElementById("latestDbData").innerHTML = 
 		"Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
-		" | Temp: " + nodeServerData.sensorSamples[0].temp + 
-		" | Humidity: " + nodeServerData.sensorSamples[0].humidity;
+		" | Temp: " + displayTemp(nodeServerData.sensorSamples[0].temp) + 
+		" | Humidity: " + nodeServerData.sensorSamples[0].humidity + " %";
 	} else {
 	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
+	  latestDbDataObject = false;
 	}
   }
   else if(nodeServerData.cmdResponse == "getLast10Samples")
@@ -302,5 +313,32 @@ function populateTornadoSpeedTestTable(){
   document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
 }
 // ------------------------------------------------------------------------------------
+// Display temperature on webpage based on
+// @temp - input temperature to convert to select units (C or F)
+// @return - Converted temperature string with unit designation
+function displayTemp(temp) {
+	var tempStr = "";
+	
+	// If fahrenheit radio button selected, convert value; otherwise, simply return received value
+	if(document.getElementById("fahrenheit").checked == true){
+		temp = ((temp * (9/5)) + 32);
+		tempStr = temp + " F";
+	} else {
+		tempStr = temp + " C";
+	}
+	
+	return tempStr;
+}
 
+// ------------------------------------------------------------------------------------
+
+function updatePageTemp() {
+	if(latestDbDataObject != false){
+		document.getElementById("latestDbData").innerHTML = 
+		"Timestamp: " + latestDbDataObject.timestamp + 
+		" | Temp: " + displayTemp(latestDbDataObject.temp) + 
+		" | Humidity: " + latestDbDataObject.humidity + " %";
+	}
+
+}
 </script>
