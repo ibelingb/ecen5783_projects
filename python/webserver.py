@@ -72,10 +72,13 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     # Provide data for speed test
     elif ("getLast10Samples" == message):
       timestamp, temperature, humidity = db.getRecentSensorData(10)
+
+      # Confirm all three arrays are equally filled
       if not ((len(timestamp) == len(temperature))
               and (len(timestamp) == len(humidity))):
         messageResponseRaw['error'] = 'badMySQLRetrieval'
         messageResponseRaw['numSensorSamples'] = 0
+
       else:
         numSensorSamples = len(timestamp)
         messageResponseRaw['numSensorSamples'] = numSensorSamples
