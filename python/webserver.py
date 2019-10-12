@@ -64,6 +64,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         messageResponseRaw.append({'error': 'sensorHardware'})
       else:
         syslog.syslog('Sensor reading succeeded.')
+        # TODO: Update numSensorSamples in messageResponseRaw
         messageResponseRaw.append({'humidity': humidity,
                                       'temperature': temperature}) 
 
@@ -75,7 +76,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         messageResponseRaw.append({'error': 'badMySQLRetrieval'})
       else:
         numSensorSamples = len(timestamp)
-        # TODO - Update numSensorSamples in messageResponseRaw
+        # TODO: Update numSensorSamples in messageResponseRaw
         for i in range(numSensorSamples):
           messageResponseRaw.append({'timestamp': timestamp[i],
                                      'temperature': temperature[i],

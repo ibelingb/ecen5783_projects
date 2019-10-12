@@ -238,7 +238,7 @@ wsws.onmessage = function(e) {
   console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
   webServerData = JSON.parse(e.data);
  
-  // Check if data received from NodeJS/SQL DB - used for error handling in message types below.
+  // Check if data received from webserver - used for error handling in message types below.
   if(webServerData.numSensorSamples == 0) {
 	alert("Failed to retrieve data from NodeJS Server")
 	dataAvailable = false;
@@ -289,7 +289,7 @@ function getLatestDbData() {
 // ------------------------------------------------------------------------------------
 // Wrapper function called when "Display Current Sensor Data" button is pressed.
 function getCurrentSensorData() {
-  wsws.send('reqCurrentReading');
+  wsws.send('getLatestDbData');
   document.getElementById("currentSensorData").innerHTML = "Coming soon!";
 }
 
@@ -306,7 +306,11 @@ function testNetworkSpeed() {
   
   // Request data via Tornado server
   var tornadoTestStarttime = new Date();
-  // TODO - Add Tornado request to retrieve last 10 values
+  if(!webServerConnError) {
+    wsws.send('getLast10Samples');
+  } else {
+    alert("Failed to connect to Webserver")
+  }
   // TODO - Set tornadoTestEndtime variable once Tornado server returns MySQL data
   // TODO - Handle error case in the event Tornado fails to read data from MySQL DB
   // TODO - Overwrite Timestamp column of Humidity Table when Tornado Server data returned; ignore if error
