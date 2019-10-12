@@ -261,11 +261,11 @@ wsws.onmessage = function(e) {
   // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
   if(webServerData.cmdResponse == "getLatestDbData") {
     if(dataAvailable) {
-      currSensorDataObject = webServerData;
+      currSensorDataObject = webServerData.sensorSamples[0];
 
       document.getElementById("currentSensorData").innerHTML = 
-        "Temp: " + displayTemp(webServerData.temperature) + 
-        " | Humidity: " + webServerData.humidity;
+        "Temp: " + displayTemp(webServerData.sensorSamples[0].temperature) + 
+        " | Humidity: " + webServerData.sensorSamples[0].humidity + " %";
     } else {
       document.getElementById("currentSensorData").innerHTML = "Failed to retrieve data from Tornado Server";
       currSensorDataObject = false;
@@ -370,7 +370,7 @@ function displayTemp(temp) {
   // If fahrenheit radio button selected, convert value; otherwise, simply return received value
   // Also, add units and return temp string
   if(document.getElementById("fahrenheit").checked == true){
-    temp = ((temp * (9/5)) + 32); // Convert Celcius value to fahrenheit
+    temp = Math.round(((temp * (9/5)) + 32) * 10) / 10; // Convert Celcius value to fahrenheit, rounded to be xx.x
     tempStr = temp + " F";
   } else {
     tempStr = temp + " C";
