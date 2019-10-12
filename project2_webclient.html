@@ -160,7 +160,7 @@ tr:nth-child(even) {
   var tornadoTestStarttime = new Date();
   var tornadoTestEndtime = new Date();
   var nodeJSServerConnError = false;
-  var TornadoServerConnError = false;
+  var tornadoServerConnError = false;
   var latestDbDataObject = false; // object to store latestDb sensor data - used in temp radio button onchange event
   var currSensorDataObject = false; // object to store current sensor data - used in temp radio button onchange event
 
@@ -193,7 +193,7 @@ jsws.onerror = function(e) {
 
 wsws.onerror = function(e) {
   alert("Failed to connect to Tornado Webserver")
-    TornadoServerConnError = true;
+    tornadoServerConnError = true;
 };
 
 // ------------------------------------------------------------------------------------
@@ -305,8 +305,13 @@ function getLatestDbData() {
 // ------------------------------------------------------------------------------------
 // Wrapper function called when "Display Current Sensor Data" button is pressed.
 function getCurrentSensorData() {
-  wsws.send('getLatestDbData');
-  document.getElementById("currentSensorData").innerHTML = "Sampling DTH22 Sensor...";
+  if(!tornadoServerConnError) {
+    wsws.send('getLatestDbData');
+    document.getElementById("currentSensorData").innerHTML = "Sampling DTH22 Sensor...";
+  } else {
+    document.getElementById("currentSensorData").innerHTML = "Failed to retrieve data from Tornado Server";
+    alert("Failed to connect to Tornado Webserver")
+  }
 }
 
 // ------------------------------------------------------------------------------------
@@ -322,7 +327,7 @@ function testNetworkSpeed() {
 
   // Request data via Tornado server
   tornadoTestStarttime = new Date();
-  if(!TornadoServerConnError) {
+  if(!tornadoServerConnError) {
     wsws.send('getLast10Samples');
   } else {
     alert("Failed to connect to Tornado Webserver")
