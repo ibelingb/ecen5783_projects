@@ -246,8 +246,43 @@ jsws.onmessage = function(e) {
 // Method for Webserver WebSocket Message received event.
 // Handle raw string from (test) webserver
 wsws.onmessage = function(e) {
-  var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
-  console.log(e.data); // Allows user to view/debug data from webpage console. 
+  console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
+  webServerData = JSON.parse(e.data);
+ 
+  // Check if data received from webserver - used for error handling in message types below.
+  if(webServerData.numSensorSamples == 0) {
+	alert("Failed to retrieve data from NodeJS Server")
+	dataAvailable = false;
+  }
+ 
+  // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
+  if(webServerData.cmdResponse == "getLatestDbData") {
+	if(dataAvailable) {
+	  document.getElementById("latestDbData").innerHTML = 
+		"Timestamp: " + webServerData.sensorSamples[0].timestamp + 
+		" | Temp: " + webServerData.sensorSamples[0].temp + 
+		" | Humidity: " + webServerData.sensorSamples[0].humidity;
+	} else {
+	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
+	}
+  }
+  else if(webServerData.cmdResponse == "getLast10Samples")
+  { // Handle getLast10Samples event - populate corresponding tables with returned data.
+	// Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
+	for(i=0; i<webServerData.numSensorSamples; i++) {
+	  document.getElementById("timestamp" + i).innerHTML = webServerData.sensorSamples[i].timestamp;
+	  document.getElementById("nodeHumidity" + i).innerHTML = webServerData.sensorSamples[i].humidity;
+	}
+	// If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
+	for(i=webServerData.numSensorSamples; i<10; i++) {
+	  document.getElementById("timestamp" + i).innerHTML = "-";
+	  document.getElementById("nodeHumidity" + i).innerHTML = "-";
+	}
+
+  // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
+	webTestEndtime = new Date();
+	populateNodeSpeedTestTable(dataAvailable);
+  }
 };
 
 // ------------------------------------------------------------------------------------
@@ -265,7 +300,7 @@ function getLatestDbData() {
 // ------------------------------------------------------------------------------------
 // Wrapper function called when "Display Current Sensor Data" button is pressed.
 function getCurrentSensorData() {
-  wsws.send('reqCurrentReading');
+  wsws.send('getLatestDbData');
   document.getElementById("currentSensorData").innerHTML = "Coming soon!";
 }
 
@@ -282,7 +317,11 @@ function testNetworkSpeed() {
   
   // Request data via Tornado server
   var tornadoTestStarttime = new Date();
-  // TODO - Add Tornado request to retrieve last 10 values
+  if(!webServerConnError) {
+    wsws.send('getLast10Samples');
+  } else {
+    alert("Failed to connect to Webserver")
+  }
   // TODO - Set tornadoTestEndtime variable once Tornado server returns MySQL data
   // TODO - Handle error case in the event Tornado fails to read data from MySQL DB
   // TODO - Overwrite Timestamp column of Humidity Table when Tornado Server data returned; ignore if error

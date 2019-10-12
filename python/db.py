@@ -140,3 +140,40 @@ def getRecentHumidityData(numSamples: int):
     
     return timestampArray, humidityArray
 #-----------------------------------------------------------------------
+def getRecentSensorData(numSamples: int):
+    """ Method to retrieve the last [numSamples] sensor readings from the sensors table 
+        of the Project1 DB as an array of values.
+        If the requested number of samples is greater than the number of samples available,
+        only the number of samples available is returned.
+        - @numSamples (int) : The number of humidity samples to return.
+        - @return: timestampArray[numSamples], tempArray[numSamples], humidityArray[numSamples]
+    """
+    timestampArray = [None] * numSamples
+    tempArray = [None] * numSamples
+    humidityArray = [None] * numSamples
+    
+    db = getDbConnection()
+    
+    # Create a Cursor object to execute queries
+    cur = db.cursor()
+    
+    # Select data from table via SQL query
+    cur.execute("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT %s", (numSamples,))
+    
+    # If the number of samples captured is less than numSamples, update array size accordingly
+    if(cur.rowcount < numSamples):
+        timestampArray = [None] * cur.rowcount
+        tempArray = [None] * cur.rowcount
+        humidityArray = [None] * cur.rowcount
+    
+    # Populate received data into respective arrays
+    i = 0
+    if(cur.rowcount != 0) :    
+        for row in cur.fetchall() :
+            timestampArray[i] = row[0]
+            tempArray[i] = row[1]
+            humidityArray[i] = row[2]
+            i += 1
+    
+    return timestampArray, tempArray, humidityArray
+#-----------------------------------------------------------------------
