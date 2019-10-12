@@ -35,7 +35,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
   def on_message(self, message):
     syslog.syslog('Message received via WebSocket connection.')
-    messageResponseRaw = [{'cmdResponse': message, 'numSensorSamples': 0}]
+    messageResponseRaw = [{'cmdResponse': message}]
 
     ''' Expect plaintext request messages from the HTML client.
         Handle these with an if/else block
@@ -64,9 +64,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         messageResponseRaw.append({'error': 'sensorHardware'})
       else:
         syslog.syslog('Sensor reading succeeded.')
-        # TODO: Update numSensorSamples in messageResponseRaw
-        messageResponseRaw.append({'humidity': humidity,
-                                      'temperature': temperature}) 
+        messageResponseRaw.append({'numSensorSamples': 1})
+        messageResponseRaw.append({'humidity': humidity})
+        messageResponseRaw.append({'temperature': temperature}) 
 
     # Provide data for speed test
     elif ("getLast10Samples" == message):
@@ -76,11 +76,13 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         messageResponseRaw.append({'error': 'badMySQLRetrieval'})
       else:
         numSensorSamples = len(timestamp)
-        # TODO: Update numSensorSamples in messageResponseRaw
+        messageResponseRaw.append({'numSensorSamples': numSensorSamples})
+        sensorSamples = [None]
         for i in range(numSensorSamples):
-          messageResponseRaw.append({'timestamp': timestamp[i],
-                                     'temperature': temperature[i],
-                                     'humidity': humidity[i]})
+          sensorSamples.append({'timestamp': timestamp[i],
+                                'temperature': temperature[i],
+                                'humidity': humidity[i]})
+        messageResponseRaw.append(sensorSamples)
 
     # Handle bad request
     else:
