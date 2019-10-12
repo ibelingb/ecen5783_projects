@@ -4,12 +4,17 @@
 # Author: Brian Ibeling and Connor Shapiro
 # 9/13/2019
 
-""" project1.py: Main python file for EID Project1 to store and display DHT22 data in a QT GUI.
+""" project1.py: Main python file for EID Project2 to store and display DHT22 data in a QT GUI,
+                 and run a webserver exposing this data via WebSockets.
 
     Main python application to launch the GUI, create/connect to the database sensors table and
     provide all the necessary user interactions via the GUI. Also starts a timer when the program
     is launched to sample DTH22 sensor data every PERIOD_SEC (default 15), storing that into the 
     sensors database. When the GUI application is closed, the timer is cancelled.
+
+    The Qt GUI is run with the PEP 3156 (asyncio standard) Event-Loop thanks to the quamash module.
+    By running Qt in the asyncio event loop instead of the usual Qt loop, a Tornado webserver may
+    run concurrently without the need for threading/multiprocessing.
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
@@ -85,12 +90,14 @@ def startGui():
   Instead of calling g_qtApp.exec_() we now use the QEventLoop from quamash,
   which allows Tornado and Qt to run concurrently through asyncio.
   '''
-  loop = QEventLoop(g_qtApp)
-  asyncio.set_event_loop(loop)
-  webserver.start_webserver()
+  loop = QEventLoop(g_qtApp)  # instantiate the loop
+  asyncio.set_event_loop(loop)  # register loop with asyncio
+  webserver.start_webserver()  # webserver.py will start the loop
 
   with loop:
-    loop.run_forever()
+    loop.run_forever()  # run_forever() for ease of coding, as we are just
+                        # killing python with the stopApp.sh script when 
+                        # finished with the application.
 
 #-----------------------------------------------------------------------
 def main(args):
