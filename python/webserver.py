@@ -35,7 +35,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
   def on_message(self, message):
     syslog.syslog('Message received via WebSocket connection.')
-    messageResponseRaw = [{'cmdResponse': message}]
+    messageResponseRaw = {'cmdResponse': message}
 
     ''' Expect plaintext request messages from the HTML client.
         Handle these with an if/else block
@@ -61,33 +61,33 @@ class WSHandler(tornado.websocket.WebSocketHandler):
       if sensorError:
         syslog.syslog('Sensor reading failed after ' + str(MAX_RETRIES) + 
                       ' attempts.')
-        messageResponseRaw.append({'error': 'sensorHardware'})
+        messageResponseRaw['error'] = 'sensorHardware'
       else:
         syslog.syslog('Sensor reading succeeded.')
-        messageResponseRaw.append({'numSensorSamples': 1})
-        messageResponseRaw.append({'humidity': humidity})
-        messageResponseRaw.append({'temperature': temperature}) 
+        messageResponseRaw['numSensorSamples'] = 1
+        messageResponseRaw['humidity'] = humidity
+        messageResponseRaw['temperature'] = temperature
 
     # Provide data for speed test
     elif ("getLast10Samples" == message):
       timestamp, temperature, humidity = db.getRecentSensorData(10)
       if not ((len(timestamp) == len(temperature))
               and (len(timestamp) == len(humidity))):
-        messageResponseRaw.append({'error': 'badMySQLRetrieval'})
+        messageResponseRaw['error'] = 'badMySQLRetrieval'
       else:
         numSensorSamples = len(timestamp)
-        messageResponseRaw.append({'numSensorSamples': numSensorSamples})
+        messageResponseRaw['numSensorSamples'] = numSensorSamples
         sensorSamples = [None]
         for i in range(numSensorSamples):
           sensorSamples.append({'timestamp': timestamp[i],
                                 'temperature': temperature[i],
                                 'humidity': humidity[i]})
-        messageResponseRaw.append(sensorSamples)
+        messageResponseRaw['sensorSamples'] = sensorSamples
 
     # Handle bad request
     else:
       syslog.syslog('Received an unexpected request from HTML client.')
-      messageResponseRaw.append({'error': 'invalidRequest'})
+      messageResponseRaw['error'] = 'invalidRequest'
 
     # Format & send response
     messageResponseJSON = json.dumps(messageResponseRaw)
