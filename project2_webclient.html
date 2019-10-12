@@ -22,40 +22,41 @@ The following resources were used to assist with development of this SW.
   - https://www.w3schools.com/jsref/jsref_gettime.asp
   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds
   - https://stackoverflow.com/questions/3552461/how-to-format-a-javascript-date
+  - https://www.w3schools.com/tags/att_input_type_radio.asp
 -->
 
 <html>
 <head>
-  <title>Project2 Client Webpage</title>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <link rel="stylesheet" href="/resources/demos/style.css">
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  
+<title>Project2 Client Webpage</title>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <style>
 table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
-  width: 70%;
+width: 70%;
 }
 
 td, th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 5px;
+border: 1px solid #dddddd;
+        text-align: left;
+padding: 5px;
 }
 
 tr:nth-child(even) {
-  background-color: #dddddd;
-}
+     background-color: #dddddd;
+   }
 </style>
-  
+
 </head>
 <body>
 
 <div class="widget">
-  <!-- Define Webpage heading with buttons and text fields for latest DB data, current Sensor data, 
-       and test server responsiveness -->
+<!-- Define Webpage heading with buttons and text fields for latest DB data, current Sensor data, 
+  and test server responsiveness -->
   <h1>ECEN5873 Project-2 Client Webpage</h1>
   <p>Display Temperature as:</p>
   <input type="radio" name="tempUnits" id="celsius" value="celsius" onchange="updatePageTemp();" checked="checked"> Celsius<br>
@@ -70,112 +71,113 @@ tr:nth-child(even) {
   <!-- Define Server Speed Test Summary Table -->
   <h2>Server Speed Test Summary</h2>
   <table>
-    <tr>
-      <th>Server</th>
-      <th>Start Time</th>
-      <th>End Time</th>
-	  <th>Total Time (msec)</th>
-    </tr>
-    <tr>
-      <td id=SpeedTestServer0>NodeJS</td>
-      <td id=SpeedTestStarttime0>-</td>
-      <td id=SpeedTestEndtime0>-</td>
-	  <td id=SpeedTestTotal0>-</td>
-    </tr>  <tr>
-      <td id=SpeedTestServer1>Tornado</td>
-      <td id=SpeedTestStarttime1>-</td>
-      <td id=SpeedTestEndtime1>-</td>
-	  <td id=SpeedTestTotal1>-</td>
-    </tr>
+  <tr>
+  <th>Server</th>
+  <th>Start Time</th>
+  <th>End Time</th>
+  <th>Total Time (msec)</th>
+  </tr>
+  <tr>
+  <td id=SpeedTestServer0>NodeJS</td>
+  <td id=SpeedTestStarttime0>-</td>
+  <td id=SpeedTestEndtime0>-</td>
+  <td id=SpeedTestTotal0>-</td>
+  </tr>  <tr>
+  <td id=SpeedTestServer1>Tornado</td>
+  <td id=SpeedTestStarttime1>-</td>
+  <td id=SpeedTestEndtime1>-</td>
+  <td id=SpeedTestTotal1>-</td>
+  </tr>
   </table>
-  
+
   <!-- Define Speed Test Humidity Table -->
   <h2>Speed Test Humidity Table</h2>
   <table>
-    <tr>
-      <th>Timestamp</th>
-      <th>% Humidity (NodeJS)</th>
-      <th>% Humidity (Tornado)</th>
-    </tr>
-    <tr>
-      <td id=timestamp0>-</td>
-      <td id=nodeHumidity0>-</td>
-      <td id=tornadoHumidity0>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp1>-</td>
-      <td id=nodeHumidity1>-</td>
-      <td id=tornadoHumidity1>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp2>-</td>
-      <td id=nodeHumidity2>-</td>
-      <td id=tornadoHumidity2>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp3>-</td>
-      <td id=nodeHumidity3>-</td>
-      <td id=tornadoHumidity3>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp4>-</td>
-      <td id=nodeHumidity4>-</td>
-      <td id=tornadoHumidity4>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp5>-</td>
-      <td id=nodeHumidity5>-</td>
-      <td id=tornadoHumidity5>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp6>-</td>
-      <td id=nodeHumidity6>-</td>
-      <td id=tornadoHumidity6>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp7>-</td>
-      <td id=nodeHumidity7>-</td>
-      <td id=tornadoHumidity7>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp8>-</td>
-      <td id=nodeHumidity8>-</td>
-      <td id=tornadoHumidity8>-</td>
-    </tr>
-    <tr>
-      <td id=timestamp9>-</td>
-      <td id=nodeHumidity9>-</td>
-      <td id=tornadoHumidity9>-</td>
-    </tr>
+  <tr>
+  <th>Timestamp</th>
+  <th>% Humidity (NodeJS)</th>
+  <th>% Humidity (Tornado)</th>
+  </tr>
+  <tr>
+  <td id=timestamp0>-</td>
+  <td id=nodeHumidity0>-</td>
+  <td id=tornadoHumidity0>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp1>-</td>
+  <td id=nodeHumidity1>-</td>
+  <td id=tornadoHumidity1>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp2>-</td>
+  <td id=nodeHumidity2>-</td>
+  <td id=tornadoHumidity2>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp3>-</td>
+  <td id=nodeHumidity3>-</td>
+  <td id=tornadoHumidity3>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp4>-</td>
+  <td id=nodeHumidity4>-</td>
+  <td id=tornadoHumidity4>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp5>-</td>
+  <td id=nodeHumidity5>-</td>
+  <td id=tornadoHumidity5>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp6>-</td>
+  <td id=nodeHumidity6>-</td>
+  <td id=tornadoHumidity6>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp7>-</td>
+  <td id=nodeHumidity7>-</td>
+  <td id=tornadoHumidity7>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp8>-</td>
+  <td id=nodeHumidity8>-</td>
+  <td id=tornadoHumidity8>-</td>
+  </tr>
+  <tr>
+  <td id=timestamp9>-</td>
+  <td id=nodeHumidity9>-</td>
+  <td id=tornadoHumidity9>-</td>
+  </tr>
   </table>
-</div>
-</body>
-<script>
-// ------------------------------------------------------------------------------------
-// JS variables used to track client-server responsiveness and connection status
-var i = 0;
-var nodeTestStarttime;
-var nodeTestEndtime;
-var tornadoTestStarttime;
-var tornadoTestEndtime;
-var nodeJSServerConnError = false;
-var webServerConnError = false;
-var latestDbDataObject = false;
+  </div>
+  </body>
+  <script>
+  // ------------------------------------------------------------------------------------
+  // JS variables used to track client-server responsiveness and connection status
+  var i = 0;
+  var nodeTestStarttime;
+  var nodeTestEndtime;
+  var tornadoTestStarttime;
+  var tornadoTestEndtime;
+  var nodeJSServerConnError = false;
+  var TornadoServerConnError = false;
+  var latestDbDataObject = false;
+  var currSensorDataObject = false;
 
-// Verify Checkbox selected properly
-document.getElementById("celsius").checked = true;
+  // Verify Checkbox selected properly
+  document.getElementById("celsius").checked = true;
 
-// Establish WebSocket connection to Raspberry Pi NodeJS serv
-const jsws = new WebSocket('ws://raspberrypi:9898/');
+  // Establish WebSocket connection to Raspberry Pi NodeJS serv
+  const jsws = new WebSocket('ws://raspberrypi:9898/');
 
-// Establish WebSocket connection to Raspberry Pi webserver
-const wsws = new WebSocket('ws://raspberrypi:9897/ws');
+  // Establish WebSocket connection to Raspberry Pi webserver
+  const wsws = new WebSocket('ws://raspberrypi:9897/ws');
 
-// ------------------------------------------------------------------------------------
-// Method for NodeJS WebSocket Connection initialization event 
-jsws.onopen = function() {
-  console.log('node.JS WebSocket Client Connected');
-};
+  // ------------------------------------------------------------------------------------
+  // Method for NodeJS WebSocket Connection initialization event 
+  jsws.onopen = function() {
+    console.log('node.JS WebSocket Client Connected');
+  };
 
 // Method for webserver WebSocket Connection initialization event 
 wsws.onopen = function() {
@@ -186,12 +188,12 @@ wsws.onopen = function() {
 // Method for NodeJS WebSocket Connection error event - Update connection status
 jsws.onerror = function(e) {
   alert("Failed to connect to NodeJS Server")
-  nodeJSServerConnError = true;
+    nodeJSServerConnError = true;
 };
 
 wsws.onerror = function(e) {
   alert("Failed to connect to Webserver")
-  webServerConnError = true;
+    TornadoServerConnError = true;
 };
 
 // ------------------------------------------------------------------------------------
@@ -202,86 +204,89 @@ jsws.onmessage = function(e) {
   var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
   console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
   nodeServerData = JSON.parse(e.data);
- 
+
   // Check if data received from NodeJS/SQL DB - used for error handling in message types below.
   if(nodeServerData.numSensorSamples == 0) {
-	alert("Failed to retrieve data from NodeJS Server")
-	dataAvailable = false;
+    alert("Failed to retrieve data from NodeJS Server")
+      dataAvailable = false;
   }
- 
+
   // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
   if(nodeServerData.cmdResponse == "getLatestDbData") {
-	if(dataAvailable) {
-	  latestDbDataObject = nodeServerData.sensorSamples[0];
-	  
-	  document.getElementById("latestDbData").innerHTML = 
-		"Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
-		" | Temp: " + displayTemp(nodeServerData.sensorSamples[0].temp) + 
-		" | Humidity: " + nodeServerData.sensorSamples[0].humidity + " %";
-	} else {
-	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
-	  latestDbDataObject = false;
-	}
+    if(dataAvailable) {
+      latestDbDataObject = nodeServerData.sensorSamples[0];
+
+      document.getElementById("latestDbData").innerHTML = 
+        "Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
+        " | Temp: " + displayTemp(nodeServerData.sensorSamples[0].temp) + 
+        " | Humidity: " + nodeServerData.sensorSamples[0].humidity + " %";
+    } else {
+      document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
+      latestDbDataObject = false;
+    }
   }
   else if(nodeServerData.cmdResponse == "getLast10Samples")
   { // Handle getLast10Samples event - populate corresponding tables with returned data.
-	// Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
-	for(i=0; i<nodeServerData.numSensorSamples; i++) {
-	  document.getElementById("timestamp" + i).innerHTML = nodeServerData.sensorSamples[i].timestamp;
-	  document.getElementById("nodeHumidity" + i).innerHTML = nodeServerData.sensorSamples[i].humidity;
-	}
-	// If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
-	for(i=nodeServerData.numSensorSamples; i<10; i++) {
-	  document.getElementById("timestamp" + i).innerHTML = "-";
-	  document.getElementById("nodeHumidity" + i).innerHTML = "-";
-	}
+    // Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
+    for(i=0; i<nodeServerData.numSensorSamples; i++) {
+      document.getElementById("timestamp" + i).innerHTML = nodeServerData.sensorSamples[i].timestamp;
+      document.getElementById("nodeHumidity" + i).innerHTML = nodeServerData.sensorSamples[i].humidity;
+    }
+    // If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
+    for(i=nodeServerData.numSensorSamples; i<10; i++) {
+      document.getElementById("timestamp" + i).innerHTML = "-";
+      document.getElementById("nodeHumidity" + i).innerHTML = "-";
+    }
 
-  // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
-	nodeTestEndtime = new Date();
-	populateNodeSpeedTestTable(dataAvailable);
+    // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
+    nodeTestEndtime = new Date();
+    populateNodeSpeedTestTable(dataAvailable);
   }
 };
 
 // ------------------------------------------------------------------------------------
-// Method for Webserver WebSocket Message received event.
-// Handle raw string from (test) webserver
+// Method for Tornado Webserver WebSocket Message received event.
+// Handle raw string from webserver
 wsws.onmessage = function(e) {
+  var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
   console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
   webServerData = JSON.parse(e.data);
- 
+
   // Check if data received from webserver - used for error handling in message types below.
   if(webServerData.numSensorSamples == 0) {
-	alert("Failed to retrieve data from NodeJS Server")
-	dataAvailable = false;
+    alert("Failed to retrieve data from NodeJS Server")
+      dataAvailable = false;
   }
- 
+
   // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
   if(webServerData.cmdResponse == "getLatestDbData") {
-	if(dataAvailable) {
-	  document.getElementById("latestDbData").innerHTML = 
-		"Timestamp: " + webServerData.sensorSamples[0].timestamp + 
-		" | Temp: " + webServerData.sensorSamples[0].temp + 
-		" | Humidity: " + webServerData.sensorSamples[0].humidity;
-	} else {
-	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
-	}
+    if(dataAvailable) {
+      currSensorDataObject = webServerData;
+
+      document.getElementById("currentSensorData").innerHTML = 
+        "Temp: " + displayTemp(webServerData.temperature) + 
+        " | Humidity: " + webServerData.humidity;
+    } else {
+      document.getElementById("currentSensorData").innerHTML = "Failed to retrieve data from Tornado Server";
+      currSensorDataObject = false;
+    }
   }
   else if(webServerData.cmdResponse == "getLast10Samples")
   { // Handle getLast10Samples event - populate corresponding tables with returned data.
-	// Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
-	for(i=0; i<webServerData.numSensorSamples; i++) {
-	  document.getElementById("timestamp" + i).innerHTML = webServerData.sensorSamples[i].timestamp;
-	  document.getElementById("nodeHumidity" + i).innerHTML = webServerData.sensorSamples[i].humidity;
-	}
-	// If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
-	for(i=webServerData.numSensorSamples; i<10; i++) {
-	  document.getElementById("timestamp" + i).innerHTML = "-";
-	  document.getElementById("nodeHumidity" + i).innerHTML = "-";
-	}
+    // Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
+    for(i=0; i<webServerData.numSensorSamples; i++) {
+      document.getElementById("timestamp" + i).innerHTML = webServerData.sensorSamples[i].timestamp;
+      document.getElementById("nodeHumidity" + i).innerHTML = webServerData.sensorSamples[i].humidity;
+    }
+    // If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
+    for(i=webServerData.numSensorSamples; i<10; i++) {
+      document.getElementById("timestamp" + i).innerHTML = "-";
+      document.getElementById("nodeHumidity" + i).innerHTML = "-";
+    }
 
-  // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
-	webTestEndtime = new Date();
-	populateNodeSpeedTestTable(dataAvailable);
+    // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
+    webTestEndtime = new Date();
+    populateNodeSpeedTestTable(dataAvailable);
   }
 };
 
@@ -290,10 +295,10 @@ wsws.onmessage = function(e) {
 function getLatestDbData() {
   // Determine if NodeJS server connection is active; if true, send SQL data request
   if(!nodeJSServerConnError) {
-	  jsws.send('getLatestDbData');
+    jsws.send('getLatestDbData');
   } else {
-	  document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
-	  alert("Failed to connect to NodeJS Server")
+    document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
+    alert("Failed to connect to NodeJS Server")
   }
 }
 
@@ -301,7 +306,7 @@ function getLatestDbData() {
 // Wrapper function called when "Display Current Sensor Data" button is pressed.
 function getCurrentSensorData() {
   wsws.send('getLatestDbData');
-  document.getElementById("currentSensorData").innerHTML = "Coming soon!";
+  document.getElementById("currentSensorData").innerHTML = "Sampling DTH22 Sensor...";
 }
 
 // ------------------------------------------------------------------------------------
@@ -310,14 +315,14 @@ function testNetworkSpeed() {
   // Request data via NodeJS server and populate HTML table
   nodeTestStarttime = new Date();
   if(!nodeJSServerConnError) {
-	  jsws.send('getLast10Samples');
+    jsws.send('getLast10Samples');
   } else {
-	  alert("Failed to connect to NodeJS Server")
+    alert("Failed to connect to NodeJS Server")
   }
-  
+
   // Request data via Tornado server
   var tornadoTestStarttime = new Date();
-  if(!webServerConnError) {
+  if(!TornadoServerConnError) {
     wsws.send('getLast10Samples');
   } else {
     alert("Failed to connect to Webserver")
@@ -331,15 +336,15 @@ function testNetworkSpeed() {
 // Method to populate NodeJS row of Server Speed Test Summary Table
 function populateNodeSpeedTestTable(dataAvailable){
   if(dataAvailable) {
-	// Calculate and format timing for NodeJS server speed test
-	document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
-	document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
-	document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
+    // Calculate and format timing for NodeJS server speed test
+    document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
+    document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
+    document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
   } else {
-	// Failed to read data from MySQL DB - clear NodeJS server speed test table entries
-	document.getElementById("SpeedTestStarttime0").innerHTML = "-";
-	document.getElementById("SpeedTestEndtime0").innerHTML = "-";
-	document.getElementById("SpeedTestTotal0").innerHTML = "-";
+    // Failed to read data from MySQL DB - clear NodeJS server speed test table entries
+    document.getElementById("SpeedTestStarttime0").innerHTML = "-";
+    document.getElementById("SpeedTestEndtime0").innerHTML = "-";
+    document.getElementById("SpeedTestTotal0").innerHTML = "-";
   }
 }
 
@@ -356,28 +361,34 @@ function populateTornadoSpeedTestTable(){
 // @temp - input temperature to convert to select units (C or F)
 // @return - Converted temperature string with unit designation
 function displayTemp(temp) {
-	var tempStr = "";
-	
-	// If fahrenheit radio button selected, convert value; otherwise, simply return received value
-	if(document.getElementById("fahrenheit").checked == true){
-		temp = ((temp * (9/5)) + 32);
-		tempStr = temp + " F";
-	} else {
-		tempStr = temp + " C";
-	}
-	
-	return tempStr;
+  var tempStr = "";
+
+  // If fahrenheit radio button selected, convert value; otherwise, simply return received value
+  if(document.getElementById("fahrenheit").checked == true){
+    temp = ((temp * (9/5)) + 32);
+    tempStr = temp + " F";
+  } else {
+    tempStr = temp + " C";
+  }
+
+  return tempStr;
 }
 
 // ------------------------------------------------------------------------------------
-
+// Method to update temp data displayed on webpage based on C/F radio button update event
 function updatePageTemp() {
-	if(latestDbDataObject != false){
-		document.getElementById("latestDbData").innerHTML = 
-		"Timestamp: " + latestDbDataObject.timestamp + 
-		" | Temp: " + displayTemp(latestDbDataObject.temp) + 
-		" | Humidity: " + latestDbDataObject.humidity + " %";
-	}
+  if(latestDbDataObject != false){
+    document.getElementById("latestDbData").innerHTML = 
+      "Timestamp: " + latestDbDataObject.timestamp + 
+      " | Temp: " + displayTemp(latestDbDataObject.temp) + 
+      " | Humidity: " + latestDbDataObject.humidity + " %";
+  }
 
+
+  if(currSensorDataObject != false){
+    document.getElementById("currentSensorData").innerHTML = 
+      "Temp: " + displayTemp(currSensorDataObject.temperature) + 
+      " | Humidity: " + currSensorDataObject.humidity;
+  }
 }
 </script>
