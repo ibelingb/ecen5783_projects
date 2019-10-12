@@ -53,7 +53,7 @@ def periodicDth22Sample():
   
   # If sensor data received, insert to DB and update GUI
   if humidity is not None and temperature is not None and humidity < 100:
-    g_sampleCount += g_sampleCount + 1
+    g_sampleCount += 1
     insertSensorData(temperature, humidity)
     g_mainWindowInstance.updateStatusLine('DB Update: Temp={0:0.1f}C  Humidity={1:0.1f}%' \
                                         .format(temperature, humidity))

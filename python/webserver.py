@@ -79,7 +79,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
 """
 start_webserver() must be called by the main application after the Qt (quamash)
-asyncio loop has been instantiated but before it has begun. 
+asyncio loop has been instantiated but before it has begun.
 """
 def start_webserver():
   application = tornado.web.Application([(r'/ws', WSHandler),])
