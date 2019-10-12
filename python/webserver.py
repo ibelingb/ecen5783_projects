@@ -77,7 +77,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
       else:
         numSensorSamples = len(timestamp)
         messageResponseRaw['numSensorSamples'] = numSensorSamples
-        sensorSamples = [None]
+        sensorSamples = []
         for i in range(numSensorSamples):
           sensorSamples.append({'timestamp': str(timestamp[i]),
                                 'temperature': temperature[i],
