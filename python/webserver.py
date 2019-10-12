@@ -62,11 +62,12 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         syslog.syslog('Sensor reading failed after ' + str(MAX_RETRIES) + 
                       ' attempts.')
         messageResponseRaw['error'] = 'sensorHardware'
+        messageResponseRaw['numSensorSamples'] = 0
       else:
         syslog.syslog('Sensor reading succeeded.')
         messageResponseRaw['numSensorSamples'] = 1
-        messageResponseRaw['humidity'] = humidity
-        messageResponseRaw['temperature'] = temperature
+        sensorSamples = [{'temperature': round(temperature, 1), 'humidity': round(humidity, 1)}]
+        messageResponseRaw['sensorSamples'] = sensorSamples
 
     # Provide data for speed test
     elif ("getLast10Samples" == message):
@@ -74,20 +75,22 @@ class WSHandler(tornado.websocket.WebSocketHandler):
       if not ((len(timestamp) == len(temperature))
               and (len(timestamp) == len(humidity))):
         messageResponseRaw['error'] = 'badMySQLRetrieval'
+        messageResponseRaw['numSensorSamples'] = 0
       else:
         numSensorSamples = len(timestamp)
         messageResponseRaw['numSensorSamples'] = numSensorSamples
         sensorSamples = []
         for i in range(numSensorSamples):
           sensorSamples.append({'timestamp': str(timestamp[i]),
-                                'temperature': temperature[i],
-                                'humidity': humidity[i]})
+                                'temperature': round(temperature[i], 1),
+                                'humidity': round(humidity[i], 1)})
         messageResponseRaw['sensorSamples'] = sensorSamples
 
     # Handle bad request
     else:
       syslog.syslog('Received an unexpected request from HTML client.')
       messageResponseRaw['error'] = 'invalidRequest'
+      messageResponseRaw['numSensorSamples'] = 0
 
     # Format & send response
     messageResponseJSON = json.dumps(messageResponseRaw)
