@@ -155,16 +155,16 @@ tr:nth-child(even) {
   // ------------------------------------------------------------------------------------
   // JS variables used to track client-server responsiveness and connection status
   var i = 0;
-  var nodeTestStarttime;
-  var nodeTestEndtime;
-  var tornadoTestStarttime;
-  var tornadoTestEndtime;
+  var nodeTestStarttime = new Date();
+  var nodeTestEndtime = new Date();
+  var tornadoTestStarttime = new Date();
+  var tornadoTestEndtime = new Date();
   var nodeJSServerConnError = false;
   var TornadoServerConnError = false;
-  var latestDbDataObject = false;
-  var currSensorDataObject = false;
+  var latestDbDataObject = false; // object to store latestDb sensor data - used in temp radio button onchange event
+  var currSensorDataObject = false; // object to store current sensor data - used in temp radio button onchange event
 
-  // Verify Checkbox selected properly
+  // Verify Checkbox selected properly on webpage startup
   document.getElementById("celsius").checked = true;
 
   // Establish WebSocket connection to Raspberry Pi NodeJS serv
@@ -181,7 +181,7 @@ tr:nth-child(even) {
 
 // Method for webserver WebSocket Connection initialization event 
 wsws.onopen = function() {
-  console.log('Webserver WebSocket Client Connected');
+  console.log('Tornado WebSocket Client Connected');
 };
 
 // ------------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ jsws.onerror = function(e) {
 };
 
 wsws.onerror = function(e) {
-  alert("Failed to connect to Webserver")
+  alert("Failed to connect to Tornado Webserver")
     TornadoServerConnError = true;
 };
 
@@ -276,17 +276,17 @@ wsws.onmessage = function(e) {
     // Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
     for(i=0; i<webServerData.numSensorSamples; i++) {
       document.getElementById("timestamp" + i).innerHTML = webServerData.sensorSamples[i].timestamp;
-      document.getElementById("nodeHumidity" + i).innerHTML = webServerData.sensorSamples[i].humidity;
+      document.getElementById("tornadoHumidity" + i).innerHTML = webServerData.sensorSamples[i].humidity;
     }
     // If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
     for(i=webServerData.numSensorSamples; i<10; i++) {
       document.getElementById("timestamp" + i).innerHTML = "-";
-      document.getElementById("nodeHumidity" + i).innerHTML = "-";
+      document.getElementById("tornadoHumidity" + i).innerHTML = "-";
     }
 
     // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
-    webTestEndtime = new Date();
-    populateNodeSpeedTestTable(dataAvailable);
+    tornadoTestEndtime = new Date();
+    populateTornadoSpeedTestTable(dataAvailable);
   }
 };
 
@@ -321,15 +321,12 @@ function testNetworkSpeed() {
   }
 
   // Request data via Tornado server
-  var tornadoTestStarttime = new Date();
+  tornadoTestStarttime = new Date();
   if(!TornadoServerConnError) {
     wsws.send('getLast10Samples');
   } else {
-    alert("Failed to connect to Webserver")
+    alert("Failed to connect to Tornado Webserver")
   }
-  // TODO - Set tornadoTestEndtime variable once Tornado server returns MySQL data
-  // TODO - Handle error case in the event Tornado fails to read data from MySQL DB
-  // TODO - Overwrite Timestamp column of Humidity Table when Tornado Server data returned; ignore if error
 }
 
 // ------------------------------------------------------------------------------------
@@ -350,11 +347,18 @@ function populateNodeSpeedTestTable(dataAvailable){
 
 // ------------------------------------------------------------------------------------
 // Method to populate Tornado row of Server Speed Test Summary Table
-function populateTornadoSpeedTestTable(){
-  // Calculate and format timing for Tornado server speed test
-  document.getElementById("SpeedTestStarttime1").innerHTML = tornadoTestStarttime.toISOString();
-  document.getElementById("SpeedTestEndtime1").innerHTML = tornadoTestEndtime.toISOString();
-  document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
+function populateTornadoSpeedTestTable(dataAvailable){
+  if(dataAvailable) {
+    // Calculate and format timing for Tornado server speed test
+    document.getElementById("SpeedTestStarttime1").innerHTML = tornadoTestStarttime.toISOString();
+    document.getElementById("SpeedTestEndtime1").innerHTML = tornadoTestEndtime.toISOString();
+    document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
+  } else {
+    // Failed to read data from MySQL DB - clear Tornado server speed test table entries
+    document.getElementById("SpeedTestStarttime1").innerHTML = "-";
+    document.getElementById("SpeedTestEndtime1").innerHTML = "-";
+    document.getElementById("SpeedTestTotal1").innerHTML = "-";
+  }
 }
 // ------------------------------------------------------------------------------------
 // Display temperature on webpage based on
@@ -364,8 +368,9 @@ function displayTemp(temp) {
   var tempStr = "";
 
   // If fahrenheit radio button selected, convert value; otherwise, simply return received value
+  // Also, add units and return temp string
   if(document.getElementById("fahrenheit").checked == true){
-    temp = ((temp * (9/5)) + 32);
+    temp = ((temp * (9/5)) + 32); // Convert Celcius value to fahrenheit
     tempStr = temp + " F";
   } else {
     tempStr = temp + " C";
@@ -377,6 +382,7 @@ function displayTemp(temp) {
 // ------------------------------------------------------------------------------------
 // Method to update temp data displayed on webpage based on C/F radio button update event
 function updatePageTemp() {
+  // Update latest DB data string (if data displayed on webpage)
   if(latestDbDataObject != false){
     document.getElementById("latestDbData").innerHTML = 
       "Timestamp: " + latestDbDataObject.timestamp + 
@@ -384,7 +390,7 @@ function updatePageTemp() {
       " | Humidity: " + latestDbDataObject.humidity + " %";
   }
 
-
+  // Update Current Sensor data string (if data displayed on webpage)
   if(currSensorDataObject != false){
     document.getElementById("currentSensorData").innerHTML = 
       "Temp: " + displayTemp(currSensorDataObject.temperature) + 
