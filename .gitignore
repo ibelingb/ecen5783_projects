@@ -2,3 +2,4 @@
 *.png
 package-lock.json
 .vscode/
+html/credentials.js

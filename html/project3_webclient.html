@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<!--
+Project 3 HTML page
+ECEN 5783 - Embedded Interface Design
+10/14/2019
+Authors: Brian Ibeling and Connor Shapiro
+
+The project3_webclient.html page provides a browser-based HTML client interface to communicate 
+with the NodeJS and Tornado WebSocket servers which communicate with the Python Application and
+MySQL database from Project1. HTML page contains several buttons to read SQL data and determine 
+
+The HTML page monitors and reports to the user the following error conditions:
+  - Connection between HTML client and NodeJS server is lost/unavailable.
+  - Data requested from NodeJS server fails to return MySQL sensor data to HTML client.
+    >> Due to no data being available in SQL DB, or NodeJS fails to read from SQL DB.
+  - Connection between HTML client and webserver is lost/unavailable.
+  - Data requested from webserver is not delievered to HTML client.
+
++ Resources and Citations +
+The following resources were used to assist with development of this SW.
+  - https://jqueryui.com/button/
+  - https://www.w3schools.com/html/html_tables.asp
+  - https://www.w3schools.com/jsref/jsref_gettime.asp
+  - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds
+  - https://stackoverflow.com/questions/3552461/how-to-format-a-javascript-date
+  - https://www.w3schools.com/tags/att_input_type_radio.asp
+  - https://docs.aws.amazon.com/code-samples/latest/catalog/javascript-browserstart-polly.html.html
+  - https://docs.aws.amazon.com/en_pv/code-samples/latest/catalog/javascript-sqs-sqs_receivemessage.js.html
+-->
+
+<html>
+  <head>
+    <title>Project2 Client Webpage</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!--Load the AWS JavaScript SDK       -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.549.0.min.js"></script>
+    <!--Load the AWS credentials -->
+    <script type="text/javascript" src="credentials.js"></script> 
+
+    <style>
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 70%;
+      }
+
+      td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 5px;
+      }
+
+      tr:nth-child(even) {
+          background-color: #dddddd;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div class="widget">
+      <!-- Define Webpage heading with buttons and text fields for latest DB data, current Sensor data, 
+      and test server responsiveness -->
+      <h1>ECEN5873 Project-3 Client Webpage</h1>
+      <p>Display Temperature as:</p>
+      <input type="radio" name="tempUnits" id="celsius" value="celsius" onchange="updatePageTemp();" checked="checked"> Celsius<br>
+      <input type="radio" name="tempUnits" id="fahrenheit" value="fahrenheit" onchange="updatePageTemp();"> Fahrenheit<br>
+      <br>
+      <input onclick="getLatestDbData()" type="submit" value="Display Latest DB Data">
+      <p id="latestDbData">Awaiting data request</p>
+      <input onclick="getCurrentSensorData()" type="submit" value="Display Current Sensor Data">
+      <p id="currentSensorData">Awaiting data request</p>
+      <input onclick="testNetworkSpeed()" type="submit" value="Test Network Responsiveness">  
+
+      <!-- Define Server Speed Test Summary Table -->
+      <h2>Server Speed Test Summary</h2>
+      <table>
+        <tr>
+          <th>Server</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Total Time (msec)</th>
+        </tr>
+        <tr>
+          <td id=SpeedTestServer0>NodeJS</td>
+          <td id=SpeedTestStarttime0>-</td>
+          <td id=SpeedTestEndtime0>-</td>
+          <td id=SpeedTestTotal0>-</td>
+        </tr>
+        <tr>
+          <td id=SpeedTestServer1>Tornado</td>
+          <td id=SpeedTestStarttime1>-</td>
+          <td id=SpeedTestEndtime1>-</td>
+          <td id=SpeedTestTotal1>-</td>
+        </tr>
+      </table>
+
+      <!-- Define Speed Test Humidity Table -->
+      <h2>Speed Test Humidity Table</h2>
+      <table>
+        <tr>
+          <th>Timestamp</th>
+          <th>% Humidity (NodeJS)</th>
+          <th>% Humidity (Tornado)</th>
+        </tr>
+        <tr>
+          <td id=timestamp0>-</td>
+          <td id=nodeHumidity0>-</td>
+          <td id=tornadoHumidity0>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp1>-</td>
+          <td id=nodeHumidity1>-</td>
+          <td id=tornadoHumidity1>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp2>-</td>
+          <td id=nodeHumidity2>-</td>
+          <td id=tornadoHumidity2>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp3>-</td>
+          <td id=nodeHumidity3>-</td>
+          <td id=tornadoHumidity3>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp4>-</td>
+          <td id=nodeHumidity4>-</td>
+          <td id=tornadoHumidity4>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp5>-</td>
+          <td id=nodeHumidity5>-</td>
+          <td id=tornadoHumidity5>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp6>-</td>
+          <td id=nodeHumidity6>-</td>
+          <td id=tornadoHumidity6>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp7>-</td>
+          <td id=nodeHumidity7>-</td>
+          <td id=tornadoHumidity7>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp8>-</td>
+          <td id=nodeHumidity8>-</td>
+          <td id=tornadoHumidity8>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp9>-</td>
+          <td id=nodeHumidity9>-</td>
+          <td id=tornadoHumidity9>-</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+  <script type="text/javascript">
+    // ------------------------------------------------------------------------------------
+    // AWS Config 
+    AWS.config.region =  "us-west-2";
+    AWS.config.credentials = new AWS.Credentials(awsKey, awsSecret, awsToken);
+
+    var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+
+    var queueURL = "https://sqs.us-west-2.amazonaws.com/582548553336/project3Queue";
+
+    var params = {
+      AttributeNames: [
+        "SentTimestamp"
+      ],
+      MaxNumberOfMessages: 10,
+      MessageAttributeNames: [
+        "All"
+      ],
+      QueueUrl: queueURL,
+      VisibilityTimeout: 20,
+      WaitTimeSeconds: 0
+    };
+
+    sqs.receiveMessage(params, function(err, data) {
+      if (err) {
+        console.log("Receive Error", err);
+      } else if (data.Messages) {
+
+        console.log(data)
+
+        var deleteParams = {
+          QueueUrl: queueURL,
+          ReceiptHandle: data.Messages[0].ReceiptHandle
+        };
+        sqs.deleteMessage(deleteParams, function(err, data) {
+          if (err) {
+            console.log("Delete Error", err);
+          } else {
+            console.log("Message Deleted", data);
+          }
+        });
+      }
+    });
+
+    // ------------------------------------------------------------------------------------
+    // JS variables used to track client-server responsiveness and connection status
+    var i = 0;
+    var latestDbDataObject = false; // object to store latestDb sensor data - used in temp radio button onchange event
+    var currSensorDataObject = false; // object to store current sensor data - used in temp radio button onchange event
+
+    // Verify Checkbox selected properly on webpage startup
+    document.getElementById("celsius").checked = true;
+
+  
+    // ------------------------------------------------------------------------------------
+    // Wrapper function called when "Display Latest DB Data" button is pressed.
+    function getLatestDbData() {
+      // Determine if NodeJS server connection is active; if true, send SQL data request
+      if (!nodeJSServerConnError) {
+        jsws.send('getLatestDbData');
+      } else {
+        document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
+        alert("Failed to connect to NodeJS Server")
+      }
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Wrapper function called when "Display Current Sensor Data" button is pressed.
+    function getCurrentSensorData() {
+      sqs.receiveMessage();
+      // if (!tornadoServerConnError) {
+      //   wsws.send('getLatestDbData');
+      //   document.getElementById("currentSensorData").innerHTML = "Sampling DTH22 Sensor...";
+      // } else {
+      //   document.getElementById("currentSensorData").innerHTML = "Failed to retrieve data from Tornado Server";
+      //   alert("Failed to connect to Tornado Webserver")
+      // }
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Wrapper function called when "Test Network Responsiveness" button is pressed.
+    function testNetworkSpeed() {
+      // Request data via NodeJS server and populate HTML table
+      nodeTestStarttime = new Date();
+      if (!nodeJSServerConnError) {
+        jsws.send('getLast10Samples');
+      } else {
+        alert("Failed to connect to NodeJS Server")
+      }
+
+      // Request data via Tornado server
+      tornadoTestStarttime = new Date();
+      if (!tornadoServerConnError) {
+        wsws.send('getLast10Samples');
+      } else {
+        alert("Failed to connect to Tornado Webserver")
+      }
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Method to populate NodeJS row of Server Speed Test Summary Table
+    function populateNodeSpeedTestTable(dataAvailable) {
+      if (dataAvailable) {
+        // Calculate and format timing for NodeJS server speed test
+        document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
+        document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
+        document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
+      } else {
+        // Failed to read data from MySQL DB - clear NodeJS server speed test table entries
+        document.getElementById("SpeedTestStarttime0").innerHTML = "-";
+        document.getElementById("SpeedTestEndtime0").innerHTML = "-";
+        document.getElementById("SpeedTestTotal0").innerHTML = "-";
+      }
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Method to populate Tornado row of Server Speed Test Summary Table
+    function populateTornadoSpeedTestTable(dataAvailable) {
+      if (dataAvailable) {
+        // Calculate and format timing for Tornado server speed test
+        document.getElementById("SpeedTestStarttime1").innerHTML = tornadoTestStarttime.toISOString();
+        document.getElementById("SpeedTestEndtime1").innerHTML = tornadoTestEndtime.toISOString();
+        document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
+      } else {
+        // Failed to read data from MySQL DB - clear Tornado server speed test table entries
+        document.getElementById("SpeedTestStarttime1").innerHTML = "-";
+        document.getElementById("SpeedTestEndtime1").innerHTML = "-";
+        document.getElementById("SpeedTestTotal1").innerHTML = "-";
+      }
+    }
+    // ------------------------------------------------------------------------------------
+    // Display temperature on webpage based on
+    // @temp - input temperature to convert to select units (C or F)
+    // @return - Converted temperature string with unit designation
+    function displayTemp(temp) {
+      var tempStr = "";
+
+      // If fahrenheit radio button selected, convert value; otherwise, simply return received value
+      // Also, add units and return temp string
+      if (document.getElementById("fahrenheit").checked == true) {
+        temp = Math.round(((temp * (9/5)) + 32) * 10) / 10; // Convert Celcius value to fahrenheit, rounded to be xx.x
+        tempStr = temp + " F";
+      } else {
+        tempStr = temp + " C";
+      }
+
+      return tempStr;
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Method to update temp data displayed on webpage based on C/F radio button update event
+    function updatePageTemp() {
+      // Update latest DB data string (if data displayed on webpage)
+      if (latestDbDataObject != false) {
+        document.getElementById("latestDbData").innerHTML = 
+          "Timestamp: " + latestDbDataObject.timestamp + 
+          " | Temp: " + displayTemp(latestDbDataObject.temp) + 
+          " | Humidity: " + latestDbDataObject.humidity + " %";
+      }
+
+      // Update Current Sensor data string (if data displayed on webpage)
+      if (currSensorDataObject != false) {
+        document.getElementById("currentSensorData").innerHTML = 
+          "Temp: " + displayTemp(currSensorDataObject.temperature) + 
+          " | Humidity: " + currSensorDataObject.humidity;
+      }
+    }
+  </script>
+</html>

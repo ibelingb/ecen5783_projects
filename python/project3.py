@@ -2,9 +2,9 @@
 #
 # ECEN5783
 # Author: Brian Ibeling and Connor Shapiro
-# 9/13/2019
+# 10/14/2019
 
-""" project1.py: Main python file for EID Project2 to store and display DHT22 data in a QT GUI,
+""" project3.py: Main python file for EID Project3 to store and display DHT22 data in a QT GUI,
                  and run a webserver exposing this data via WebSockets.
 
     Main python application to launch the GUI, create/connect to the database sensors table and
