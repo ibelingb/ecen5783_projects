@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="utf-8"/>
 <!--
 Project 3 HTML page
 ECEN 5783 - Embedded Interface Design
@@ -30,7 +31,7 @@ The following resources were used to assist with development of this SW.
 
 <html>
   <head>
-    <title>Project2 Client Webpage</title>
+    <title>ECEN 5783 Project-3 Client Webpage</title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="/resources/demos/style.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -68,92 +69,120 @@ The following resources were used to assist with development of this SW.
       <input type="radio" name="tempUnits" id="celsius" value="celsius" onchange="updatePageTemp();" checked="checked"> Celsius<br>
       <input type="radio" name="tempUnits" id="fahrenheit" value="fahrenheit" onchange="updatePageTemp();"> Fahrenheit<br>
       <br>
-      <input onclick="getLatestDbData()" type="submit" value="Display Latest DB Data">
-      <p id="latestDbData">Awaiting data request</p>
-      <input onclick="getCurrentSensorData()" type="submit" value="Display Current Sensor Data">
-      <p id="currentSensorData">Awaiting data request</p>
-      <input onclick="testNetworkSpeed()" type="submit" value="Test Network Responsiveness">  
-
-      <!-- Define Server Speed Test Summary Table -->
-      <h2>Server Speed Test Summary</h2>
-      <table>
-        <tr>
-          <th>Server</th>
-          <th>Start Time</th>
-          <th>End Time</th>
-          <th>Total Time (msec)</th>
-        </tr>
-        <tr>
-          <td id=SpeedTestServer0>NodeJS</td>
-          <td id=SpeedTestStarttime0>-</td>
-          <td id=SpeedTestEndtime0>-</td>
-          <td id=SpeedTestTotal0>-</td>
-        </tr>
-        <tr>
-          <td id=SpeedTestServer1>Tornado</td>
-          <td id=SpeedTestStarttime1>-</td>
-          <td id=SpeedTestEndtime1>-</td>
-          <td id=SpeedTestTotal1>-</td>
-        </tr>
-      </table>
+      <input onclick="getOneRecord()" type="submit" value="Get One SQS Record">
+      <p id="oneErrMessage"></p>
+      <input onclick="getAllRecords()" type="submit" value="Get All SQS Records">
+      <p id="allErrMessage"></p>
+      <input onclick="getMessageCount()" type="submit" value="Display Number of SQS Records">
+      <p id="currentMessageCount">Awaiting transaction from AWS</p>
 
       <!-- Define Speed Test Humidity Table -->
       <h2>Speed Test Humidity Table</h2>
       <table>
         <tr>
           <th>Timestamp</th>
-          <th>% Humidity (NodeJS)</th>
-          <th>% Humidity (Tornado)</th>
+          <th>Temperature</th>
+          <th>% Humidity</th>
         </tr>
         <tr>
           <td id=timestamp0>-</td>
-          <td id=nodeHumidity0>-</td>
-          <td id=tornadoHumidity0>-</td>
+          <td id=temperature0>-</td>
+          <td id=humidity0>-</td>
         </tr>
         <tr>
           <td id=timestamp1>-</td>
-          <td id=nodeHumidity1>-</td>
-          <td id=tornadoHumidity1>-</td>
+          <td id=temperature1>-</td>
+          <td id=humidity1>-</td>
         </tr>
         <tr>
           <td id=timestamp2>-</td>
-          <td id=nodeHumidity2>-</td>
-          <td id=tornadoHumidity2>-</td>
+          <td id=temperature2>-</td>
+          <td id=humidity2>-</td>
         </tr>
         <tr>
           <td id=timestamp3>-</td>
-          <td id=nodeHumidity3>-</td>
-          <td id=tornadoHumidity3>-</td>
+          <td id=temperature3>-</td>
+          <td id=humidity3>-</td>
         </tr>
         <tr>
           <td id=timestamp4>-</td>
-          <td id=nodeHumidity4>-</td>
-          <td id=tornadoHumidity4>-</td>
+          <td id=temperature4>-</td>
+          <td id=humidity4>-</td>
         </tr>
         <tr>
           <td id=timestamp5>-</td>
-          <td id=nodeHumidity5>-</td>
-          <td id=tornadoHumidity5>-</td>
+          <td id=temperature5>-</td>
+          <td id=humidity5>-</td>
         </tr>
         <tr>
           <td id=timestamp6>-</td>
-          <td id=nodeHumidity6>-</td>
-          <td id=tornadoHumidity6>-</td>
+          <td id=temperature6>-</td>
+          <td id=humidity6>-</td>
         </tr>
         <tr>
           <td id=timestamp7>-</td>
-          <td id=nodeHumidity7>-</td>
-          <td id=tornadoHumidity7>-</td>
+          <td id=temperature7>-</td>
+          <td id=humidity7>-</td>
         </tr>
         <tr>
           <td id=timestamp8>-</td>
-          <td id=nodeHumidity8>-</td>
-          <td id=tornadoHumidity8>-</td>
+          <td id=temperature8>-</td>
+          <td id=humidity8>-</td>
         </tr>
         <tr>
           <td id=timestamp9>-</td>
-          <td id=nodeHumidity9>-</td>
-          <td id=tornadoHumidity9>-</td>
+          <td id=temperature9>-</td>
+          <td id=humidity9>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp10>-</td>
+          <td id=temperature10>-</td>
+          <td id=humidity10>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp11>-</td>
+          <td id=temperature11>-</td>
+          <td id=humidity11>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp12>-</td>
+          <td id=temperature12>-</td>
+          <td id=humidity12>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp13>-</td>
+          <td id=temperature13>-</td>
+          <td id=humidity13>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp14>-</td>
+          <td id=temperature14>-</td>
+          <td id=humidity14>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp15>-</td>
+          <td id=temperature15>-</td>
+          <td id=humidity15>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp16>-</td>
+          <td id=temperature16>-</td>
+          <td id=humidity16>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp17>-</td>
+          <td id=temperature17>-</td>
+          <td id=humidity17>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp18>-</td>
+          <td id=temperature18>-</td>
+          <td id=humidity18>-</td>
+        </tr>
+        <tr>
+          <td id=timestamp19>-</td>
+          <td id=temperature19>-</td>
+          <td id=humidity19>-</td>
         </tr>
       </table>
     </div>
@@ -181,27 +210,6 @@ The following resources were used to assist with development of this SW.
       WaitTimeSeconds: 0
     };
 
-    sqs.receiveMessage(params, function(err, data) {
-      if (err) {
-        console.log("Receive Error", err);
-      } else if (data.Messages) {
-
-        console.log(data)
-
-        var deleteParams = {
-          QueueUrl: queueURL,
-          ReceiptHandle: data.Messages[0].ReceiptHandle
-        };
-        sqs.deleteMessage(deleteParams, function(err, data) {
-          if (err) {
-            console.log("Delete Error", err);
-          } else {
-            console.log("Message Deleted", data);
-          }
-        });
-      }
-    });
-
     // ------------------------------------------------------------------------------------
     // JS variables used to track client-server responsiveness and connection status
     var i = 0;
@@ -214,8 +222,39 @@ The following resources were used to assist with development of this SW.
   
     // ------------------------------------------------------------------------------------
     // Wrapper function called when "Display Latest DB Data" button is pressed.
-    function getLatestDbData() {
+    function getOneRecord() {
       // Determine if NodeJS server connection is active; if true, send SQL data request
+
+      sqs.receiveMessage(params, function(err, data) {
+        if (err) {
+          console.log("Receive Error", err);
+          document.getElementById("oneErrMessage").innerHTML = "Failed to retrieve data from AWS SQS queue.";
+
+        } else if (data.Messages) {
+          
+          var dataAvailable = true; // Boolean flag to check if data received
+          console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
+          latestDbDataObject = nodeServerData.sensorSamples[0];
+          
+          document.getElementById("latestDbData").innerHTML = 
+            "Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
+            " | Temp: " + displayTemp(nodeServerData.sensorSamples[0].temp) + 
+            " | Humidity: " + nodeServerData.sensorSamples[0].humidity + " %";
+
+          var deleteParams = {
+            QueueUrl: queueURL,
+            ReceiptHandle: data.Messages[0].ReceiptHandle
+          };
+          sqs.deleteMessage(deleteParams, function(err, data) {
+            if (err) {
+              console.log("Delete Error", err);
+            } else {
+              console.log("Message Deleted", data);
+            }
+          });
+        }
+      });
+
       if (!nodeJSServerConnError) {
         jsws.send('getLatestDbData');
       } else {
