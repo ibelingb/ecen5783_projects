@@ -25,11 +25,9 @@
 import sys
 import time
 import threading
-import asyncio
 from db import *
 from sensor import *
 from gui import *
-from quamash import QEventLoop, QThreadExecutor
 import webserver
 
 __author__ = "Brian Ibeling & Connor Shapiro"
@@ -85,19 +83,7 @@ def startGui():
   """ Launch the main application GUI and update the status line to specify app has started. """
   g_mainWindowInstance.show()
   g_mainWindowInstance.updateStatusLine('Application Started')
-  
-  '''
-  Instead of calling g_qtApp.exec_() we now use the QEventLoop from quamash,
-  which allows Tornado and Qt to run concurrently through asyncio.
-  '''
-  loop = QEventLoop(g_qtApp)  # instantiate the loop
-  asyncio.set_event_loop(loop)  # register loop with asyncio
-  webserver.start_webserver()  # webserver.py will start the loop
-
-  with loop:
-    loop.run_forever()  # run_forever() for ease of coding, as we are just
-                        # killing python with the stopApp.sh script when 
-                        # finished with the application.
+  g_qtApp.exec_()
 
 #-----------------------------------------------------------------------
 def main(args):

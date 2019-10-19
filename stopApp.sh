@@ -7,7 +7,3 @@
 # Kill launched python GUI application & Tornado webserver
 echo "Killing python GUI..."
 kill -15 `pidof python3` &
-
-# Kill launched NodeJS Server application
-echo "Killing NodeJS Server..."
-kill -15 `pidof node` &
