@@ -18,10 +18,11 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
 __author__ = "Brian Ibeling"
 
+myMQTTClient = AWSIoTMQTTClient("RpiClient")
+
 #-----------------------------------------------------------------------
-def dataPusherInit():
+def initializeDataPusher():
   # Establish AWS IoT certificate based connection
-  myMQTTClient = AWSIoTMQTTClient("myTestClient")
   myMQTTClient.configureEndpoint("a376p1vo77mjsi-ats.iot.us-east-1.amazonaws.com", 8883)
   myMQTTClient.configureCredentials("/home/pi/certs/Amazon_Root_CA_1.pem", "/home/pi/certs/0b8296d0dd-private.pem.key", "/home/pi/certs/0b8296d0dd-certificate.pem.crt")
   myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
@@ -31,24 +32,17 @@ def dataPusherInit():
 
   return 0
 #-----------------------------------------------------------------------
-def pushDataToAws():
+def pushDataToAws(sensorData):
   # Connect and publish data packet
   myMQTTClient.connect()
-  myMQTTClient.publish("sensor/data", "data", 0)
+  myMQTTClient.publish("sensor/data", str(sensorData), 0)
 
   return 0
 #-----------------------------------------------------------------------
-def pushAlertToAws():
+def pushAlertToAws(alertData):
   # Connect and publish alert packet
   myMQTTClient.connect()
-  myMQTTClient.publish("sensor/alert", "alert", 0)
+  myMQTTClient.publish("sensor/alert", str(alertData), 0)
 
   return 0
 #-----------------------------------------------------------------------
-def main(args):
-
-  return 0
-
-if __name__ == '__main__':
-  import sys
-  sys.exit(main(sys.argv))
