@@ -32,8 +32,8 @@ The following resources were used to assist with development of this SW.
 <html>
   <head>
     <title>ECEN 5783 Project-3 Client Webpage</title>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="/resources/demos/style.css">
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- <link rel="stylesheet" href="/resources/demos/style.css"> -->
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!--Load the AWS JavaScript SDK       -->
@@ -190,25 +190,13 @@ The following resources were used to assist with development of this SW.
   <script type="text/javascript">
     // ------------------------------------------------------------------------------------
     // AWS Config 
-    AWS.config.region =  "us-west-2";
-    AWS.config.credentials = new AWS.Credentials(awsKey, awsSecret, awsToken);
-
+    AWS.config.region = 'us-east-1';
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: unauthPoolID, // unauthPoolID is set in credentials.js
+                                      // which is not distrubuted via git
+    });
     var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
-
-    var queueURL = "https://sqs.us-west-2.amazonaws.com/582548553336/project3Queue";
-
-    var params = {
-      AttributeNames: [
-        "SentTimestamp"
-      ],
-      MaxNumberOfMessages: 10,
-      MessageAttributeNames: [
-        "All"
-      ],
-      QueueUrl: queueURL,
-      VisibilityTimeout: 20,
-      WaitTimeSeconds: 0
-    };
+    var queueURL = "https://sqs.us-east-1.amazonaws.com/582548553336/project3Queue";
 
     // ------------------------------------------------------------------------------------
     // JS variables used to track client-server responsiveness and connection status
@@ -218,98 +206,81 @@ The following resources were used to assist with development of this SW.
 
     // Verify Checkbox selected properly on webpage startup
     document.getElementById("celsius").checked = true;
-
   
     // ------------------------------------------------------------------------------------
-    // Wrapper function called when "Display Latest DB Data" button is pressed.
+    // Wrapper function called when "Get One SQS Record" button is pressed.
     function getOneRecord() {
-      // Determine if NodeJS server connection is active; if true, send SQL data request
+      // Attempt to get one message from AWS SQS queue,
+      // handling possible empty queue & connection failure errors
+
+      var params = {
+        AttributeNames: [
+          "SentTimestamp"
+        ],
+        MaxNumberOfMessages: 1,
+        MessageAttributeNames: [
+          "All"
+        ],
+        QueueUrl: queueURL,
+        VisibilityTimeout: 10,
+        WaitTimeSeconds: 0
+      };
 
       sqs.receiveMessage(params, function(err, data) {
         if (err) {
           console.log("Receive Error", err);
           document.getElementById("oneErrMessage").innerHTML = "Failed to retrieve data from AWS SQS queue.";
-
-        } else if (data.Messages) {
-          
+        } else if (data.Messages.length) {
           var dataAvailable = true; // Boolean flag to check if data received
-          console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
-          latestDbDataObject = nodeServerData.sensorSamples[0];
-          
-          document.getElementById("latestDbData").innerHTML = 
-            "Timestamp: " + nodeServerData.sensorSamples[0].timestamp + 
-            " | Temp: " + displayTemp(nodeServerData.sensorSamples[0].temp) + 
-            " | Humidity: " + nodeServerData.sensorSamples[0].humidity + " %";
-
-          var deleteParams = {
-            QueueUrl: queueURL,
-            ReceiptHandle: data.Messages[0].ReceiptHandle
-          };
-          sqs.deleteMessage(deleteParams, function(err, data) {
-            if (err) {
-              console.log("Delete Error", err);
-            } else {
-              console.log("Message Deleted", data);
-            }
-          });
+          console.log(JSON.parse(data.Messages[0].Body)); // Allows user to view/debug data from webpage console.
+          latestDbDataObject = JSON.parse(data.Messages[0].Body);
+          // var deleteParams = {
+          //   QueueUrl: queueURL,
+          //   ReceiptHandle: data.Messages[0].ReceiptHandle
+          // };
+          // sqs.deleteMessage(deleteParams, function(err, data) {
+          //   if (err) {
+          //     console.log("Delete Error", err);
+          //   } else {
+          //     console.log("Message Deleted", data);
+          //   }
+          // });
+          getMessageCount();
+        } else {
+          var dataAvailable = false;
+          console.log("SQS Queue empty.");
+          document.getElementById("oneErrMessage").innerHTML = "AWS SQS queue is empty.";
+          getMessageCount();
         }
       });
-
-      if (!nodeJSServerConnError) {
-        jsws.send('getLatestDbData');
-      } else {
-        document.getElementById("latestDbData").innerHTML = "Failed to retrieve data from NodeJS Server";
-        alert("Failed to connect to NodeJS Server")
-      }
     }
 
     // ------------------------------------------------------------------------------------
-    // Wrapper function called when "Display Current Sensor Data" button is pressed.
-    function getCurrentSensorData() {
-      sqs.receiveMessage();
-      // if (!tornadoServerConnError) {
-      //   wsws.send('getLatestDbData');
-      //   document.getElementById("currentSensorData").innerHTML = "Sampling DTH22 Sensor...";
-      // } else {
-      //   document.getElementById("currentSensorData").innerHTML = "Failed to retrieve data from Tornado Server";
-      //   alert("Failed to connect to Tornado Webserver")
-      // }
+    // Wrapper function called when "Get All SQS Records" button is pressed.
+    function getAllRecords() {
+      // 
     }
-
     // ------------------------------------------------------------------------------------
-    // Wrapper function called when "Test Network Responsiveness" button is pressed.
-    function testNetworkSpeed() {
-      // Request data via NodeJS server and populate HTML table
-      nodeTestStarttime = new Date();
-      if (!nodeJSServerConnError) {
-        jsws.send('getLast10Samples');
-      } else {
-        alert("Failed to connect to NodeJS Server")
-      }
+    // Function to update display of number of messages waiting in AWS SQS queue
+    function getMessageCount() {
 
-      // Request data via Tornado server
-      tornadoTestStarttime = new Date();
-      if (!tornadoServerConnError) {
-        wsws.send('getLast10Samples');
-      } else {
-        alert("Failed to connect to Tornado Webserver")
-      }
-    }
+      var params = {
+        AttributeNames: [
+          "ApproximateNumberOfMessages"
+        ],
+        QueueUrl: queueURL
+      };
 
-    // ------------------------------------------------------------------------------------
-    // Method to populate NodeJS row of Server Speed Test Summary Table
-    function populateNodeSpeedTestTable(dataAvailable) {
-      if (dataAvailable) {
-        // Calculate and format timing for NodeJS server speed test
-        document.getElementById("SpeedTestStarttime0").innerHTML = nodeTestStarttime.toISOString();
-        document.getElementById("SpeedTestEndtime0").innerHTML = nodeTestEndtime.toISOString();
-        document.getElementById("SpeedTestTotal0").innerHTML = (nodeTestEndtime - nodeTestStarttime);
-      } else {
-        // Failed to read data from MySQL DB - clear NodeJS server speed test table entries
-        document.getElementById("SpeedTestStarttime0").innerHTML = "-";
-        document.getElementById("SpeedTestEndtime0").innerHTML = "-";
-        document.getElementById("SpeedTestTotal0").innerHTML = "-";
-      }
+      sqs.getQueueAttributes(params, function(err, data) {
+        if (err) {
+          console.log("Queue Attribute Error", err);
+          document.getElementById("currentMessageCount").innerHTML =
+            "Failed to retrieve number of messages in AWS SQS queue.";
+        }
+        document.getElementById("currentMessageCount").innerHTML =
+          "There are approximately " + data.Attributes.ApproximateNumberOfMessages
+          + " messages in the AWS SQS queue."
+      });
     }
 
     // ------------------------------------------------------------------------------------
@@ -327,6 +298,7 @@ The following resources were used to assist with development of this SW.
         document.getElementById("SpeedTestTotal1").innerHTML = "-";
       }
     }
+
     // ------------------------------------------------------------------------------------
     // Display temperature on webpage based on
     // @temp - input temperature to convert to select units (C or F)
@@ -353,15 +325,8 @@ The following resources were used to assist with development of this SW.
       if (latestDbDataObject != false) {
         document.getElementById("latestDbData").innerHTML = 
           "Timestamp: " + latestDbDataObject.timestamp + 
-          " | Temp: " + displayTemp(latestDbDataObject.temp) + 
+          " | Temp: " + displayTemp(latestDbDataObject.temperature) + 
           " | Humidity: " + latestDbDataObject.humidity + " %";
-      }
-
-      // Update Current Sensor data string (if data displayed on webpage)
-      if (currSensorDataObject != false) {
-        document.getElementById("currentSensorData").innerHTML = 
-          "Temp: " + displayTemp(currSensorDataObject.temperature) + 
-          " | Humidity: " + currSensorDataObject.humidity;
       }
     }
   </script>
