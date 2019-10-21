@@ -4,32 +4,36 @@ import json
 import urllib
 import boto3
 
-print('Loading message function...')
-
+print('Initializing project3RecordHandler Lambda function...')
 
 def handle_rpi_record(message, context):
     # Based on what message type is received from AWS IoT, pass along to 
     # appropriate AWS App (SQS Queue or SNS)
-    if(message['recordType'] == "alert"){
+    
+    if(message['recordType'] == "data"):
+        print("Alert Record Received")
         send_to_sqs(message)
-    } else if (message['recordType'] == "data"){
+    if(message['recordType'] == "alert"):
+        print("Data Record Received")
         send_to_sns(message)
-    } else {
+    else:
        print('Received AWS message unrecognized')
        return -1
-    }
     
     return 0
 
-def send_to_sqs(message, context):
+def send_to_sqs(message):
     sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName='test-messages') # TODO: Update
+    queue = sqs.get_queue_by_name(QueueName='testQueue') # TODO: Update
+    
+    print(message)
     
     # Push received msg onto queue
     response = queue.send_message(MessageBody=json.dumps(message))
+    print(response)
     
 
-def send_to_sns(message, context):
+def send_to_sns(message):
 
     # This function receives JSON input with three fields: the ARN of an SNS topic,
     # a string with the subject of the message, and a string with the body of the message.
@@ -54,5 +58,4 @@ def send_to_sns(message, context):
         Message=message
     )
 
-    return ('Sent a message to an Amazon SNS topic.')
-
+    return 0
