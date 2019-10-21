@@ -11,10 +11,10 @@ def handle_rpi_record(message, context):
     # appropriate AWS App (SQS Queue or SNS)
     
     if(message['recordType'] == "data"):
-        print("Alert Record Received")
+        print("Data Record Received")
         send_to_sqs(message)
     if(message['recordType'] == "alert"):
-        print("Data Record Received")
+        print("Alert Record Received")
         send_to_sns(message)
     else:
        print('Received AWS message unrecognized')
@@ -24,12 +24,12 @@ def handle_rpi_record(message, context):
 
 def send_to_sqs(message):
     sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName='testQueue') # TODO: Update
+    queue = sqs.get_queue_by_name(QueueName='project3Queue', QueueOwnerAWSAccountId="582548553336")
     
     print(message)
     
     # Push received msg onto queue
-    response = queue.send_message(MessageBody=json.dumps(message))
+    response = queue.send_message(QueueUrl="https://sqs.us-east-1.amazonaws.com/582548553336/project3Queue", MessageBody=json.dumps(message))
     print(response)
     
 
