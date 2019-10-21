@@ -234,17 +234,17 @@ The following resources were used to assist with development of this SW.
           var dataAvailable = true; // Boolean flag to check if data received
           console.log(JSON.parse(data.Messages[0].Body)); // Allows user to view/debug data from webpage console.
           latestDbDataObject = JSON.parse(data.Messages[0].Body);
-          // var deleteParams = {
-          //   QueueUrl: queueURL,
-          //   ReceiptHandle: data.Messages[0].ReceiptHandle
-          // };
-          // sqs.deleteMessage(deleteParams, function(err, data) {
-          //   if (err) {
-          //     console.log("Delete Error", err);
-          //   } else {
-          //     console.log("Message Deleted", data);
-          //   }
-          // });
+          var deleteParams = {
+            QueueUrl: queueURL,
+            ReceiptHandle: data.Messages[0].ReceiptHandle
+          };
+          sqs.deleteMessage(deleteParams, function(err, data) {
+            if (err) {
+              console.log("Delete Error", err);
+            } else {
+              console.log("Message Deleted", data);
+            }
+          });
           getMessageCount();
         } else {
           var dataAvailable = false;
