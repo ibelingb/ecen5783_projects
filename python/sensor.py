@@ -12,6 +12,9 @@
 
 import sys
 import Adafruit_DHT
+from datetime import datetime
+import json
+from data_pusher import pushDataToAws
 
 __author__ = "Brian Ibeling"
 #-----------------------------------------------------------------------
@@ -23,6 +26,16 @@ PIN = 4
 def sampleDth22():
     """ Read humidity and temperature data from the DHT22 sensor, returning data in that order """
     humidity, temperature = Adafruit_DHT.read(SENSOR, PIN)
+
+    # If sensor samples properly read, push to AWS IoT
+    if humidity is not None and temperature is not None and humidity < 100:
+      # Populate JSON object with sensor data
+      sensorData = '{  "recordType": "data"' \
+                   ',  "timestamp": "'   + str(datetime.now()) + \
+                   '", "temperature": "' + str(round(temperature,1)) + \
+                   '", "humidity": "'    + str(round(humidity, 1)) + '"}'
+      pushDataToAws(sensorData)
+
     return humidity, temperature
 
 #-----------------------------------------------------------------------

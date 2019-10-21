@@ -12,7 +12,3 @@ mysql --user="piuser" --password="BestPasswordEver" --execute="CREATE DATABASE I
 # Start python applciation and data pushser
 echo "Launching Python GUI..."
 python3 python/project3.py &
-
-# Start NodeJS Server applciation
-echo "Launching NodeJS Server..."
-node node_js/project2_node_server.js &

@@ -5,16 +5,12 @@
 # 10/14/2019
 
 """ project3.py: Main python file for EID Project3 to store and display DHT22 data in a QT GUI,
-                 and run a webserver exposing this data via WebSockets.
+                 and pushing data to the data_pusher.py application with ZeroMQ to send data to AWS.
 
     Main python application to launch the GUI, create/connect to the database sensors table and
     provide all the necessary user interactions via the GUI. Also starts a timer when the program
     is launched to sample DTH22 sensor data every PERIOD_SEC (default 15), storing that into the 
     sensors database. When the GUI application is closed, the timer is cancelled.
-
-    The Qt GUI is run with the PEP 3156 (asyncio standard) Event-Loop thanks to the quamash module.
-    By running Qt in the asyncio event loop instead of the usual Qt loop, a Tornado webserver may
-    run concurrently without the need for threading/multiprocessing.
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
@@ -25,12 +21,11 @@
 import sys
 import time
 import threading
-import asyncio
+import zmq
 from db import *
 from sensor import *
 from gui import *
-from quamash import QEventLoop, QThreadExecutor
-import webserver
+from data_pusher import *
 
 __author__ = "Brian Ibeling & Connor Shapiro"
 
@@ -64,8 +59,11 @@ def periodicDth22Sample():
                                         .format(temperature, humidity))
     g_mainWindowInstance.latestTempReading = temperature
     g_mainWindowInstance.latestHumidReading = humidity
-    g_mainWindowInstance.checkTempLimit()
-    g_mainWindowInstance.checkHumidityLimit()
+    tempAlert = g_mainWindowInstance.checkTempLimit()
+    humidityAlert = g_mainWindowInstance.checkHumidityLimit()
+    # Determine if Alert msg needs to be sent to AWS IoT app limit sensor limits exceeded
+    g_mainWindowInstance.checkSensorAlerts(tempAlert, humidityAlert)
+
   else:
     g_mainWindowInstance.updateStatusLine('Failed to Read Sensor Data', True)
   
@@ -85,19 +83,7 @@ def startGui():
   """ Launch the main application GUI and update the status line to specify app has started. """
   g_mainWindowInstance.show()
   g_mainWindowInstance.updateStatusLine('Application Started')
-  
-  '''
-  Instead of calling g_qtApp.exec_() we now use the QEventLoop from quamash,
-  which allows Tornado and Qt to run concurrently through asyncio.
-  '''
-  loop = QEventLoop(g_qtApp)  # instantiate the loop
-  asyncio.set_event_loop(loop)  # register loop with asyncio
-  webserver.start_webserver()  # webserver.py will start the loop
-
-  with loop:
-    loop.run_forever()  # run_forever() for ease of coding, as we are just
-                        # killing python with the stopApp.sh script when 
-                        # finished with the application.
+  g_qtApp.exec_()
 
 #-----------------------------------------------------------------------
 def main(args):
@@ -112,6 +98,9 @@ def main(args):
 
   # Initialize connection to mySQL DB and create/open table for sensor data
   initializeDatabase()
+
+  # Initialize data pusher
+  initializeDataPusher()
 
   # Start periodic sampling of sensor data with short delay
   # Delay allows GUI to start before first sample is captured
