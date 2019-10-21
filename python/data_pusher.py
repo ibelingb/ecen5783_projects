@@ -27,8 +27,8 @@ def initializeDataPusher():
   myMQTTClient.configureCredentials("/home/pi/certs/Amazon_Root_CA_1.pem", "/home/pi/certs/0b8296d0dd-private.pem.key", "/home/pi/certs/0b8296d0dd-certificate.pem.crt")
   myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
   myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
-  myMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
-  myMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
+  myMQTTClient.configureConnectDisconnectTimeout(10)  # sec
+  myMQTTClient.configureMQTTOperationTimeout(5)  # sec
 
   return 0
 #-----------------------------------------------------------------------

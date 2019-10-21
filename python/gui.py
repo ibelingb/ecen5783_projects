@@ -144,14 +144,13 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
       # sensor sample has triggered an alarm on the GUI
       if tempAlert is True or humidityAlert is True:
         # Populate JSON object and tx to AWS IoT
-        sensorAlert = '{  "recordType":"alert"' \
-                      ',  "timestamp":"'   + str(datetime.now()) + \
-                      '", "tempAlertLevel":"' + str(round(self.latestTempReading,1)) + \
-                      '", "tempTrigLevel":"' + str(round(self.TempLimitSpinBox.value(),0)) + \
-                      '", "humidityAlertLevel":"' + str(round(self.latestHumidReading,1)) + \
-                      '", "humidityTrigLevel":"' + str(round(self.HumidLimitSpinBox.value(),0)) + '"}'
-        sensorAlertJson = json.loads(sensorAlert)
-        pushAlertToAws(sensorAlertJson)
+        sensorAlert = '{  "recordType": "alert"' \
+                      ',  "timestamp": "'   + str(datetime.now()) + \
+                      '", "tempAlertLevel": "' + str(round(self.latestTempReading,1)) + \
+                      '", "tempTrigLevel": "' + str(round(self.TempLimitSpinBox.value(),0)) + \
+                      '", "humidityAlertLevel": "' + str(round(self.latestHumidReading,1)) + \
+                      '", "humidityTrigLevel": "' + str(round(self.HumidLimitSpinBox.value(),0)) + '"}'
+        pushAlertToAws(sensorAlert)
 
 #-----------------------------------------------------------------------
     def buttonPressCurrData(self):

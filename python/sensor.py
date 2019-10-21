@@ -30,12 +30,11 @@ def sampleDth22():
     # If sensor samples properly read, push to AWS IoT
     if humidity is not None and temperature is not None and humidity < 100:
       # Populate JSON object with sensor data
-      sensorData = '{  "recordType":"data"' \
-                   ',  "timestamp":"'   + str(datetime.now()) + \
-                   '", "temperature":"' + str(round(temperature,1)) + \
-                   '", "humidity":"'    + str(round(humidity, 1)) + '"}'
-      sensorDataJson = json.loads(sensorData)
-      pushDataToAws(sensorDataJson)
+      sensorData = '{  "recordType": "data"' \
+                   ',  "timestamp": "'   + str(datetime.now()) + \
+                   '", "temperature": "' + str(round(temperature,1)) + \
+                   '", "humidity": "'    + str(round(humidity, 1)) + '"}'
+      pushDataToAws(sensorData)
 
     return humidity, temperature
 
