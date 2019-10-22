@@ -26,36 +26,32 @@ def send_to_sqs(message):
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName='project3Queue', QueueOwnerAWSAccountId="582548553336")
     
+    # Print the received data message from the Project1 GUI
     print(message)
     
-    # Push received msg onto queue
+    # Push received msg onto queue and print the response for debugging
     response = queue.send_message(QueueUrl="https://sqs.us-east-1.amazonaws.com/582548553336/project3Queue", MessageBody=json.dumps(message))
     print(response)
     
+    return 0
 
 def send_to_sns(message):
 
     # This function receives JSON input with three fields: the ARN of an SNS topic,
     # a string with the subject of the message, and a string with the body of the message.
     # The message is then sent to the SNS topic.
-    #
-    # Example:
-    #   {
-    #       "topic": "arn:aws:sns:REGION:123456789012:MySNSTopic",
-    #       "subject": "This is the subject of the message.",
-    #       "message": "This is the body of the message."
-    #   }
-
-    
-    #topic = "arn:aws:sns:REGION:123456789012:MySNSTopic"
-    snsTopic = "TBD" # TODO
-    snsSubject = "RPI Sensor Alert Message"
     
     sns = boto3.client('sns')
-    sns.publish(
-        TopicArn=snsTopic,
-        Subject=snsSubject,
-        Message=message
+    
+    # Print the received Alert message from the Project1 GUI
+    print(message)
+    
+    # Push received msg onto queue and print the response for debugging
+    response = sns.publish(
+        TopicArn="arn:aws:sns:us-east-1:582548553336:projectThreeAlerts",
+        Subject="Project3 Sensor Alert Message",
+        Message=str(message)
     )
+    print(response)
 
     return 0
