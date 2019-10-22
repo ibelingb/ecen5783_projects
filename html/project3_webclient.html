@@ -73,7 +73,7 @@ The following resources were used to assist with development of this SW.
       <p id="oneErrMessage"></p>
       <input onclick="getAllRecords()" type="submit" value="Get All SQS Records">
       <p id="allErrMessage"></p>
-      <input onclick="getMessageCount()" type="submit" value="Display Number of SQS Records">
+      <input onclick="updateMessageCount()" type="submit" value="Display Number of SQS Records">
       <p id="currentMessageCount">Awaiting transaction from AWS</p>
 
       <!-- Define Speed Test Humidity Table -->
@@ -199,11 +199,9 @@ The following resources were used to assist with development of this SW.
     var queueURL = "https://sqs.us-east-1.amazonaws.com/582548553336/project3Queue";
 
     // ------------------------------------------------------------------------------------
-    // JS variables used to track client-server responsiveness and connection status
-    var i = 0;
-    var latestDbDataObject = false; // object to store latestDb sensor data - used in temp radio button onchange event
-    var currSensorDataObject = false; // object to store current sensor data - used in temp radio button onchange event
-
+    // Global needed to pass data from AWS function context to caller
+    var doneEmptyingQueue = false;
+    // ------------------------------------------------------------------------------------
     // Verify Checkbox selected properly on webpage startup
     document.getElementById("celsius").checked = true;
   
@@ -214,56 +212,98 @@ The following resources were used to assist with development of this SW.
       // handling possible empty queue & connection failure errors
 
       var params = {
-        AttributeNames: [
-          "SentTimestamp"
-        ],
         MaxNumberOfMessages: 1,
-        MessageAttributeNames: [
-          "All"
-        ],
         QueueUrl: queueURL,
         VisibilityTimeout: 10,
         WaitTimeSeconds: 0
       };
 
+      // Request 1 messages from SQS
       sqs.receiveMessage(params, function(err, data) {
         if (err) {
           console.log("Receive Error", err);
           document.getElementById("oneErrMessage").innerHTML = "Failed to retrieve data from AWS SQS queue.";
         } else if (data.Messages.length) {
-          var dataAvailable = true; // Boolean flag to check if data received
-          console.log(JSON.parse(data.Messages[0].Body)); // Allows user to view/debug data from webpage console.
-          latestDbDataObject = JSON.parse(data.Messages[0].Body);
-          var deleteParams = {
-            QueueUrl: queueURL,
-            ReceiptHandle: data.Messages[0].ReceiptHandle
-          };
-          sqs.deleteMessage(deleteParams, function(err, data) {
-            if (err) {
-              console.log("Delete Error", err);
-            } else {
-              console.log("Message Deleted", data);
-            }
-          });
-          getMessageCount();
+          
+          pushRecordToTable(data.Messages)
+
+          // Delete successfully received message from queue
+          // var deleteParams = {
+          //   QueueUrl: queueURL,
+          //   ReceiptHandle: data.Messages[0].ReceiptHandle
+          // };
+          // sqs.deleteMessage(deleteParams, function(err, data) {
+          //   if (err) {
+          //     console.log("Delete Error", err);
+          //   } else {
+          //     console.log("Message Deleted", data);
+          //   }
+          // });
+
+        // Handle case where SQS successfully tells us it is empty
         } else {
-          var dataAvailable = false;
           console.log("SQS Queue empty.");
           document.getElementById("oneErrMessage").innerHTML = "AWS SQS queue is empty.";
-          getMessageCount();
         }
       });
+
+      // Get final count of messages remaining in queue
+      updateMessageCount();
     }
 
     // ------------------------------------------------------------------------------------
     // Wrapper function called when "Get All SQS Records" button is pressed.
     function getAllRecords() {
-      // 
+      doneEmptyingQueue = false;
+      var params = {
+        MaxNumberOfMessages: 10, // 10 is maximum qty of messages that can be requested at once from SQS
+        QueueUrl: queueURL,      // so we will attempt to get 10 at a time until empty
+        VisibilityTimeout: 10,
+        WaitTimeSeconds: 0
+      };
+
+      while (!doneEmptyingQueue) {
+        
+        // Request 10 messages from SQS
+        sqs.receiveMessage(params, function(err, data) {
+          var i;
+          if (err) {
+            console.log("Receive Error", err);
+            document.getElementById("allErrMessage").innerHTML = "Failed to retrieve data from AWS SQS queue.";
+          } else if (data.Messages.length) {
+            
+            pushRecordToTable(data.Messages);
+
+            // Delete successfully received message from queue
+            // for (i = 0; i < data.Messages.length; i++) {
+            //   var deleteParams = {
+            //     QueueUrl: queueURL,
+            //     ReceiptHandle: data.Messages[i].ReceiptHandle
+            //   };
+            //   sqs.deleteMessage(deleteParams, function(err, data) {
+            //     if (err) {
+            //       console.log("Delete Error", err);
+            //     } else {
+            //       console.log("Message Deleted", data);
+            //     }
+            //   });
+            // }
+
+          } else {
+            doneEmptyingQueue = true;
+            console.log("SQS Queue empty.");
+            document.getElementById("allErrMessage").innerHTML = "AWS SQS queue has been emptied.";
+          }
+        });
+      }
+
+      // Get final count of messages remaining in queue
+      updateMessageCount();
     }
+
     // ------------------------------------------------------------------------------------
     // Function to update display of number of messages waiting in AWS SQS queue
-    function getMessageCount() {
-
+    function updateMessageCount() {
       var params = {
         AttributeNames: [
           "ApproximateNumberOfMessages"
@@ -284,18 +324,37 @@ The following resources were used to assist with development of this SW.
     }
 
     // ------------------------------------------------------------------------------------
-    // Method to populate Tornado row of Server Speed Test Summary Table
-    function populateTornadoSpeedTestTable(dataAvailable) {
-      if (dataAvailable) {
-        // Calculate and format timing for Tornado server speed test
-        document.getElementById("SpeedTestStarttime1").innerHTML = tornadoTestStarttime.toISOString();
-        document.getElementById("SpeedTestEndtime1").innerHTML = tornadoTestEndtime.toISOString();
-        document.getElementById("SpeedTestTotal1").innerHTML = (tornadoTestEndtime - tornadoTestStarttime);
-      } else {
-        // Failed to read data from MySQL DB - clear Tornado server speed test table entries
-        document.getElementById("SpeedTestStarttime1").innerHTML = "-";
-        document.getElementById("SpeedTestEndtime1").innerHTML = "-";
-        document.getElementById("SpeedTestTotal1").innerHTML = "-";
+    // Method to add JSON-formatted records (in SQS Messages format) to table
+    function pushRecordToTable(SQSRecord) {
+      var i;
+      var quantity = SQSRecord.length
+      
+      // Shift records which are "old" down
+      if (quantity > 0) {  // Prevent accidentally trying to push 0 records
+        if (quantity < 20) {  // No point shifting records if all 20 will go away
+          for (i = 0; i < quantity; i++) {
+            shiftTableRecordsDown();
+          }
+        }
+
+        // Populate new records in order given by SQS
+        for (i = 0; i < quantity; i++) {
+          document.getElementById("timestamp" + i).innerHTML = JSON.parse(SQSRecord[i].Body).timestamp;
+          document.getElementById("temperature" + i).innerHTML = displayTemp(JSON.parse(SQSRecord[i].Body).temperature);
+          document.getElementById("humidity" + i).innerHTML = JSON.parse(SQSRecord[i].Body).humidity;
+        }
+      }
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Function to shift table rows down by one
+    function shiftTableRecordsDown() {
+      var i;
+
+      for (i = 19; i > 0; i--) {  // Copy record18 to record19, then record17 to record18, etc.
+        document.getElementById("timestamp" + i).innerHTML = document.getElementById("timestamp" + (i - 1)).innerHTML;
+        document.getElementById("temperature" + i).innerHTML = document.getElementById("temperature" + (i - 1)).innerHTML;
+        document.getElementById("humidity" + i).innerHTML = document.getElementById("humidity" + (i - 1)).innerHTML;
       }
     }
 
@@ -309,7 +368,7 @@ The following resources were used to assist with development of this SW.
       // If fahrenheit radio button selected, convert value; otherwise, simply return received value
       // Also, add units and return temp string
       if (document.getElementById("fahrenheit").checked == true) {
-        temp = Math.round(((temp * (9/5)) + 32) * 10) / 10; // Convert Celcius value to fahrenheit, rounded to be xx.x
+        temp = Math.round(((temp * (9/5)) + 32) * 10) / 10; // Convert celsius value to fahrenheit, rounded to be xx.x
         tempStr = temp + " F";
       } else {
         tempStr = temp + " C";
@@ -321,12 +380,39 @@ The following resources were used to assist with development of this SW.
     // ------------------------------------------------------------------------------------
     // Method to update temp data displayed on webpage based on C/F radio button update event
     function updatePageTemp() {
-      // Update latest DB data string (if data displayed on webpage)
-      if (latestDbDataObject != false) {
-        document.getElementById("latestDbData").innerHTML = 
-          "Timestamp: " + latestDbDataObject.timestamp + 
-          " | Temp: " + displayTemp(latestDbDataObject.temperature) + 
-          " | Humidity: " + latestDbDataObject.humidity + " %";
+      var i;
+      var temp;
+      var tempStr = "";
+
+      if (document.getElementById("fahrenheit").checked) {
+        for (i = 0; i < 20; i ++) {
+
+          // Only attempt to convert a populated celsius temperature
+          if ("C" == document.getElementById("temperature" + i).innerHTML.substr(-1)) {
+  
+            // Convert to float (parser ignores whitespace and letters after numbers)
+            temp = parseFloat(document.getElementById("temperature" + i).innerHTML)
+            
+            // Convert from C to F and format as string, then repopulate the value in table
+            tempStr = (Math.round(((temp * (9/5)) + 32) * 10) / 10) + " F";
+            document.getElementById("temperature" + i).innerHTML = tempStr;
+          }
+        }
+
+      } else if (document.getElementById("celsius").checked) {
+        for (i = 0; i < 20; i ++) {
+
+          // Only attempt to convert a populated Fahrenheit temperature
+          if ("F" == document.getElementById("temperature" + i).innerHTML.substr(-1)) {
+
+            // Convert to float (parser ignores whitespace and letters after numbers)
+            temp = parseFloat(document.getElementById("temperature" + i).innerHTML)
+            
+            // Convert from F to C and format as string, then repopulate the value in table
+            tempStr = (Math.round(((temp - 32) * (5/9)) * 10) / 10) + " C";
+            document.getElementById("temperature" + i).innerHTML = tempStr;
+          }
+        }
       }
     }
   </script>
