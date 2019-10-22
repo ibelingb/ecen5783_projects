@@ -42,8 +42,8 @@ def initializeDataPusher():
   myMQTTClient.configureCredentials("/home/pi/certs/Amazon_Root_CA_1.pem", "/home/pi/certs/0b8296d0dd-private.pem.key", "/home/pi/certs/0b8296d0dd-certificate.pem.crt")
   myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
   myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
-  myMQTTClient.configureConnectDisconnectTimeout(120)  # sec
-  myMQTTClient.configureMQTTOperationTimeout(120)  # sec
+  myMQTTClient.configureConnectDisconnectTimeout(300)  # sec
+  myMQTTClient.configureMQTTOperationTimeout(300)  # sec
 
   return 0
 #-----------------------------------------------------------------------
@@ -68,7 +68,6 @@ def pushAlertToAws(alertData):
 def main():
   global dataSocket
 
-  print("Launching AWS data_pusher...")
   initializeDataPusher()
 
   # Loop to receive Data and Alert messages from GUI App and pass along to AWS IoT
