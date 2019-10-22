@@ -8,13 +8,14 @@
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
         - https://github.com/adafruit/Adafruit_Python_DHT
+        - https://zeromq.org/languages/python/
 """
 
 import sys
 import Adafruit_DHT
 from datetime import datetime
 import json
-from data_pusher import pushDataToAws
+import zmq
 
 __author__ = "Brian Ibeling"
 #-----------------------------------------------------------------------
@@ -22,6 +23,9 @@ __author__ = "Brian Ibeling"
 SENSOR = Adafruit_DHT.DHT22
 PIN = 4
 
+context = zmq.Context()
+dataSocket = context.socket(zmq.REQ)
+dataSocket.connect("tcp://localhost:5555")
 #-----------------------------------------------------------------------
 def sampleDth22():
     """ Read humidity and temperature data from the DHT22 sensor, returning data in that order """
@@ -34,7 +38,9 @@ def sampleDth22():
                    ',  "timestamp": "'   + str(datetime.now()) + \
                    '", "temperature": "' + str(round(temperature,1)) + \
                    '", "humidity": "'    + str(round(humidity, 1)) + '"}'
-      pushDataToAws(sensorData)
+      # Pass data to data_pusher.py via ZeroMQ socket
+      dataSocket.send_string(sensorData)
+      dataSocket.recv_string()
 
     return humidity, temperature
 

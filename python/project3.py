@@ -21,11 +21,9 @@
 import sys
 import time
 import threading
-import zmq
 from db import *
 from sensor import *
 from gui import *
-from data_pusher import *
 
 __author__ = "Brian Ibeling & Connor Shapiro"
 
@@ -98,9 +96,6 @@ def main(args):
 
   # Initialize connection to mySQL DB and create/open table for sensor data
   initializeDatabase()
-
-  # Initialize data pusher
-  initializeDataPusher()
 
   # Start periodic sampling of sensor data with short delay
   # Delay allows GUI to start before first sample is captured

@@ -10,5 +10,6 @@ mysql --user="piuser" --password="BestPasswordEver" --execute="CREATE DATABASE I
       CREATE TABLE IF NOT EXISTS sensors (timestamp TIMESTAMP, temp FLOAT(3,1), humidity FLOAT(3,1), PRIMARY KEY (timestamp))"
 
 # Start python applciation and data pushser
-echo "Launching Python GUI..."
+echo "Launching Python GUI and AWS IoT Data Pusher..."
 python3 python/project3.py &
+python3 python/data_pusher.py &

@@ -12,6 +12,7 @@
         - https://matplotlib.org/tutorials/introductory/pyplot.html
         - https://stackoverflow.com/questions/4090383/plotting-unix-timestamps-in-matplotlib
         - https://www.tutorialspoint.com/pyqt/pyqt_qspinbox_widget.htm
+        - https://zeromq.org/languages/python/
 """
 
 import sys
@@ -25,13 +26,16 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
 from datetime import datetime
 import json
+import zmq
 import project1_gui
 from db import *
 from sensor import *
-from data_pusher import pushAlertToAws
 
 __author__ = "Brian Ibeling"
 
+context = zmq.Context()
+alertSocket = context.socket(zmq.REQ)
+alertSocket.connect("tcp://localhost:5556")
 #-----------------------------------------------------------------------
 # Class for project1 GUI
 class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
@@ -150,7 +154,9 @@ class MainWindow(QMainWindow, project1_gui.Ui_MainWindow):
                       '", "tempTrigLevel": "' + str(round(self.TempLimitSpinBox.value(),0)) + \
                       '", "humidityAlertLevel": "' + str(round(self.latestHumidReading,1)) + \
                       '", "humidityTrigLevel": "' + str(round(self.HumidLimitSpinBox.value(),0)) + '"}'
-        pushAlertToAws(sensorAlert)
+        # Pass alert to data_pusher.py via ZeroMQ socket
+        alertSocket.send_string(sensorAlert)
+        alertSocket.recv_string()
 
 #-----------------------------------------------------------------------
     def buttonPressCurrData(self):
