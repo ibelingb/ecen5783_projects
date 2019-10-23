@@ -195,7 +195,14 @@ The following resources were used to assist with development of this SW.
         IdentityPoolId: unauthPoolID, // unauthPoolID is set in credentials.js
                                       // which is not distrubuted via git
     });
-    var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+
+    var sqs = new AWS.SQS({
+      apiVersion: '2012-11-05',
+      httpOptions: {
+        xhrAsync: false
+      }
+    });
+
     var queueURL = "https://sqs.us-east-1.amazonaws.com/582548553336/project3Queue";
 
     // ------------------------------------------------------------------------------------
@@ -208,8 +215,9 @@ The following resources were used to assist with development of this SW.
     // ------------------------------------------------------------------------------------
     // Wrapper function called when "Get One SQS Record" button is pressed.
     function getOneRecord() {
-      // Attempt to get one message from AWS SQS queue,
-      // handling possible empty queue & connection failure errors
+    /* Attempt to get one message from AWS SQS queue,
+     * handling possible empty queue & connection failure errors
+     */
 
       var params = {
         MaxNumberOfMessages: 1,
@@ -228,17 +236,17 @@ The following resources were used to assist with development of this SW.
           pushRecordToTable(data.Messages)
 
           // Delete successfully received message from queue
-          // var deleteParams = {
-          //   QueueUrl: queueURL,
-          //   ReceiptHandle: data.Messages[0].ReceiptHandle
-          // };
-          // sqs.deleteMessage(deleteParams, function(err, data) {
-          //   if (err) {
-          //     console.log("Delete Error", err);
-          //   } else {
-          //     console.log("Message Deleted", data);
-          //   }
-          // });
+          var deleteParams = {
+            QueueUrl: queueURL,
+            ReceiptHandle: data.Messages[0].ReceiptHandle
+          };
+          sqs.deleteMessage(deleteParams, function(err, data) {
+            if (err) {
+              console.log("Delete Error", err);
+            } else {
+              console.log("Message Deleted", data);
+            }
+          });
 
         // Handle case where SQS successfully tells us it is empty
         } else {
@@ -275,19 +283,19 @@ The following resources were used to assist with development of this SW.
             pushRecordToTable(data.Messages);
 
             // Delete successfully received message from queue
-            // for (i = 0; i < data.Messages.length; i++) {
-            //   var deleteParams = {
-            //     QueueUrl: queueURL,
-            //     ReceiptHandle: data.Messages[i].ReceiptHandle
-            //   };
-            //   sqs.deleteMessage(deleteParams, function(err, data) {
-            //     if (err) {
-            //       console.log("Delete Error", err);
-            //     } else {
-            //       console.log("Message Deleted", data);
-            //     }
-            //   });
-            // }
+            for (i = 0; i < data.Messages.length; i++) {
+              var deleteParams = {
+                QueueUrl: queueURL,
+                ReceiptHandle: data.Messages[i].ReceiptHandle
+              };
+              sqs.deleteMessage(deleteParams, function(err, data) {
+                if (err) {
+                  console.log("Delete Error", err);
+                } else {
+                  console.log("Message Deleted", data);
+                }
+              });
+            }
 
           } else {
             doneEmptyingQueue = true;
@@ -320,6 +328,12 @@ The following resources were used to assist with development of this SW.
         document.getElementById("currentMessageCount").innerHTML =
           "There are approximately " + data.Attributes.ApproximateNumberOfMessages
           + " messages in the AWS SQS queue."
+
+          // Clear messages about queue being empty/emptied once more messages have entered the queue
+          if (data.Attributes.ApproximateNumberOfMessages > 0) {
+            document.getElementById("allErrMessage").innerHTML = "";
+            document.getElementById("oneErrMessage").innerHTML = "";
+          }
       });
     }
 
@@ -383,6 +397,9 @@ The following resources were used to assist with development of this SW.
       var i;
       var temp;
       var tempStr = "";
+
+      // Call this just to make the message count responsive to every user input
+      updateMessageCount();
 
       if (document.getElementById("fahrenheit").checked) {
         for (i = 0; i < 20; i ++) {
