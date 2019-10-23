@@ -24,13 +24,17 @@ Before running the server-side and AWS applications, the following packages must
   > sudo pip install AWSIoTPythonSDK  
   > sudo pip install pyzmq
 
+## HTML Web Client Authentication
+Before running the webclient, user must get the file 'credentials.js' from developers and place it in the 'html/' directory.
+This file is not distributed through git for security.
+
 ## Starting and Stopping the Application
 To start the server-side applications and connect to AWS, simply type the following from the cloned project repository directory.
   > ./startApp.sh
 
 To launch the web-based client, simply open the following file from a browser on a RPi/PC remotely connected to server RPi.
   > project3_webclient.html
-NOTE: Server-side RPi server applications required to be started before launching web-based client.  
+NOTE: Server-side RPi server applications required to be started before launching web-based client.
 
 To stop the server-side applications, simply type the following from the cloned project repository directory.
   > ./stopApp.sh
@@ -44,8 +48,11 @@ Brian Ibeling
 - AWS Lambda connection with AWS IoT to receive Alert.  
 - Cost analysis between AWS and Google Cloud.  
 
-Connor Shaprio  
-- 
+Connor Shapiro
+- HTML/JavaScript browser page UI modifications from Project2->Project3.
+- JavaScript support for AWS SDK use & connection to AWS SQS.
+- JavaScript scripting for Project 3 SQS transactions (incl. extra credit).
+- AWS SNS Setup.
 
 # Project Additions
 - Extra credit completed to display the number of records current in the AWS SQS Queue  
@@ -55,3 +62,6 @@ Connor Shaprio
 - Experienced issues initially passing data from the data_pusher to AWS IoT with it being interpretted as JSON properly. Was performing an extra JSON object conversion that wasn't needed when populating the Data/Alert record.
 - The Python App would crash with a AWSIoTExceptions.connectTimeoutException error at irregular runtime intervals. Found issue with myMQTTClient.connect() call being made unnecessarily with each record push. Once moved to initializeDataPusher() method, issue was resolved.
 - The Python App would was less responsive when adding the data_pusher within the same python exeuction process. Once moved out to run as a separate process and passed records via ZeroMQ this was resolved.
+- There was a bit of guess-and-check fumbling when trying to get AWS transactions working between multiple AWS accounts, though thankfully some specific examples online eventually aided in resolving this.
+- Early attempts at using Cognito Identity Pools proved unsuccessful until two things were discovered: 'us-east-1' is the only AWS server which supports AWS Educate accounts and AWS Educate accounts cannot create Users within AWS IAM. Due to the latter limitation, an Unauthenticated Identity Pool was used for the Web client, with the pool ID stored in a file not distributed via Git.
+- Trying to script AWS SQS requests in a way where the script relied on the results of an SQS request immediately after making the request would present issues where a Message object was undefined when operated on. Furthermore, attempting to do so in a while() loop would result in repeated requests being made until the computer ran out of memory and the application crashed. Eventually, a flag was discovered which would inform the AWS SDK that all HTTP requests should be made synchonously, as opposed to the asynchronous default. An alternate solution which was briefly researched but seemed more development-heavy (at least for these JavaScript newbies) than the aforementioned flag was to make use of JavaScript Promises.
