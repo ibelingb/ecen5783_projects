@@ -369,7 +369,7 @@ The following resources were used to assist with development of this SW.
       
       /* Shift records which are "old" down */
       if (quantity > 0) {  // Prevent accidentally trying to push 0 records
-        for (i = 0; i < quantity; i++) {
+        for (i = 0; i < (20 - quantity); i++) {
           document.getElementById("timestamp" + (19 - i)).innerHTML = document.getElementById("timestamp" + (19 - i - quantity)).innerHTML;
           document.getElementById("temperature" + (19 - i)).innerHTML = document.getElementById("temperature" + (19 - i - quantity)).innerHTML;
           document.getElementById("humidity" + (19 - i)).innerHTML = document.getElementById("humidity" + (19 - i - quantity)).innerHTML;
