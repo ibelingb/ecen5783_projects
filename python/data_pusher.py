@@ -44,14 +44,14 @@ def initializeDataPusher():
   myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
   myMQTTClient.configureConnectDisconnectTimeout(300)  # sec
   myMQTTClient.configureMQTTOperationTimeout(300)  # sec
+  myMQTTClient.connect()
 
   return 0
 #-----------------------------------------------------------------------
 def pushDataToAws(sensorData):
   global myMQTTClient
 
-  # Connect and publish data packet
-  myMQTTClient.connect()
+  # Publish data packet to AWS IoT instance
   myMQTTClient.publish("sensor/data", str(sensorData), 0)
 
   return 0
@@ -59,14 +59,14 @@ def pushDataToAws(sensorData):
 def pushAlertToAws(alertData):
   global myMQTTClient
 
-  # Connect and publish alert packet
-  myMQTTClient.connect()
+  # Publish alert packet to AWS IoT instance
   myMQTTClient.publish("sensor/alert", str(alertData), 0)
 
   return 0
 #-----------------------------------------------------------------------
 def main():
   global dataSocket
+  global alertSocket
 
   initializeDataPusher()
 
