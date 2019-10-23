@@ -50,3 +50,8 @@ Connor Shaprio
 # Project Additions
 - Extra credit completed to display the number of records current in the AWS SQS Queue  
 - Added use of ZeroMQ to pass data between the Project1 Python GUI and Python Data_Pusher. This allowed the GUI responsiveness to not be interferred with by the AWS connection or data handling.
+
+# Project Issues
+- Experienced issues initially passing data from the data_pusher to AWS IoT with it being interpretted as JSON properly. Was performing an extra JSON object conversion that wasn't needed when populating the Data/Alert record.
+- The Python App would crash with a AWSIoTExceptions.connectTimeoutException error at irregular runtime intervals. Found issue with myMQTTClient.connect() call being made unnecessarily with each record push. Once moved to initializeDataPusher() method, issue was resolved.
+- The Python App would was less responsive when adding the data_pusher within the same python exeuction process. Once moved out to run as a separate process and passed records via ZeroMQ this was resolved.

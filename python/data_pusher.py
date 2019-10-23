@@ -91,8 +91,6 @@ def main():
       # No data received on socket
       message=""
 
-    time.sleep(1)
-
   return 0
 
 #-----------------------------------------------------------------------
