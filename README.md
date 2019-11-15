@@ -1,7 +1,7 @@
-# ECEN 5783 - Embedded Interface Design Project 3
-Title: ECEN 5783 Embedded Interface Design Project 3
+# ECEN 5783 - Embedded Interface Design Superproject
+Title: ECEN 5783 Embedded Interface Design Superproject
 Author: Brian Ibeling and Connor Shapiro  
-Date: 10/22/2019  
+Date: 11/14/2019  
 
 # Install and Execution Instructions
 ## Database Install and User Creation
@@ -41,27 +41,9 @@ To stop the server-side applications, simply type the following from the cloned 
 
 # Project Work
 Brian Ibeling
-- Project1 Python Application modifications and addition of ZMQ.  
-- JSON packet definition of Alert and Data records, and passing of data from Python app to AWS.
-- Data Pusher Handler python application.  
-- AWS IoT and Rules definitions.  
-- AWS Lambda connection with AWS IoT to receive Alert.  
-- Cost analysis between AWS and Google Cloud.  
 
 Connor Shapiro
-- HTML/JavaScript browser page UI modifications from Project2->Project3.
-- JavaScript support for AWS SDK use & connection to AWS SQS.
-- JavaScript scripting for Project 3 SQS transactions (incl. extra credit).
-- AWS SNS Setup.
 
 # Project Additions
-- Extra credit completed to display the number of records current in the AWS SQS Queue  
-- Added use of ZeroMQ to pass data between the Project1 Python GUI and Python Data_Pusher. This allowed the GUI responsiveness to not be interferred with by the AWS connection or data handling.
 
 # Project Issues
-- Experienced issues initially passing data from the data_pusher to AWS IoT with it being interpretted as JSON properly. Was performing an extra JSON object conversion that wasn't needed when populating the Data/Alert record.
-- The Python App would crash with a AWSIoTExceptions.connectTimeoutException error at irregular runtime intervals. Found issue with myMQTTClient.connect() call being made unnecessarily with each record push. Once moved to initializeDataPusher() method, issue was resolved.
-- The Python App would was less responsive when adding the data_pusher within the same python exeuction process. Once moved out to run as a separate process and passed records via ZeroMQ this was resolved.
-- There was a bit of guess-and-check fumbling when trying to get AWS transactions working between multiple AWS accounts, though thankfully some specific examples online eventually aided in resolving this.
-- Early attempts at using Cognito Identity Pools proved unsuccessful until two things were discovered: 'us-east-1' is the only AWS server which supports AWS Educate accounts and AWS Educate accounts cannot create Users within AWS IAM. Due to the latter limitation, an Unauthenticated Identity Pool was used for the Web client, with the pool ID stored in a file not distributed via Git.
-- Trying to script AWS SQS requests in a way where the script relied on the results of an SQS request immediately after making the request would present issues where a Message object was undefined when operated on. Furthermore, attempting to do so in a while() loop would result in repeated requests being made until the computer ran out of memory and the application crashed. Eventually, a flag was discovered which would inform the AWS SDK that all HTTP requests should be made synchonously, as opposed to the asynchronous default. An alternate solution which was briefly researched but seemed more development-heavy (at least for these JavaScript newbies) than the aforementioned flag was to make use of JavaScript Promises.
