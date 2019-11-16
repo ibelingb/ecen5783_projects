@@ -17,9 +17,9 @@
 import sys
 import time
 
-from camera import *
-from microphone import *
-from speaker import *
+#from camera import *
+#from microphone import *
+#from speaker import *
 
 __author__ = "Brian Ibeling"
 
@@ -34,8 +34,8 @@ def main(args):
   """ Main for SuperProject Client_Pi - 
       TOOD
   """
+
   return 0
 
 if __name__ == '__main__':
-  import sys
   sys.exit(main(sys.argv))
