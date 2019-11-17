@@ -2,7 +2,7 @@
 *.png
 package-lock.json
 .vscode/
-html/credentials.js
+past_projects/html/credentials.js
 *.wav
 *.jpg
 *.swp
