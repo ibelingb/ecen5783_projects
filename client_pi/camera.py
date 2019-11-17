@@ -11,6 +11,7 @@
     The following resources were used to assist with development of this SW.
       - https://projects.raspberrypi.org/en/projects/getting-started-with-picamera
       - https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/8
+      - https://stackoverflow.com/questions/3316882/how-do-i-get-a-string-format-of-the-current-date-time-in-python
 """
 __author__ = "Brian Ibeling"
 
@@ -47,7 +48,7 @@ def CaptureImage():
   print("Capturing image...")
   piCamera.start_preview()
   sleep(3) # Note: important sleep is at least 2 seconds to allow camera to sense light levels
-  imageName = ("img_" + str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".jpg")
+  imageName = ("img_" + str(datetime.now().strftime("%m%d%Y-%H%M%S")) + ".jpg")
   piCamera.capture(IMAGE_PATH + imageName)
   piCamera.stop_preview()
   print("Image capture complete")

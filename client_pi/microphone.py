@@ -15,6 +15,7 @@ The following resources were used to assist with development of this SW.
 import sys
 import pyaudio
 import wave
+from datetime import datetime
 
 __author__ = "Brian Ibeling"
 
@@ -24,8 +25,7 @@ SAMPLE_RATE = 44100 # 48kHz sampling rate
 BUFFER_FRAMES = 4096 # 2^12 samples for buffer
 RECORD_SEC = 3 # seconds to record
 DEVICE_INDEX = 2 # device index found by p.get_device_info_by_index(ii)
-WAV_OUTPUT_FILENAME = 'recordedAudio.wav' # name of .wav file
-NUM_RECORDINGS = 0 # Variable to track number of recordings before ending program
+MAX_RECORDINGS = 1 # Variable to track max number of recordings before ending program
 
 #-----------------------------------------------------------------------
 # Constants
@@ -35,6 +35,7 @@ NUM_RECORDINGS = 0 # Variable to track number of recordings before ending progra
 
 def RecordAudio():
   audio = pyaudio.PyAudio() # create pyaudio instantiation
+  outputAudioFile = "recordedAudio_" + str(datetime.now().strftime("%m%d%Y-%H%M%S")) + ".wav"
     
   # create pyaudio stream
   stream = audio.open(format = FORM_1,rate = SAMPLE_RATE,channels = CHANNELS, \
@@ -57,7 +58,7 @@ def RecordAudio():
   audio.terminate()
 
   # save the audio frames as .wav file
-  wavefile = wave.open(WAV_OUTPUT_FILENAME,'wb')
+  wavefile = wave.open(outputAudioFile,'wb')
   wavefile.setnchannels(CHANNELS)
   wavefile.setsampwidth(audio.get_sample_size(FORM_1))
   wavefile.setframerate(SAMPLE_RATE)
@@ -71,16 +72,16 @@ def RecordAudio():
 TOOD
 """
 def main(args):
-  global NUM_RECORDINGS
+  numRecordings = 0
 
-  while NUM_RECORDINGS < 5:
+  while numRecordings < MAX_RECORDINGS:
     # Capture audio via microphone, write to .wav file on RPi
     RecordAudio()
 
     # Send signal to client_pi process to send audio to AWS 
     # TODO
 
-    NUM_RECORDINGS += 1
+    numRecordings += 1
 
   return 0
 

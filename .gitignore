@@ -3,3 +3,6 @@
 package-lock.json
 .vscode/
 html/credentials.js
+*.wav
+*.jpg
+*.swp
