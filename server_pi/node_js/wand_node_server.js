@@ -38,11 +38,11 @@ mysqlCon.connect(function(err) {
 });
 
 //-----------------------------------------------------------------------------------
-// Query and quantity of image filenames from Magic Wand SQL image filename DB table
+// Query image filenames from Magic Wand SQL image filename DB table based on numImages
 // @quantity - Number of image filename table entries to retrieve and return
 // @return - JSON object with array of SQL sensors table data entries and num table entries returned.
-function getImages(quantity, callback) {
-  var query = ("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT " + quantity)
+function getImages(numImages, callback) {
+  var query = ("SELECT * FROM images ORDER BY uuid DESC LIMIT " + quantity)
   
   mysqlCon.query(query, function (err, result, fields) {
     // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
@@ -68,8 +68,8 @@ imageServer.listen(50012)
 //-----------------------------------------------------------------------------------
 // Variables for NodeJS WebSocket-Client interaction
 // Create empty dataPacket object for client response data
-var dataPacket = {cmdResponse: "", numSensorSamples: "0"};
-var key = "sensorSamples";
+var dataPacket = {cmdResponse: "", numImages: "0"};
+var key = "images";
 dataPacket[key] = [];
 var i = 0;
 
@@ -92,33 +92,33 @@ wsServer.on('request', function(request) {
     // Read request type and return corresponding data in JSON formatted string
     // Each JSON formatting string returned to client contains:
     //  - The type of request being handled (cmdResponse)
-    //  - the number of SQL data entries retrieved and being returned (numSensorSamples)
-    //  - An array of the SQL entries requested (sensorSamples)
+    //  - the number of SQL data entries retrieved and being returned (numImages)
+    //  - An array of the SQL entries requested (images)
     connection.on('message', function(message) {
 
       // Clear dataPacket from last request
-      dataPacket.numSensorSamples = '0';
+      dataPacket.numImages = '0';
       dataPacket[key] = [];
 
       // Client request for latest data entry in SQL DB.
-      if(message.utf8Data == "getLatestDbData") 
+      if(message.utf8Data == "getLatestImage") 
       {
-        dataPacket.cmdResponse = "getLatestDbData";
-        getSensorData(1, function(sensorSamples, numSamplesReturned){
-          dataPacket.numSensorSamples = numSamplesReturned;
-          if(numSamplesReturned > 0)
-            dataPacket[key].push(sensorSamples[0]);
+        dataPacket.cmdResponse = "getLatestImage";
+        getImages(1, function(images, numImagesReturned){
+          dataPacket.numImages = numImagesReturned;
+          if(numImagesReturned > 0)
+            dataPacket[key].push(images[0]);
           connection.send(JSON.stringify(dataPacket));
         });
       }
       // Client request for last 10 data entries in SQL DB.
-      else if (message.utf8Data == "getLast10Samples") 
+      else if (message.utf8Data == "getLast10Images") 
       {
-        dataPacket.cmdResponse = "getLast10Samples";
-        getSensorData(10, function(sensorSamples, numSamplesReturned){
-          dataPacket.numSensorSamples = numSamplesReturned;
-          for(i=0; i<numSamplesReturned; i++) {
-            dataPacket[key].push(sensorSamples[i]);
+        dataPacket.cmdResponse = "getLast10Images";
+        getImages(10, function(images, numImagesReturned){
+          dataPacket.numImages = numImagesReturned;
+          for(i = 0; i < numImagesReturned; i++) {
+            dataPacket[key].push(images[i]);
           }
           connection.send(JSON.stringify(dataPacket));
         });

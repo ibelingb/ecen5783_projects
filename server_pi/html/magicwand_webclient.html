@@ -144,7 +144,62 @@ The following resources were used to assist with development of this SW.
   <script type="text/javascript">
     // Load Google charts API for pi charts
     google.charts.load('current', {'packages':['corechart']});
+
+    // WebSocket stuff
+    var serverConnError = false
+    const ws = new WebSocket('ws://raspberrypi:50012/');
+
+    // ------------------------------------------------------------------------------------
+    // Method for WebSocket Connection initialization event 
+    ws.onopen = function() {
+      console.log('WebSocket Client Connected');
+    };
     
+    // ------------------------------------------------------------------------------------
+    // Method for WebSocket Connection error event - Update connection status
+    ws.onerror = function(e) {
+      alert("Failed to connect to Server Pi");
+      serverConnError = true;
+    };
+
+    // ------------------------------------------------------------------------------------
+    // Method for WebSocket Message received event.
+    // Handle JSON formatted string passed from NodeJS WebSocket server to HTML client.
+    // Based on serverData.cmdResponse field, update corresponding HTML client webpage fields/tables.
+    ws.onmessage = function(e) {
+      var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
+      console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
+      serverData = JSON.parse(e.data);
+      // Check if data received from Server Pi SQL DB - used for error handling in message types below.
+      if(serverData.numImages == 0) {
+        alert("Failed to retrieve data from Server Pi");
+          dataAvailable = false;
+      }
+      // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
+      if (nodeServerData.cmdResponse == "getLatestImage") {
+        if (dataAvailable) {
+          document.getElementById("recentImage").src = serverData.images[0].url;
+        }
+      }
+      // else if(nodeServerData.cmdResponse == "getLast10Images")
+      // { // Handle getLast10Samples event - populate corresponding tables with returned data.
+      //   // Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
+      //   for(i=0; i<nodeServerData.numImages; i++) {
+      //     document.getElementById("timestamp" + i).innerHTML = nodeServerData.sensorSamples[i].timestamp;
+      //     document.getElementById("nodeHumidity" + i).innerHTML = nodeServerData.sensorSamples[i].humidity;
+      //   }
+      //   // If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
+      //   for(i=nodeServerData.numImages; i<10; i++) {
+      //     document.getElementById("timestamp" + i).innerHTML = "-";
+      //     document.getElementById("nodeHumidity" + i).innerHTML = "-";
+      //   }
+      //   // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
+      //   nodeTestEndtime = new Date();
+      //   populateNodeSpeedTestTable(dataAvailable);
+      // }
+    };
+
+
     // ------------------------------------------------------------------------
     // Function to populate the Most Recent Image image and the System
     // Performance pie charts when the webpage loads
@@ -157,7 +212,12 @@ The following resources were used to assist with development of this SW.
 
       // Gather most recent image w/ label & correctness and populate image div
       // TODO: Gather from server pi
-      document.getElementById("recentImage").src = "https://homepages.cae.wisc.edu/~ece533/images/fruits.png";
+      if (!serverConnError) {
+        ws.send('getLatestImage');
+      } else {
+        alert("Failed to connect to NodeJS Server")
+      }
+
       document.getElementById("imageLabel").innerHTML = "Auto-Generated Image Label";
       // TODO: Correctness indicator
 
