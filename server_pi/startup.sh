@@ -1,1 +1,0 @@
-node node_js/wand_node_server.js &
