@@ -181,20 +181,20 @@ The following resources were used to assist with development of this SW.
           dataAvailable = false;
       }
       // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
-      if (nodeServerData.cmdResponse == "getLatestImage") {
+      if (serverData.cmdResponse == "getLatestImage") {
         if (dataAvailable) {
           document.getElementById("recentImage").src = serverData.images[0].url;
         }
       }
-      // else if(nodeServerData.cmdResponse == "getLast10Images")
+      // else if(serverData.cmdResponse == "getLast10Images")
       // { // Handle getLast10Samples event - populate corresponding tables with returned data.
       //   // Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
-      //   for(i=0; i<nodeServerData.numImages; i++) {
-      //     document.getElementById("timestamp" + i).innerHTML = nodeServerData.sensorSamples[i].timestamp;
-      //     document.getElementById("nodeHumidity" + i).innerHTML = nodeServerData.sensorSamples[i].humidity;
+      //   for(i=0; i<serverData.numImages; i++) {
+      //     document.getElementById("timestamp" + i).innerHTML = serverData.sensorSamples[i].timestamp;
+      //     document.getElementById("nodeHumidity" + i).innerHTML = serverData.sensorSamples[i].humidity;
       //   }
       //   // If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
-      //   for(i=nodeServerData.numImages; i<10; i++) {
+      //   for(i=serverData.numImages; i<10; i++) {
       //     document.getElementById("timestamp" + i).innerHTML = "-";
       //     document.getElementById("nodeHumidity" + i).innerHTML = "-";
       //   }

@@ -1,0 +1,12 @@
+[Unit]
+Description=Service to startup the magic wand node_js server
+After=multi-user.target
+
+[Service]
+Type=oneshot
+User=pi
+WorkingDirectory=/home/pi/repos/ecen5783_project/server_pi
+ExecStart=/home/pi/repos/ecen5783_project/server_pi/startup.sh
+
+[Install]
+WantedBy=default.target

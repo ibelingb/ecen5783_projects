@@ -42,7 +42,7 @@ mysqlCon.connect(function(err) {
 // @quantity - Number of image filename table entries to retrieve and return
 // @return - JSON object with array of SQL sensors table data entries and num table entries returned.
 function getImages(numImages, callback) {
-  var query = ("SELECT * FROM images ORDER BY uuid DESC LIMIT " + quantity)
+  var query = ("SELECT * FROM images ORDER BY uuid DESC LIMIT " + numImages)
   
   mysqlCon.query(query, function (err, result, fields) {
     // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
@@ -104,9 +104,9 @@ wsServer.on('request', function(request) {
       if(message.utf8Data == "getLatestImage") 
       {
         dataPacket.cmdResponse = "getLatestImage";
-        getImages(1, function(images, numImagesReturned){
+        getImages(1, function(images, numImagesReturned) {
           dataPacket.numImages = numImagesReturned;
-          if(numImagesReturned > 0)
+          if (numImagesReturned > 0)
             dataPacket[key].push(images[0]);
           connection.send(JSON.stringify(dataPacket));
         });
