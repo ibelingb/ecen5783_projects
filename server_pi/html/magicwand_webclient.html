@@ -147,12 +147,17 @@ The following resources were used to assist with development of this SW.
 
     // WebSocket stuff
     var serverConnError = false
-    const ws = new WebSocket('ws://raspberrypi:50012/');
+    const ws = new WebSocket('ws://raspberrypi:9898/');
 
     // ------------------------------------------------------------------------------------
     // Method for WebSocket Connection initialization event 
     ws.onopen = function() {
       console.log('WebSocket Client Connected');
+      if (!serverConnError) {
+        ws.send('getLatestImage');
+      } else {
+        alert("Failed to connect to NodeJS Server")
+      }
     };
     
     // ------------------------------------------------------------------------------------
@@ -212,11 +217,6 @@ The following resources were used to assist with development of this SW.
 
       // Gather most recent image w/ label & correctness and populate image div
       // TODO: Gather from server pi
-      if (!serverConnError) {
-        ws.send('getLatestImage');
-      } else {
-        alert("Failed to connect to NodeJS Server")
-      }
 
       document.getElementById("imageLabel").innerHTML = "Auto-Generated Image Label";
       // TODO: Correctness indicator
