@@ -16,6 +16,7 @@
       - https://docs.aws.amazon.com/rekognition/latest/dg/labels-detect-labels-image.html
       - https://docs.aws.amazon.com/polly/latest/dg/get-started-what-next.html
       - https://medium.com/@julsimon/amazon-polly-hello-world-literally-812de2c620f4
+      - https://docs.aws.amazon.com/code-samples/latest/catalog/python-sqs-send_message.py.html
 
     + AWS Credentials Setup +
     Credentials setup to pass data files to AWS S3 found by going to:
@@ -28,6 +29,7 @@ __author__ = "Brian Ibeling"
 import sys
 import time
 import boto3
+import json
 
 #from camera import *
 #from microphone import *
@@ -39,15 +41,18 @@ import boto3
 # Constants
 S3_AUDIO_BUCKET = "magicwandaudiobucket" # S3 Bucket name
 S3_IMAGE_BUCKET = "magicwandimagebucket" # S3 Bucket name
+S3_IMAGE_BUCKET_URL = "https://magicwandimagebucket.s3.amazonaws.com/"
+SQS_URL = "https://sqs.us-east-1.amazonaws.com/582548553336/magicWandQueue"
 
-audioFile = "recordedAudio_11202019-190712.wav"
-imageFile = "img_11202019-184011.jpg"
+audioFile = "recordedAudio_11212019-181859.wav"
+imageFile = "img_11212019-181819.jpg"
 
 #-----------------------------------------------------------------------
 # Object Instances and Variables
 s3 = boto3.client('s3')
 rekognition = boto3.client('rekognition')
 polly = boto3.client('polly')
+sqs = boto3.client('sqs')
 
 #-----------------------------------------------------------------------
 def pushAudioToAws(audioFilename):
@@ -67,6 +72,41 @@ def pushImageToAws(imageFilename):
   s3.upload_file(imageFilename, S3_IMAGE_BUCKET, imageFilename)
 
   return 0
+
+#-----------------------------------------------------------------------
+def parseLabelResponse(rekogResponse):
+  label = None
+
+  # Replace single quote with double quotes
+  rekogResponse = rekogResponse.replace("\'", "\"")
+
+  jsonData = json.loads(rekogResponse)
+
+  # Parse receieved JSON for highest % guess and return label
+  data = jsonData["Labels"][0]["Name"]
+
+  return label
+#-----------------------------------------------------------------------
+def sqsWriteImageLink(imageFilename):
+  # Populate JSON object with image link
+  jsonData = '{  "recordType": "imageLink"' \
+             ',  "link": "'+ str(S3_IMAGE_BUCKET_URL + imageFilename) + '"}'
+
+  # Write to SQS
+  msg = sqs.send_message(QueueUrl=SQS_URL,
+                         MessageBody=jsonData)
+  return 0
+#-----------------------------------------------------------------------
+def sqsWriteLabel(imageFilename, label):
+  # Populate JSON object with image label info
+  jsonData = '{  "recordType": "imageLabel"' \
+             ',  "image": "'   + imageFilename + \
+             ',  "label": "'+ label + '"}'
+
+  # Write to SQS
+  msg = sqs.send_message(QueueUrl=SQS_URL,
+                         MessageBody=jsonData)
+  return 0
 #-----------------------------------------------------------------------
 def main(args):
   """ Main for SuperProject Client_Pi - 
@@ -77,17 +117,24 @@ def main(args):
   pushAudioToAws(audioFile)
   pushImageToAws(imageFile)
 
+  # Send image link to SQS
+  sqsWriteImageLink(imageFile)
+
   # Trigger AWS Transcribe to process audio file
   # TODO
 
   # Trigger AWS Rekognition to process image file and print resulting analysis
   response = rekognition.detect_labels(Image={'S3Object':{'Bucket':S3_IMAGE_BUCKET,'Name':imageFile}},MaxLabels=10)
   print(response)
+  # Send label info to SQS
+  label = parseLabelResponse(str(response))
+  sqsWriteLabel(imageFile, str(label))
 
   # Determine which name has highest confident score from AWS Rekognition, pass to AWS Polly
   # Request speech synthesis and output mp3 into file
   response = polly.synthesize_speech(Text=str(response), OutputFormat="mp3", VoiceId="Joanna")
   print(response)
+
   soundfile = open('/tmp/sound.mp3', 'wb')
   soundBytes = response['AudioStream'].read()
   soundfile.write(soundBytes)
