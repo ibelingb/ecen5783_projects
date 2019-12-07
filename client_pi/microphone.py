@@ -15,6 +15,7 @@ The following resources were used to assist with development of this SW.
 import sys
 import pyaudio
 import wave
+import zmq
 from datetime import datetime
 
 __author__ = "Brian Ibeling"
@@ -25,7 +26,12 @@ SAMPLE_RATE = 44100 # 48kHz sampling rate
 BUFFER_FRAMES = 4096 # 2^12 samples for buffer
 RECORD_SEC = 3 # seconds to record
 DEVICE_INDEX = 2 # device index found by p.get_device_info_by_index(ii)
-MAX_RECORDINGS = 1 # Variable to track max number of recordings before ending program
+MAX_RECORDINGS = 3 # Variable to track max number of recordings before ending program
+
+# Define ZMQ sockets for receiving data and alert messages from GUI App
+context = zmq.Context()
+recordSocket = context.socket(zmq.PUB)
+recordSocket.bind("tcp://127.0.0.1:6001")
 
 #-----------------------------------------------------------------------
 # Constants
@@ -58,28 +64,29 @@ def RecordAudio():
   audio.terminate()
 
   # save the audio frames as .wav file
-  wavefile = wave.open(outputAudioFile,'wb')
+  wavefile = wave.open("audio_files/" + outputAudioFile,'wb')
   wavefile.setnchannels(CHANNELS)
   wavefile.setsampwidth(audio.get_sample_size(FORM_1))
   wavefile.setframerate(SAMPLE_RATE)
   wavefile.writeframes(b''.join(frames))
   wavefile.close()
 
-  return 0
+  return outputAudioFile
 
 #-----------------------------------------------------------------------
 """ Main for Client_Pi Microphone process - 
 TOOD
 """
 def main(args):
+  global recordSocket
   numRecordings = 0
 
   while numRecordings < MAX_RECORDINGS:
     # Capture audio via microphone, write to .wav file on RPi
-    RecordAudio()
+    audioFilename = RecordAudio()
 
-    # Send signal to client_pi process to send audio to AWS 
-    # TODO
+    # Write to msgQueue to client_pi to process recorded audio via AWS
+    recordSocket.send_string(audioFilename)
 
     numRecordings += 1
 

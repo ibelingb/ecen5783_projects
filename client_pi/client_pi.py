@@ -19,6 +19,7 @@
       - https://docs.aws.amazon.com/code-samples/latest/catalog/python-sqs-send_message.py.html
       - https://boto4.amazonaws.com/v1/documentation/api/latest/reference/services/transcribe.html
       - https://docs.aws.amazon.com/transcribe/latest/dg/getting-started-python.html
+      - https://www.digitalocean.com/community/tutorials/how-to-work-with-the-zeromq-messaging-library
 
     + AWS Credentials Setup +
     Credentials setup to pass data files to AWS S3 found by going to:
@@ -32,10 +33,8 @@ import sys
 import time
 import boto3
 import json
-
-#from camera import *
-#from microphone import *
-#from speaker import *
+import zmq
+from time import sleep
 
 #-----------------------------------------------------------------------
 
@@ -46,10 +45,14 @@ S3_IMAGE_BUCKET = "magicwandimagebucket" # S3 Bucket name
 S3_TRANSCRIBE_BUCKET = "magicwandtranscribedaudio" # S3 Bucket name
 S3_IMAGE_BUCKET_URL = "https://magicwandimagebucket.s3.amazonaws.com/"
 SQS_URL = "https://sqs.us-east-1.amazonaws.com/582548553336/magicWandQueue"
+AUDIOFILE_DIR = "audio_files/"
 
-audioFile = "recordedAudio_11212019-181859.wav"
-imageFile = "img_11212019-181819.jpg"
+imageFile = "image_files/img_11212019-181819.jpg"
 
+context = zmq.Context()
+recordSocket = context.socket(zmq.SUB)
+recordSocket.setsockopt_string(zmq.SUBSCRIBE, "recorded")
+recordSocket.connect("tcp://127.0.0.1:6001")
 #-----------------------------------------------------------------------
 # Object Instances and Variables
 s3 = boto3.client('s3')
@@ -64,7 +67,7 @@ def pushAudioToAws(audioFilename):
   # TODO
 
   # Send audio to AWS S3 audio Bucket
-  s3.upload_file(audioFilename, S3_AUDIO_BUCKET, audioFilename)
+  s3.upload_file(AUDIOFILE_DIR + audioFilename, S3_AUDIO_BUCKET, audioFilename)
 
   return 0
 #-----------------------------------------------------------------------
@@ -108,9 +111,31 @@ def getTranscribedAudio(jobName):
   transcribedAudioJson = json.loads(transcribedAudioStr)
   transcribedAudio = transcribedAudioJson["results"]["transcripts"][0]["transcript"]
 
-  print(transcribedAudio)
+  return transcribedAudio
 
-  return 0
+#-----------------------------------------------------------------------
+def handleCommand(cmd):
+  # If no command received from user audio, ignore message
+  if(cmd == ""):
+    return -1
+
+  # Determine if actionable command received
+  if("identifio" in cmd):
+    # Capture image
+    sqsWriteCmdRecognized(True)
+    return 1
+  elif("correcto" in cmd):
+    # Image label correct
+    sqsWriteCmdRecognized(True)
+    return 2
+  elif("wrongo" in cmd):
+    # Image label incorrect
+    sqsWriteCmdRecognized(True)
+    return 3
+  else:
+    # No command recognized
+    sqsWriteCmdRecognized(False)
+    return -1
 
 #-----------------------------------------------------------------------
 def parseLabelResponse(rekogResponse):
@@ -122,7 +147,7 @@ def parseLabelResponse(rekogResponse):
   jsonData = json.loads(rekogResponse)
 
   # Parse receieved JSON for highest % guess and return label
-  data = jsonData["Labels"][0]["Name"]
+  label = jsonData["Labels"][0]["Name"]
 
   return label
 #-----------------------------------------------------------------------
@@ -162,23 +187,52 @@ def sqsWriteImageTag(imageFilename, tag):
                          MessageBody=jsonData)
   return 0
 #-----------------------------------------------------------------------
+def sqsWriteCmdRecognized(isRecognized):
+  # Populate JSON object with image label info
+  jsonData = '{  "recordType": "cmdRecognized"' \
+             ',  "cmdRecognized": "' + str(isRecognized) + '"}'
+
+  # Write to SQS
+  msg = sqs.send_message(QueueUrl=SQS_URL,
+                         MessageBody=jsonData)
+#-----------------------------------------------------------------------
 def main(args):
   """ Main for SuperProject Client_Pi - 
       TOOD
   """
-  ### Testing of AWS functionality ###
-  # Send data to AWS S3 Buckets
-  pushAudioToAws(audioFile)
+  global audioFile
+
+  while True:
+    try:
+      # Receive audioFilename from microphone process
+      audioFile = recordSocket.recv_string(flags=zmq.NOBLOCK)
+  
+      # Send data to AWS S3 Buckets
+      pushAudioToAws(audioFile)
+      print("Received Audiofile " + audioFile)
+      break
+    except zmq.Again as e:
+      # record audio not yet available
+      audioFile = ""
+
+  print("pushImageToAws")
   pushImageToAws(imageFile)
 
   # Send image link to SQS
+  print("sqsWriteImageLink")
   sqsWriteImageLink(imageFile)
 
   # Trigger AWS Transcribe to process audio file
-#triggerTranscribeJob(audioFile)
+  print("triggerTranscribeJob")
+  triggerTranscribeJob(audioFile)
 
   # Get text from AWS Transcribe job
-  getTranscribedAudio(audioFile)
+  print("getTranscribedAudio")
+  command = getTranscribedAudio(audioFile)
+
+  # Determine if recognizable command received from user
+  print("handleCommand")
+  handleCommand(command)
 
   # Trigger AWS Rekognition to process image file and print resulting analysis
   response = rekognition.detect_labels(Image={'S3Object':{'Bucket':S3_IMAGE_BUCKET,'Name':imageFile}},MaxLabels=10)
