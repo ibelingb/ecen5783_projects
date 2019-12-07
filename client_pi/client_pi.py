@@ -17,6 +17,8 @@
       - https://docs.aws.amazon.com/polly/latest/dg/get-started-what-next.html
       - https://medium.com/@julsimon/amazon-polly-hello-world-literally-812de2c620f4
       - https://docs.aws.amazon.com/code-samples/latest/catalog/python-sqs-send_message.py.html
+      - https://boto4.amazonaws.com/v1/documentation/api/latest/reference/services/transcribe.html
+      - https://docs.aws.amazon.com/transcribe/latest/dg/getting-started-python.html
 
     + AWS Credentials Setup +
     Credentials setup to pass data files to AWS S3 found by going to:
@@ -41,6 +43,7 @@ import json
 # Constants
 S3_AUDIO_BUCKET = "magicwandaudiobucket" # S3 Bucket name
 S3_IMAGE_BUCKET = "magicwandimagebucket" # S3 Bucket name
+S3_TRANSCRIBE_BUCKET = "magicwandtranscribedaudio" # S3 Bucket name
 S3_IMAGE_BUCKET_URL = "https://magicwandimagebucket.s3.amazonaws.com/"
 SQS_URL = "https://sqs.us-east-1.amazonaws.com/582548553336/magicWandQueue"
 
@@ -50,6 +53,7 @@ imageFile = "img_11212019-181819.jpg"
 #-----------------------------------------------------------------------
 # Object Instances and Variables
 s3 = boto3.client('s3')
+transcribe = boto3.client('transcribe')
 rekognition = boto3.client('rekognition')
 polly = boto3.client('polly')
 sqs = boto3.client('sqs')
@@ -70,6 +74,41 @@ def pushImageToAws(imageFilename):
 
   # Send audio to AWS S3 audio Bucket
   s3.upload_file(imageFilename, S3_IMAGE_BUCKET, imageFilename)
+
+  return 0
+
+
+#-----------------------------------------------------------------------
+def triggerTranscribeJob(audioFilename):
+
+  response = transcribe.start_transcription_job(
+    TranscriptionJobName = audioFilename,
+    LanguageCode = "en-US",
+    MediaSampleRateHertz = 44100,
+    MediaFormat = "wav",
+    Media = {"MediaFileUri": "https://magicwandaudiobucket.s3.amazonaws.com/" + audioFilename},
+    OutputBucketName = "magicwandtranscribedaudio")
+
+#-----------------------------------------------------------------------
+def getTranscribedAudio(jobName):
+  # Loop until transcribe job is completed
+  while True:
+    status = transcribe.get_transcription_job(TranscriptionJobName=audioFile)
+    if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED']:
+      break
+    elif status['TranscriptionJob']['TranscriptionJobStatus'] in ['FAILED']:
+      print("Transcribe job " + jobName + " failed")
+      return -1 
+    sleep(1)
+
+  # Get transcribed text from audio file
+  fileObj = s3.get_object(Bucket=S3_TRANSCRIBE_BUCKET, Key=jobName+".json")
+  fileData = fileObj['Body'].read()
+  transcribedAudioStr = fileData.decode('utf-8')
+  transcribedAudioJson = json.loads(transcribedAudioStr)
+  transcribedAudio = transcribedAudioJson["results"]["transcripts"][0]["transcript"]
+
+  print(transcribedAudio)
 
   return 0
 
@@ -100,8 +139,23 @@ def sqsWriteImageLink(imageFilename):
 def sqsWriteLabel(imageFilename, label):
   # Populate JSON object with image label info
   jsonData = '{  "recordType": "imageLabel"' \
-             ',  "image": "'   + imageFilename + \
-             ',  "label": "'+ label + '"}'
+             ',  "image": "' + imageFilename + \
+             ',  "label": "' + label + '"}'
+
+  # Write to SQS
+  msg = sqs.send_message(QueueUrl=SQS_URL,
+                         MessageBody=jsonData)
+#-----------------------------------------------------------------------
+def sqsWriteImageTag(imageFilename, tag):
+  # Verify if image tag is provided
+  # Image Tag can be unknown if no response in provided from user
+  if(tag != "correct" or tag != "incorrect"):
+    tag = "unknown"
+
+  # Populate JSON object with image tag (correct or incorrect) info
+  jsonData = '{  "recordType": "imageTag"' \
+             ',  "image": "' + imageFilename + \
+             ',  "tag": "' + tag + '"}'
 
   # Write to SQS
   msg = sqs.send_message(QueueUrl=SQS_URL,
@@ -121,7 +175,10 @@ def main(args):
   sqsWriteImageLink(imageFile)
 
   # Trigger AWS Transcribe to process audio file
-  # TODO
+#triggerTranscribeJob(audioFile)
+
+  # Get text from AWS Transcribe job
+  getTranscribedAudio(audioFile)
 
   # Trigger AWS Rekognition to process image file and print resulting analysis
   response = rekognition.detect_labels(Image={'S3Object':{'Bucket':S3_IMAGE_BUCKET,'Name':imageFile}},MaxLabels=10)
