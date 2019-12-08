@@ -45,14 +45,22 @@ S3_IMAGE_BUCKET = "magicwandimagebucket" # S3 Bucket name
 S3_TRANSCRIBE_BUCKET = "magicwandtranscribedaudio" # S3 Bucket name
 S3_IMAGE_BUCKET_URL = "https://magicwandimagebucket.s3.amazonaws.com/"
 SQS_URL = "https://sqs.us-east-1.amazonaws.com/582548553336/magicWandQueue"
-AUDIOFILE_DIR = "audio_files/"
-
-imageFile = "image_files/img_11212019-181819.jpg"
+AUDIOFILE_DIR = "/home/pi/repos/ecen5783_project/client_pi/audio_files/"
+IMAGEFILE_DIR = "/home/pi/repos/ecen5783_project/client_pi/image_files/"
+OUTPUT_AUDIO_DIR = "/home/pi/repos/ecen5783_project/client_pi/output_audio/"
 
 context = zmq.Context()
 recordSocket = context.socket(zmq.SUB)
 recordSocket.setsockopt_string(zmq.SUBSCRIBE, "recorded")
 recordSocket.connect("tcp://127.0.0.1:6001")
+takePicSocket = context.socket(zmq.PUB)
+takePicSocket.bind("tcp://127.0.0.1:6002")
+imageSocket = context.socket(zmq.SUB)
+imageSocket.setsockopt_string(zmq.SUBSCRIBE, "img")
+imageSocket.connect("tcp://127.0.0.1:6003")
+speakerSocket = context.socket(zmq.PUB)
+speakerSocket.bind("tcp://127.0.0.1:6004")
+
 #-----------------------------------------------------------------------
 # Object Instances and Variables
 s3 = boto3.client('s3')
@@ -76,7 +84,7 @@ def pushImageToAws(imageFilename):
   # TODO
 
   # Send audio to AWS S3 audio Bucket
-  s3.upload_file(imageFilename, S3_IMAGE_BUCKET, imageFilename)
+  s3.upload_file(IMAGEFILE_DIR + imageFilename, S3_IMAGE_BUCKET, imageFilename)
 
   return 0
 
@@ -201,7 +209,9 @@ def main(args):
       TOOD
   """
   global audioFile
+  global imageFile
 
+  # Receive audioFilename from microphone process
   while True:
     try:
       # Receive audioFilename from microphone process
@@ -215,6 +225,34 @@ def main(args):
       # record audio not yet available
       audioFile = ""
 
+  # Trigger AWS Transcribe to process audio file
+  print("triggerTranscribeJob")
+  triggerTranscribeJob(audioFile)
+
+  # Get text from AWS Transcribe job
+  print("getTranscribedAudio")
+  #command = getTranscribedAudio(audioFile)
+  command = ""
+
+  # Determine if recognizable command received from user
+  print("handleCommand")
+  handleCommand(command)
+
+  print("Send takePic signal")
+  # Trigger image to be captured by camera.py process
+  takePicSocket.send_string("takePic")
+
+  # Receive imageFilename from camera process
+  while True:
+    try:
+      # Receive imageFilename from camera process
+      imageFile = imageSocket.recv_string(flags=zmq.NOBLOCK)
+      print("Received imageFile " + imageFile)
+      break
+    except zmq.Again as e:
+      # image not yet available
+      imageFile = ""
+
   print("pushImageToAws")
   pushImageToAws(imageFile)
 
@@ -222,20 +260,8 @@ def main(args):
   print("sqsWriteImageLink")
   sqsWriteImageLink(imageFile)
 
-  # Trigger AWS Transcribe to process audio file
-  print("triggerTranscribeJob")
-  triggerTranscribeJob(audioFile)
-
-  # Get text from AWS Transcribe job
-  print("getTranscribedAudio")
-  command = getTranscribedAudio(audioFile)
-
-  # Determine if recognizable command received from user
-  print("handleCommand")
-  handleCommand(command)
-
   # Trigger AWS Rekognition to process image file and print resulting analysis
-  response = rekognition.detect_labels(Image={'S3Object':{'Bucket':S3_IMAGE_BUCKET,'Name':imageFile}},MaxLabels=10)
+  response = rekognition.detect_labels(Image={'S3Object':{'Bucket':S3_IMAGE_BUCKET,'Name':imageFile}},MaxLabels=5)
   print(response)
   # Send label info to SQS
   label = parseLabelResponse(str(response))
@@ -243,13 +269,19 @@ def main(args):
 
   # Determine which name has highest confident score from AWS Rekognition, pass to AWS Polly
   # Request speech synthesis and output mp3 into file
-  response = polly.synthesize_speech(Text=str(response), OutputFormat="mp3", VoiceId="Joanna")
-  print(response)
+  print("sendToPolly")
+  response = polly.synthesize_speech(Text=str(label), OutputFormat="mp3", VoiceId="Joanna")
 
-  soundfile = open('/tmp/sound.mp3', 'wb')
+  print("writeOutputAudioFile")
+  soundfile = open(OUTPUT_AUDIO_DIR + 'sound.mp3', 'wb')
   soundBytes = response['AudioStream'].read()
   soundfile.write(soundBytes)
+  soundfile.flush()
   soundfile.close()
+
+  # Signal to speaker to output returned label in sound.mp3 file
+  print("sendSpeakerSignal")
+  speakerSocket.send_string("speak")
 
   return 0
 

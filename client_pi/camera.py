@@ -19,8 +19,17 @@ import sys
 from picamera import PiCamera
 from time import sleep
 from datetime import datetime
+import zmq
 
-IMAGE_PATH = "/home/pi/repos/ecen5783_project/client_pi/"
+IMAGE_PATH = "/home/pi/repos/ecen5783_project/client_pi/image_files/"
+
+# Define ZMQ socket for receiving imageCapture cmds and sending images to client_pi
+context = zmq.Context()
+takePicSocket = context.socket(zmq.SUB)
+takePicSocket.setsockopt_string(zmq.SUBSCRIBE, "takePic")
+takePicSocket.connect("tcp://127.0.0.1:6002")
+imageSocket = context.socket(zmq.PUB)
+imageSocket.bind("tcp://127.0.0.1:6003")
 
 piCamera = PiCamera()
 
@@ -45,27 +54,43 @@ def InitializeCamera():
 def CaptureImage():
   
   # Capture image using attached PiCamera
-  print("Capturing image...")
   piCamera.start_preview()
   sleep(3) # Note: important sleep is at least 2 seconds to allow camera to sense light levels
   imageName = ("img_" + str(datetime.now().strftime("%m%d%Y-%H%M%S")) + ".jpg")
   piCamera.capture(IMAGE_PATH + imageName)
   piCamera.stop_preview()
-  print("Image capture complete")
 
-  # Return string to pi_client with captured image name
-  # TODO
-  # imageName
-
-  return 0
+  return imageName
 #-----------------------------------------------------------------------
 def main(args):
+  captureImage = ""
+
+  print("Launching camera.py")
 
   # Initialize Camera
   InitializeCamera()
 
-  # Capture image
-  CaptureImage()
+  # Loop awaiting cmd from client_pi to capture image
+  while True:
+    # Capture image if signal received from client_pi
+    try:
+      captureImage = takePicSocket.recv_string(flags=zmq.NOBLOCK)
+
+      if(captureImage == "takePic"):
+        print("takePic signal received")
+
+        # Capture image
+        imageName = CaptureImage()
+
+        # Send image name to client_pi
+        imageSocket.send_string(imageName)
+        
+        # Reset flag
+        captureImage = ""
+
+    except zmq.Again as e:
+      # image not yet available
+      captureImage = ""
 
   return 0
 #-----------------------------------------------------------------------

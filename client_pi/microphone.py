@@ -28,7 +28,7 @@ RECORD_SEC = 3 # seconds to record
 DEVICE_INDEX = 2 # device index found by p.get_device_info_by_index(ii)
 MAX_RECORDINGS = 3 # Variable to track max number of recordings before ending program
 
-# Define ZMQ sockets for receiving data and alert messages from GUI App
+# Define ZMQ socket for sending recorded audio filenames to client_pi
 context = zmq.Context()
 recordSocket = context.socket(zmq.PUB)
 recordSocket.bind("tcp://127.0.0.1:6001")
