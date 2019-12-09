@@ -69,6 +69,9 @@ rekognition = boto3.client('rekognition')
 polly = boto3.client('polly')
 sqs = boto3.client('sqs')
 
+# Image Filename used to determine image tag received from user (correct vs incorrect)
+imageFile = None
+
 #-----------------------------------------------------------------------
 def pushAudioToAws(audioFilename):
   # Verify audio file exists
@@ -123,6 +126,8 @@ def getTranscribedAudio(jobName):
 
 #-----------------------------------------------------------------------
 def handleCommand(cmd):
+  global imageFile
+
   # If no command received from user audio, ignore message
   if(cmd == ""):
     return None
@@ -139,11 +144,17 @@ def handleCommand(cmd):
     # Image label correct
     print("Correcto cmd received")
     sqsWriteCmdRecognized(True)
+    if(imageFile != None):
+      sqsWriteImageTag(imageFile, "correct")
+    imageFile = None
     return "correcto"
   elif("wrongo" in cmd):
     # Image label incorrect
     print("wrongo cmd received")
     sqsWriteCmdRecognized(True)
+    if(imageFile != None):
+      sqsWriteImageTag(imageFile, "incorrect")
+    imageFile = None
     return "wrongo"
   else:
     # No command recognized
@@ -225,7 +236,6 @@ def main(args):
       # Receive audioFilename from microphone process
       while True:
         try:
-          break
           # Receive audioFilename from microphone process
           audioFile = recordSocket.recv_string(flags=zmq.NOBLOCK)
     
