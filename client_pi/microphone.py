@@ -13,10 +13,12 @@ The following resources were used to assist with development of this SW.
   - https://forum.core-electronics.com.au/t/awful-sound-to-noise-ratio-with-mini-usb-microphone/4079
 """
 import sys
+import time
 import pyaudio
 import wave
 import zmq
 from datetime import datetime
+from pygame import mixer
 
 __author__ = "Brian Ibeling"
 
@@ -24,21 +26,24 @@ FORM_1 = pyaudio.paInt16 # 16-bit resolution
 CHANNELS = 1 # 1 channel
 SAMPLE_RATE = 44100 # 48kHz sampling rate
 BUFFER_FRAMES = 4096 # 2^12 samples for buffer
-RECORD_SEC = 3 # seconds to record
+RECORD_SEC = 8 # seconds to record
 DEVICE_INDEX = 2 # device index found by p.get_device_info_by_index(ii)
-MAX_RECORDINGS = 3 # Variable to track max number of recordings before ending program
+
+OUTPUT_AUDIO_DIR = "/home/pi/repos/ecen5783_project/client_pi/output_audio/"
 
 # Define ZMQ socket for sending recorded audio filenames to client_pi
 context = zmq.Context()
 recordSocket = context.socket(zmq.PUB)
 recordSocket.bind("tcp://127.0.0.1:6001")
+speakerSocket = context.socket(zmq.SUB)
+speakerSocket.setsockopt_string(zmq.SUBSCRIBE, "speak")
+speakerSocket.connect("tcp://127.0.0.1:6004")
 
 #-----------------------------------------------------------------------
 # Constants
 #-----------------------------------------------------------------------
 # Object Instances and Variables
 #-----------------------------------------------------------------------
-
 def RecordAudio():
   audio = pyaudio.PyAudio() # create pyaudio instantiation
   outputAudioFile = "recordedAudio_" + str(datetime.now().strftime("%m%d%Y-%H%M%S")) + ".wav"
@@ -47,16 +52,12 @@ def RecordAudio():
   stream = audio.open(format = FORM_1,rate = SAMPLE_RATE,channels = CHANNELS, \
                       input_device_index = DEVICE_INDEX,input = True, \
                       frames_per_buffer=BUFFER_FRAMES)
-
-  print("recording")
   frames = []
 
   # loop through stream and append audio chunks to frame array
   for ii in range(0,int((SAMPLE_RATE/BUFFER_FRAMES)*RECORD_SEC)):
     data = stream.read(BUFFER_FRAMES, exception_on_overflow = False)
     frames.append(data)
-
-  print("finished recording")
 
   # stop the stream, close it, and terminate the pyaudio instantiation
   stream.stop_stream()
@@ -79,16 +80,40 @@ TOOD
 """
 def main(args):
   global recordSocket
-  numRecordings = 0
 
-  while numRecordings < MAX_RECORDINGS:
+  while True:
     # Capture audio via microphone, write to .wav file on RPi
     audioFilename = RecordAudio()
 
     # Write to msgQueue to client_pi to process recorded audio via AWS
     recordSocket.send_string(audioFilename)
 
-    numRecordings += 1
+    # Output speaker audio if signal received from client_pi
+    try:
+      # Receive signal from client_pi process to output audio
+      outputAudio = speakerSocket.recv_string(flags=zmq.NOBLOCK)
+
+      if(outputAudio == "speak"):
+        print("Output Audio signal received")
+
+        # Initialize Speaker
+        mixer.init() #turn all of pygame on.
+
+        # Output audio
+        sound = mixer.music.load(OUTPUT_AUDIO_DIR + 'sound.mp3')
+        sound = mixer.music.play()
+        time.sleep(3) # Delay while audio file is played
+        sound = mixer.music.stop()
+
+        # Clear flag
+        outputAudio = ""
+
+        # Disable Speaker
+        mixer.quit()
+
+    except zmq.Again as e:
+      # speaker signal not received
+      outputAudio = ""
 
   return 0
 

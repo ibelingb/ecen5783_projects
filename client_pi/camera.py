@@ -17,7 +17,7 @@ __author__ = "Brian Ibeling"
 
 import sys
 from picamera import PiCamera
-from time import sleep
+import time
 from datetime import datetime
 import zmq
 
@@ -55,7 +55,7 @@ def CaptureImage():
   
   # Capture image using attached PiCamera
   piCamera.start_preview()
-  sleep(3) # Note: important sleep is at least 2 seconds to allow camera to sense light levels
+  time.sleep(3) # Note: important sleep is at least 2 seconds to allow camera to sense light levels
   imageName = ("img_" + str(datetime.now().strftime("%m%d%Y-%H%M%S")) + ".jpg")
   piCamera.capture(IMAGE_PATH + imageName)
   piCamera.stop_preview()

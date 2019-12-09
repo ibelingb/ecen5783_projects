@@ -17,7 +17,7 @@
 __author__ = "Brian Ibeling"
 
 import sys
-from time import sleep
+import time
 from pygame import mixer
 import zmq
 
@@ -50,22 +50,21 @@ def main(args):
 
   print("Launching speaker.py")
 
-  InitializeSpeaker()
 
   while True:
     try:
       # Receive signal from client_pi process
       outputAudio = speakerSocket.recv_string(flags=zmq.NOBLOCK)
 
-      print("speaker")
-
       if(outputAudio == "speak"):
         print("Output Audio signal received")
+
+        #InitializeSpeaker()
 
         # Output audio
         sound = mixer.music.load(OUTPUT_AUDIO_DIR + 'sound.mp3')
         sound = mixer.music.play()
-        sleep(3) # Delay while audio file is played
+        time.sleep(3) # Delay while audio file is played
         sound = mixer.music.stop()
 
         # Clear flag

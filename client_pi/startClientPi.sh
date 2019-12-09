@@ -13,6 +13,6 @@
 echo "Launching SuperProject client_pi..."
 python3 microphone.py -s > /dev/null 2>&1 &
 python3 camera.py &
-python3 speaker.py &
+#python3 speaker.py &
 python3 client_pi.py &
 
