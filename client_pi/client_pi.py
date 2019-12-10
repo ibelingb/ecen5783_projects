@@ -202,7 +202,7 @@ def sqsWriteImageLink(imageFilename):
 def sqsWriteLabel(imageFilename, label):
   # Populate JSON object with image label info
   jsonData = '{  "recordType": "imageLabel"' \
-             ',  "image": "' + imageFilename + \
+             ',  "image": "' + imageFilename + '"'\
              ',  "label": "' + label + '"}'
 
   # Write to SQS via IoT
@@ -218,7 +218,7 @@ def sqsWriteImageTag(imageFilename, tag):
 
   # Populate JSON object with image tag (correct or incorrect) info
   jsonData = '{  "recordType": "imageTag"' \
-             ',  "image": "' + imageFilename + \
+             ',  "image": "' + imageFilename + '"'\
              ',  "tag": "' + tag + '"}'
 
   # Write to SQS via IoT
