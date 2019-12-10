@@ -169,7 +169,7 @@ function getOneRecord() {
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
       console.log('SUCCESS')
-      console.log(result)
+      console.log(JSON.parse(result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0].Body).recordType)
     }).catch(function(result){
       console.log('ERROR')
       console.log(result.message)
