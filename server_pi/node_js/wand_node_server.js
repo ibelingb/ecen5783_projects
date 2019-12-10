@@ -148,33 +148,63 @@ var apigConfig = {
 }
 var apigClient = apigClientFactory.newClient(apigConfig)
 
-var pathParams = {
-  //This is where path request params go. 
-  item: 'img_12072019-180625.jpg'
-};
-// Template syntax follows url-template https://www.npmjs.com/package/url-template
-var pathTemplate = '/v1/image/{item}'
-var method = 'GET';
-var additionalParams = {
-  //If there are query parameters or headers that need to be sent with the request you can add them here
-  headers: {
-      param0: '',
-      param1: ''
-  },
-  queryParams: {
-      param0: '',
-      param1: ''
+//-----------------------------------------------------------------------------------
+// Pull one record from SQS via API Gateway
+function getOneRecord() {
+  var pathParams = ''
+  var resource = '/v1/receive'
+  var method = 'GET'
+  var additionalParams = {
+    headers: {
+      param0: ''
+    },
+    queryParams: {
+      VisibilityTimeout: '10',
+      MaxNumberOfMessages: '1',
+      AttributeName: ''
+    }
   }
-};
-var body = {
-  //This is where you define the body of the request
-};
+  var body = ''
+  
+  apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
+    .then(function(result) {
+      console.log('SUCCESS')
+      console.log(result)
+    }).catch(function(result){
+      console.log('ERROR')
+      console.log(result.message)
+    })
+}
 
-apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
-  .then(function(result){
-      //This is where you would put a success callback
-      console.log("SUCCESS")
-      fs.writeFileSync(pathParams.item, result.message)
-  }).catch( function(result){
-    console.log(result.message)
-  });
+getOneRecord()
+
+// var pathParams = {
+//   //This is where path request params go. 
+//   item: 'img_12072019-180625.jpg'
+// };
+// // Template syntax follows url-template https://www.npmjs.com/package/url-template
+// var pathTemplate = '/v1/image/{item}'
+// var method = 'GET';
+// var additionalParams = {
+//   //If there are query parameters or headers that need to be sent with the request you can add them here
+//   headers: {
+//       param0: '',
+//       param1: ''
+//   },
+//   queryParams: {
+//       param0: '',
+//       param1: ''
+//   }
+// };
+// var body = {
+//   //This is where you define the body of the request
+// };
+
+// apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
+//   .then(function(result){
+//       //This is where you would put a success callback
+//       console.log("SUCCESS")
+//       fs.writeFileSync(pathParams.item, result.message)
+//   }).catch( function(result){
+//     console.log(result.message)
+//   });
