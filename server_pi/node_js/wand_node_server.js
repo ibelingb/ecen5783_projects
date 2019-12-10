@@ -248,7 +248,8 @@ function getOneRecord() {
                 console.log(err)
               }
               else {
-                console.log(result)
+                // console.log(result)
+                deleteOneRecord(receivedRecord.ReceiptHandle)
               }
             }
           )
