@@ -141,7 +141,9 @@ var apigCredentials = require('./credentials.js')  // Hardcoded apiKey is not di
 var apigConfig = {
   invokeUrl:'https://l8htk90vrb.execute-api.us-east-1.amazonaws.com/testDecNinth',
   region: 'us-east-1',
-  apiKey: apigCredentials.apiCredentials
+  accessKey: 'ASIAYPIUZPZ4OZYEEOP3',
+  secretKey: 'rb/0JrCU0tpCPUKryJzZZ5CbgD6v4ZjdIm73VUHN',
+  sessionToken: 'FwoGZXIvYXdzEJf//////////wEaDO4lXsB1wW/egMPzdCLKAbkpFM0/TGAuuyoJUbotvPC58oTVT6GdqE7jDt6Z1gd3fWjUYkdHcH7ETQZZXhtYLfenae6tijPFWgAbYcyIn0TaycZg07GUvmv+CTzxZZh2I9yP2Wu+otB38zDbC36GdSbyD/4DCRGKSA7rHPvq5L032G4/ySkrxbQXp71nX3Q3bp92j0GU+RVIe39oGzzJe2swzd9DFLyeDNdJpANapyqUpRDhWqUKaue5Gu4hh+7bF0b+JDZkLZ6EQP7vK8RXrkrcTd5qdVnFYpYoj9a87wUyLTC4k/0lpfFqdC4fzoTYvtmM20eMB0aZEOYEFHbVUEmGVjnDEZHLkjT6nJ0CwQ=='
 }
 var apigClient = apigClientFactory.newClient(apigConfig)
 
@@ -172,5 +174,5 @@ apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
       //This is where you would put a success callback
       console.log("SUCCESS")
   }).catch( function(result){
-    console.log("ERROR")
+    console.log(result.message)
   });
