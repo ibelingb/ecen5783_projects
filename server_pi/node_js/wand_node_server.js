@@ -221,6 +221,8 @@ function getOneRecord() {
         console.log(recordTimestamp)
       }
 
+      var query = ''
+      var boolToInt
       switch (parsedRecord.recordType) {
         case 'imageLink':
           // imageLink records are vestigial (thanks to imageLabel) so delete them
@@ -232,6 +234,14 @@ function getOneRecord() {
         break
 
         case 'cmdRecognized':
+          if (parsedRecord.cmdRecognized == 'true') {
+            boolToInt = '1'
+          }
+          else {
+            boolToInt = '0'
+          }
+          query = 'INSERT INTO recognizedCmds VALUES(' + recordTimestamp + ', ' + boolToInt + ')'
+          console.log(query)
 
         break
 
@@ -241,7 +251,7 @@ function getOneRecord() {
 
         default:
           // clear out test messages
-          console.log(parseRecord.message)
+          console.log(parsedRecord.message)
           if (parsedRecord.message.localCompare('Hello from AWS IoT console')) {
             console.log("Removing test record")
             deleteOneRecord(receivedRecord.ReceiptHandle)
