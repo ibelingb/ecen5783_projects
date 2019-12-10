@@ -149,15 +149,37 @@ var apigConfig = {
 var apigClient = apigClientFactory.newClient(apigConfig)
 
 //-----------------------------------------------------------------------------------
+// Delete one record from SQS via API Gateway
+function deleteOneRecord(receiptHandle) {
+  var pathParams = ''
+  var resource = '/v1/delete'
+  var method = 'DELETE'
+  var additionalParams = {
+    headers: '',
+    queryParams: {
+      ReceiptHandle: receiptHandle
+    }
+  }
+  var body = ''
+  
+  apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
+    .then(function(result) {
+      console.log(result)
+    }).catch(function(result){
+      console.log('ERROR')
+      console.log(result.message)
+    })
+}
+
+//-----------------------------------------------------------------------------------
 // Pull one record from SQS via API Gateway
 function getOneRecord() {
+  var recordTimestamp
   var pathParams = ''
   var resource = '/v1/receive'
   var method = 'GET'
   var additionalParams = {
-    headers: {
-      param0: ''
-    },
+    headers: '',
     queryParams: {
       VisibilityTimeout: '10',
       MaxNumberOfMessages: '1',
@@ -168,8 +190,50 @@ function getOneRecord() {
   
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      console.log('SUCCESS')
-      console.log(JSON.parse(result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0].Body).recordType)
+      var receivedRecord = result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0]
+      var parsedRecord
+
+      // Deal with possibility of new Lambda records and old records
+      if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
+        parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
+        console.log(parsedRecord)
+        recordTimestamp = JSON.parse(receivedRecord.Body).timestamp
+        console.log(recordTimestamp)
+      }
+      else {
+        parsedRecord = JSON.parse(receivedRecord.Body)
+        console.log(parsedRecord)
+        // since these early-dev records have no creation timestamp, use the current time
+        const now = new Date()
+        recordTimestamp = Math.round(now.getTime() / 1000)
+        console.log(recordTimestamp)
+      }
+
+      console.log(parsedRecord)
+
+      switch (parsedRecord.recordType) {
+        case 'imageLink':
+          // imageLink records are vestigial (thanks to imageLabel) so delete them
+          deleteOneRecord(receivedRecord.ReceiptHandle)
+        break
+
+        case 'imageLabel':
+
+        break
+
+        case 'cmdRecognized':
+
+        break
+
+        case 'imageTag':
+
+        break
+
+        default:
+          console.log("ERROR: Unknown recordType received from SQS.")
+        break
+      }
+
     }).catch(function(result){
       console.log('ERROR')
       console.log(result.message)
