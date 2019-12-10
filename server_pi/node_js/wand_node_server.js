@@ -16,6 +16,9 @@ Description: NodeJS WebSocket server instance to provide an interface between
     - https://stackoverflow.com/questions/11151632/passing-an-object-to-client-in-node-express-ejs/18106721
     - https://stackoverflow.com/questions/34385499/how-to-create-json-object-node-js
     - https://expressjs.com/en/4x/api.html
+    - https://dzone.com/articles/creating-aws-service-proxy-for-amazon-sqs
+    - https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-generate-sdk-javascript.html
+    - https://www.npmjs.com/package/aws-api-gateway-client
 */
 
 //-----------------------------------------------------------------------------------
@@ -132,3 +135,42 @@ wsServer.on('request', function(request) {
 });
 
 //-----------------------------------------------------------------------------------
+// Variables for AWS API Gateway
+var apigClientFactory = require('aws-api-gateway-client').default
+var apigCredentials = require('./credentials.js')  // Hardcoded apiKey is not distributed via git
+var apigConfig = {
+  invokeUrl:'https://l8htk90vrb.execute-api.us-east-1.amazonaws.com/testDecNinth',
+  region: 'us-east-1',
+  apiKey: apigCredentials.apiCredentials
+}
+var apigClient = apigClientFactory.newClient(apigConfig)
+
+var pathParams = {
+  //This is where path request params go. 
+  item: 'img_12072019-180625.jpg'
+};
+// Template syntax follows url-template https://www.npmjs.com/package/url-template
+var pathTemplate = '/v1/image/{item}'
+var method = 'GET';
+var additionalParams = {
+  //If there are query parameters or headers that need to be sent with the request you can add them here
+  headers: {
+      param0: '',
+      param1: ''
+  },
+  queryParams: {
+      param0: '',
+      param1: ''
+  }
+};
+var body = {
+  //This is where you define the body of the request
+};
+
+apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
+  .then(function(result){
+      //This is where you would put a success callback
+      console.log("SUCCESS")
+  }).catch( function(result){
+    console.log("ERROR")
+  });
