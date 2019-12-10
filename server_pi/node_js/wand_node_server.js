@@ -175,7 +175,6 @@ function deleteOneRecord(receiptHandle) {
 // Pull one record from SQS via API Gateway
 function getOneRecord() {
   var recordTimestamp
-  var imageURL = ''
   var pathParams = ''
   var resource = '/v1/receive'
   var method = 'GET'
@@ -230,7 +229,18 @@ function getOneRecord() {
         break
 
         case 'imageLabel':
-
+          query = 'INSERT INTO images (filename, label) VALUES (\'' + parsedRecord.image + '\', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE label=\'' + parsedRecord.label + '\''
+          mysqlCon.query(query, function (err, result, fields) {
+              if (err) {
+                console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                console.log(err)
+              }
+              else {
+                console.log(result)
+                // deleteOneRecord(receivedRecord.ReceiptHandle)
+              }
+            }
+          )
         break
 
         case 'cmdRecognized':
@@ -242,13 +252,11 @@ function getOneRecord() {
           }
           query = 'INSERT INTO recognizedCmds VALUES(' + recordTimestamp + ', ' + boolToInt + ')'
           mysqlCon.query(query, function (err, result, fields) {
-              // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
               if (err) {
                 console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
                 console.log(err)
               }
               else {
-                // console.log(result)
                 deleteOneRecord(receivedRecord.ReceiptHandle)
               }
             }
