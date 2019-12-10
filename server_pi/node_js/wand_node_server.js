@@ -228,7 +228,14 @@ function getOneRecord() {
         break
 
         default:
-          console.log("ERROR: Unknown recordType received from SQS.")
+          // clear out test messages
+          if (parsedRecord.message.localCompare('Hello from AWS IoT console')) {
+            console.log("Removing test record")
+            deleteOneRecord(receivedRecord.ReceiptHandle)
+          }
+          else {
+            console.log("ERROR: Unknown recordType received from SQS.")
+          }
         break
       }
 
