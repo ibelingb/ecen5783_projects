@@ -198,7 +198,7 @@ def sqsWriteLabel(imageFilename, label):
 def sqsWriteImageTag(imageFilename, tag):
   # Verify if image tag is provided
   # Image Tag can be unknown if no response in provided from user
-  if(tag != "correct" or tag != "incorrect"):
+  if not ("correct" or "incorrect") in tag:
     tag = "unknown"
 
   # Populate JSON object with image tag (correct or incorrect) info

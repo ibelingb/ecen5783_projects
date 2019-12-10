@@ -4,7 +4,7 @@
 # Author: Brian Ibeling
 # 11/14/2019
 
-""" microphone.py: 
+""" microphone_speaker.py: TODO
 
 + Resources and Citations +
 The following resources were used to assist with development of this SW.
