@@ -199,8 +199,7 @@ function getOneRecord() {
       var found = receivedRecord.Body.match(regex)
       if (found) {
         receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
-        console.log(receivedRecord.Body)
-        console.log(JSON.parse(receivedRecord.Body))
+        console.log('fixed JSON')
       }
 
       // Deal with possibility of new Lambda records and old records
@@ -230,7 +229,7 @@ function getOneRecord() {
         break
 
         case 'imageLabel':
-          query = 'INSERT INTO images (filename, label) VALUES (\'' + parsedRecord.image + '\', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE label=\'' + parsedRecord.label + '\''
+          query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
           mysqlCon.query(query, function (err, result, fields) {
               if (err) {
                 console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
@@ -290,8 +289,7 @@ function getOneRecord() {
                   console.log(err)
                 }
                 else {
-                  console.log(result)
-                  // deleteOneRecord(receivedRecord.ReceiptHandle)
+                  deleteOneRecord(receivedRecord.ReceiptHandle)
                 }
               }
             )
