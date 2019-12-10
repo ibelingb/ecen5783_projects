@@ -194,9 +194,16 @@ function getOneRecord() {
       var receivedRecord = result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0]
       var parsedRecord
 
+      
+      // Deal with bug in some old tag and label JSONs
+      var regex = '.jpg'
+      var found = receivedRecord.Body.match(regex)
+      if  (found) {
+        receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
+      }
+
       // Deal with possibility of new Lambda records and old records
-      console.log(JSON.parse(receivedRecord.Body))
-      if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
+      else if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
         parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
         console.log(parsedRecord)
         const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
