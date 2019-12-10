@@ -198,7 +198,10 @@ function getOneRecord() {
       // Deal with bug in some old tag and label JSONs
       var regex = '.jpg'
       var found = receivedRecord.Body.match(regex)
-      if  (found) {
+      console.log(found)
+      console.log(found.index)
+      if (found) {
+        console.log(receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length))
         receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
       }
 
@@ -239,6 +242,7 @@ function getOneRecord() {
 
         default:
           // clear out test messages
+          console.log(parseRecord.message)
           if (parsedRecord.message.localCompare('Hello from AWS IoT console')) {
             console.log("Removing test record")
             deleteOneRecord(receivedRecord.ReceiptHandle)
