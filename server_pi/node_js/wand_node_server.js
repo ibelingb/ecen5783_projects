@@ -164,10 +164,10 @@ function deleteOneRecord(receiptHandle) {
   
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      console.log(result)
+      console.log(result.data.DeleteMessageResponse)
     }).catch(function(result){
       console.log('ERROR')
-      console.log(result.message)
+      console.log(result)
     })
 }
 
@@ -208,8 +208,6 @@ function getOneRecord() {
         recordTimestamp = Math.round(now.getTime() / 1000)
         console.log(recordTimestamp)
       }
-
-      console.log(parsedRecord)
 
       switch (parsedRecord.recordType) {
         case 'imageLink':
