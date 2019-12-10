@@ -167,7 +167,7 @@ function deleteOneRecord(receiptHandle) {
       console.log(result.data.DeleteMessageResponse)
     }).catch(function(result){
       console.log('ERROR')
-      console.log(result.data)
+      console.log(result)
     })
 }
 
@@ -243,7 +243,7 @@ function getOneRecord() {
 
     }).catch(function(result){
       console.log('ERROR')
-      console.log(result.data)
+      console.log(result)
     })
 }
 
