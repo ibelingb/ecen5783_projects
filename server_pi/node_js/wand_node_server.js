@@ -198,11 +198,10 @@ function getOneRecord() {
       // Deal with bug in some old tag and label JSONs
       var regex = '.jpg'
       var found = receivedRecord.Body.match(regex)
-      console.log(found)
-      console.log(found.index)
       if (found) {
-        console.log(receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length))
         receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
+        console.log(receivedRecord.Body)
+        console.log(JSON.parse(receivedRecord.Body))
       }
 
       // Deal with possibility of new Lambda records and old records
