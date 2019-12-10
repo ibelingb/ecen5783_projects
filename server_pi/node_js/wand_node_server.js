@@ -245,6 +245,7 @@ function getOneRecord() {
               // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
               if (err) {
                 console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                console.log(err)
               }
               else {
                 console.log(result)
