@@ -173,6 +173,7 @@ apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
   .then(function(result){
       //This is where you would put a success callback
       console.log("SUCCESS")
+      fs.writeFileSync(pathParams.item, result.message)
   }).catch( function(result){
     console.log(result.message)
   });
