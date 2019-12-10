@@ -205,7 +205,7 @@ function getOneRecord() {
       }
 
       // Deal with possibility of new Lambda records and old records
-      else if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
+      if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
         parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
         console.log(parsedRecord)
         const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
