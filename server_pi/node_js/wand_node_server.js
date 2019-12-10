@@ -195,6 +195,7 @@ function getOneRecord() {
       var parsedRecord
 
       // Deal with possibility of new Lambda records and old records
+      console.log(JSON.parse(receivedRecord.Body))
       if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
         parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
         console.log(parsedRecord)
