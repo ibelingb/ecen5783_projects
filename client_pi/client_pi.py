@@ -34,8 +34,7 @@ import time
 import boto3
 import json
 import zmq
-
-#-----------------------------------------------------------------------
+from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
 #-----------------------------------------------------------------------
 # Constants
@@ -61,6 +60,9 @@ imageSocket.connect("tcp://127.0.0.1:6003")
 speakerSocket = context.socket(zmq.PUB)
 speakerSocket.bind("tcp://127.0.0.1:6004")
 
+# Define AWS IoT connection client
+myMQTTClient = AWSIoTMQTTClient("RpiClient")
+
 #-----------------------------------------------------------------------
 # Object Instances and Variables
 s3 = boto3.client('s3')
@@ -72,6 +74,18 @@ sqs = boto3.client('sqs')
 # Image Filename used to determine image tag received from user (correct vs incorrect)
 imageFile = None
 
+#-----------------------------------------------------------------------
+def initAwsIotConnection():
+  # Establish AWS IoT certificate based connection
+  myMQTTClient.configureEndpoint("a376p1vo77mjsi-ats.iot.us-east-1.amazonaws.com", 8883)
+  myMQTTClient.configureCredentials("/home/pi/certs/Amazon_Root_CA_1.pem", "/home/pi/certs/0b8296d0dd-private.pem.key", "/home/pi/certs/0b8296d0dd-certificate.pem.crt")
+  myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+  myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
+  myMQTTClient.configureConnectDisconnectTimeout(300)  # sec
+  myMQTTClient.configureMQTTOperationTimeout(300)  # sec
+  myMQTTClient.connect()
+
+  return 0
 #-----------------------------------------------------------------------
 def pushAudioToAws(audioFilename):
   # Verify audio file exists
@@ -180,9 +194,9 @@ def sqsWriteImageLink(imageFilename):
   jsonData = '{  "recordType": "imageLink"' \
              ',  "link": "'+ str(S3_IMAGE_BUCKET_URL + imageFilename) + '"}'
 
-  # Write to SQS
-  msg = sqs.send_message(QueueUrl=SQS_URL,
-                         MessageBody=jsonData)
+  # Write to SQS via IoT
+  myMQTTClient.publish("clientPi/imageLink", str(jsonData), 0)
+
   return 0
 #-----------------------------------------------------------------------
 def sqsWriteLabel(imageFilename, label):
@@ -191,9 +205,10 @@ def sqsWriteLabel(imageFilename, label):
              ',  "image": "' + imageFilename + \
              ',  "label": "' + label + '"}'
 
-  # Write to SQS
-  msg = sqs.send_message(QueueUrl=SQS_URL,
-                         MessageBody=jsonData)
+  # Write to SQS via IoT
+  myMQTTClient.publish("clientPi/imageLabel", str(jsonData), 0)
+
+  return 0
 #-----------------------------------------------------------------------
 def sqsWriteImageTag(imageFilename, tag):
   # Verify if image tag is provided
@@ -206,9 +221,9 @@ def sqsWriteImageTag(imageFilename, tag):
              ',  "image": "' + imageFilename + \
              ',  "tag": "' + tag + '"}'
 
-  # Write to SQS
-  msg = sqs.send_message(QueueUrl=SQS_URL,
-                         MessageBody=jsonData)
+  # Write to SQS via IoT
+  myMQTTClient.publish("clientPi/imageTag", str(jsonData), 0)
+
   return 0
 #-----------------------------------------------------------------------
 def sqsWriteCmdRecognized(isRecognized):
@@ -216,9 +231,10 @@ def sqsWriteCmdRecognized(isRecognized):
   jsonData = '{  "recordType": "cmdRecognized"' \
              ',  "cmdRecognized": "' + str(isRecognized) + '"}'
 
-  # Write to SQS
-  msg = sqs.send_message(QueueUrl=SQS_URL,
-                         MessageBody=jsonData)
+  # Write to SQS via IoT
+  myMQTTClient.publish("clientPi/cmdRecognized", str(jsonData), 0)
+
+  return 0
 #-----------------------------------------------------------------------
 def main(args):
   """ Main for SuperProject Client_Pi - 
@@ -226,6 +242,15 @@ def main(args):
   """
   global audioFile
   global imageFile
+
+  # Establish connection with AWS IoT
+  initAwsIotConnection()
+  
+  # TEST
+  #print("test")
+  #sqsWriteCmdRecognized("True")
+  #print("test")
+  #return 0
 
   while True:
     awaitingIdCmd = True
