@@ -16,6 +16,9 @@ Description: NodeJS WebSocket server instance to provide an interface between
     - https://stackoverflow.com/questions/11151632/passing-an-object-to-client-in-node-express-ejs/18106721
     - https://stackoverflow.com/questions/34385499/how-to-create-json-object-node-js
     - https://expressjs.com/en/4x/api.html
+    - https://dzone.com/articles/creating-aws-service-proxy-for-amazon-sqs
+    - https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-generate-sdk-javascript.html
+    - https://www.npmjs.com/package/aws-api-gateway-client
 */
 
 //-----------------------------------------------------------------------------------
@@ -132,3 +135,214 @@ wsServer.on('request', function(request) {
 });
 
 //-----------------------------------------------------------------------------------
+// Variables for AWS API Gateway
+const fs = require('fs')
+var apigClientFactory = require('aws-api-gateway-client').default
+var apigCredentials = require('./credentials.js')  // Hardcoded apiKey is not distributed via git
+var apigConfig = {
+  invokeUrl:'https://l8htk90vrb.execute-api.us-east-1.amazonaws.com/testDecNinth',
+  region: 'us-east-1',
+  accessKey: 'ASIAYPIUZPZ4OZYEEOP3',
+  secretKey: 'rb/0JrCU0tpCPUKryJzZZ5CbgD6v4ZjdIm73VUHN',
+  sessionToken: 'FwoGZXIvYXdzEJf//////////wEaDO4lXsB1wW/egMPzdCLKAbkpFM0/TGAuuyoJUbotvPC58oTVT6GdqE7jDt6Z1gd3fWjUYkdHcH7ETQZZXhtYLfenae6tijPFWgAbYcyIn0TaycZg07GUvmv+CTzxZZh2I9yP2Wu+otB38zDbC36GdSbyD/4DCRGKSA7rHPvq5L032G4/ySkrxbQXp71nX3Q3bp92j0GU+RVIe39oGzzJe2swzd9DFLyeDNdJpANapyqUpRDhWqUKaue5Gu4hh+7bF0b+JDZkLZ6EQP7vK8RXrkrcTd5qdVnFYpYoj9a87wUyLTC4k/0lpfFqdC4fzoTYvtmM20eMB0aZEOYEFHbVUEmGVjnDEZHLkjT6nJ0CwQ=='
+}
+var apigClient = apigClientFactory.newClient(apigConfig)
+
+//-----------------------------------------------------------------------------------
+// Delete one record from SQS via API Gateway
+function deleteOneRecord(receiptHandle) {
+  var pathParams = ''
+  var resource = '/v1/delete'
+  var method = 'DELETE'
+  var additionalParams = {
+    headers: '',
+    queryParams: {
+      ReceiptHandle: receiptHandle
+    }
+  }
+  var body = ''
+  
+  apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
+    .then(function(result) {
+      console.log(result.data.DeleteMessageResponse)
+    }).catch(function(result){
+      console.log('ERROR')
+      console.log(result)
+    })
+}
+
+//-----------------------------------------------------------------------------------
+// Pull one record from SQS via API Gateway
+function getOneRecord() {
+  var recordTimestamp
+  var pathParams = ''
+  var resource = '/v1/receive'
+  var method = 'GET'
+  var additionalParams = {
+    headers: '',
+    queryParams: {
+      VisibilityTimeout: '10',
+      MaxNumberOfMessages: '1',
+      AttributeName: ''
+    }
+  }
+  var body = ''
+  
+  apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
+    .then(function(result) {
+      var receivedRecord = result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0]
+      var parsedRecord
+
+      
+      // Deal with bug in some old tag and label JSONs
+      var regex = '.jpg,'
+      var found = receivedRecord.Body.match(regex)
+      if (found) {
+        receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
+        console.log('fixed JSON')
+      }
+
+      // Deal with possibility of new Lambda records and old records
+      if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
+        parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
+        console.log(parsedRecord)
+        const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
+        recordTimestamp = Math.round(then.getTime() / 1000)
+        console.log(recordTimestamp)
+      }
+      else {
+        parsedRecord = JSON.parse(receivedRecord.Body)
+        console.log(parsedRecord)
+        // since these early-dev records have no creation timestamp, use the current time
+        const now = new Date()
+        recordTimestamp = Math.round(now.getTime() / 1000)
+        console.log(recordTimestamp)
+      }
+
+      var query = ''
+      var boolToInt
+      var correctnessInt
+      switch (parsedRecord.recordType) {
+        case 'imageLink':
+          // imageLink records are vestigial (thanks to imageLabel) so delete them
+          deleteOneRecord(receivedRecord.ReceiptHandle)
+        break
+
+        case 'imageLabel':
+          query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
+          mysqlCon.query(query, function (err, result, fields) {
+              if (err) {
+                console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                console.log(err)
+              }
+              else {
+                deleteOneRecord(receivedRecord.ReceiptHandle)
+              }
+            }
+          )
+        break
+
+        case 'cmdRecognized':
+          if (parsedRecord.cmdRecognized == 'true') {
+            boolToInt = '1'
+          }
+          else {
+            boolToInt = '0'
+          }
+          query = 'INSERT INTO recognizedCmds VALUES(' + recordTimestamp + ', ' + boolToInt + ')'
+          mysqlCon.query(query, function (err, result, fields) {
+              if (err) {
+                console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                console.log(err)
+              }
+              else {
+                deleteOneRecord(receivedRecord.ReceiptHandle)
+              }
+            }
+          )
+
+        break
+
+        case 'imageTag':
+            switch (parsedRecord.tag) {
+              case 'unknown':
+                correctnessInt = 2
+              break
+
+              case 'correct':
+                correctnessInt = 0
+              break
+
+              case 'incorrect':
+                correctnessInt = 1
+              break
+
+              default:
+                correctnessInt = 3
+              break
+            }
+             
+            query = 'INSERT INTO images (filename, correctness) VALUES (\'' + parsedRecord.image + '\', \'' + correctnessInt + '\') ON DUPLICATE KEY UPDATE correctness=\'' + correctnessInt + '\''
+            mysqlCon.query(query, function (err, result, fields) {
+                if (err) {
+                  console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                  console.log(err)
+                }
+                else {
+                  deleteOneRecord(receivedRecord.ReceiptHandle)
+                }
+              }
+            )
+        break
+
+        default:
+          // clear out test messages
+          console.log(parsedRecord.message)
+          if (parsedRecord.message == 'Hello from AWS IoT console') {
+            console.log("Removing test record")
+            deleteOneRecord(receivedRecord.ReceiptHandle)
+          }
+          else {
+            console.log("ERROR: Unknown recordType received from SQS.")
+          }
+        break
+      }
+
+    }).catch(function(result){
+      console.log('ERROR')
+      console.log(result)
+    })
+}
+
+getOneRecord()
+
+// var pathParams = {
+//   //This is where path request params go. 
+//   item: 'img_12072019-180625.jpg'
+// };
+// // Template syntax follows url-template https://www.npmjs.com/package/url-template
+// var pathTemplate = '/v1/image/{item}'
+// var method = 'GET';
+// var additionalParams = {
+//   //If there are query parameters or headers that need to be sent with the request you can add them here
+//   headers: {
+//       param0: '',
+//       param1: ''
+//   },
+//   queryParams: {
+//       param0: '',
+//       param1: ''
+//   }
+// };
+// var body = {
+//   //This is where you define the body of the request
+// };
+
+// apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
+//   .then(function(result){
+//       //This is where you would put a success callback
+//       console.log("SUCCESS")
+//       fs.writeFileSync(pathParams.item, result.message)
+//   }).catch( function(result){
+//     console.log(result.message)
+//   });

@@ -1,9 +1,10 @@
 *.pyc
 *.png
-package-lock.json
 .vscode/
 past_projects/html/credentials.js
 *.wav
 *.jpg
 *.swp
 *.mp3
+server_pi/node_js/credentials.js
+node_modules/
