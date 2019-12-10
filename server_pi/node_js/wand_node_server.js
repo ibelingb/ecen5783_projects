@@ -136,6 +136,7 @@ wsServer.on('request', function(request) {
 
 //-----------------------------------------------------------------------------------
 // Variables for AWS API Gateway
+const fs = require('fs')
 var apigClientFactory = require('aws-api-gateway-client').default
 var apigCredentials = require('./credentials.js')  // Hardcoded apiKey is not distributed via git
 var apigConfig = {
