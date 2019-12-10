@@ -167,7 +167,7 @@ function deleteOneRecord(receiptHandle) {
       console.log(result.data.DeleteMessageResponse)
     }).catch(function(result){
       console.log('ERROR')
-      console.log(result)
+      console.log(result.data)
     })
 }
 
@@ -175,6 +175,7 @@ function deleteOneRecord(receiptHandle) {
 // Pull one record from SQS via API Gateway
 function getOneRecord() {
   var recordTimestamp
+  var imageURL = ''
   var pathParams = ''
   var resource = '/v1/receive'
   var method = 'GET'
@@ -197,7 +198,8 @@ function getOneRecord() {
       if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
         parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
         console.log(parsedRecord)
-        recordTimestamp = JSON.parse(receivedRecord.Body).timestamp
+        const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
+        recordTimestamp = Math.round(then.getTime() / 1000)
         console.log(recordTimestamp)
       }
       else {
@@ -241,7 +243,7 @@ function getOneRecord() {
 
     }).catch(function(result){
       console.log('ERROR')
-      console.log(result.message)
+      console.log(result.data)
     })
 }
 
