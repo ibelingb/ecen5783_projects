@@ -222,6 +222,7 @@ function getOneRecord() {
 
       var query = ''
       var boolToInt
+      var correctnessInt
       switch (parsedRecord.recordType) {
         case 'imageLink':
           // imageLink records are vestigial (thanks to imageLabel) so delete them
@@ -236,8 +237,7 @@ function getOneRecord() {
                 console.log(err)
               }
               else {
-                console.log(result)
-                // deleteOneRecord(receivedRecord.ReceiptHandle)
+                deleteOneRecord(receivedRecord.ReceiptHandle)
               }
             }
           )
@@ -265,7 +265,36 @@ function getOneRecord() {
         break
 
         case 'imageTag':
+            switch (parsedRecord.tag) {
+              case 'unknown':
+                correctnessInt = 2
+              break
 
+              case 'correct':
+                correctnessInt = 0
+              break
+
+              case 'incorrect':
+                correctnessInt = 1
+              break
+
+              default:
+                correctnessInt = 3
+              break
+            }
+             
+            query = 'INSERT INTO images (filename, correctness) VALUES (\'' + parsedRecord.image + '\', \'' + correctnessInt + '\') ON DUPLICATE KEY UPDATE correctness=\'' + correctnessInt + '\''
+            mysqlCon.query(query, function (err, result, fields) {
+                if (err) {
+                  console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                  console.log(err)
+                }
+                else {
+                  console.log(result)
+                  // deleteOneRecord(receivedRecord.ReceiptHandle)
+                }
+              }
+            )
         break
 
         default:
