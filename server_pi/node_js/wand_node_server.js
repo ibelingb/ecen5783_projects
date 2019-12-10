@@ -166,7 +166,7 @@ function getOneRecord() {
   }
   var body = ''
   
-  apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
+  apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
       console.log('SUCCESS')
       console.log(result)
