@@ -196,7 +196,7 @@ function getOneRecord() {
 
       
       // Deal with bug in some old tag and label JSONs
-      var regex = '.jpg'
+      var regex = '.jpg,'
       var found = receivedRecord.Body.match(regex)
       if (found) {
         receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
