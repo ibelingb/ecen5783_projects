@@ -314,8 +314,9 @@ function getOneRecord() {
     })
 }
 
-getOneRecord()
-
+while (1) {
+  getOneRecord()
+}
 // var pathParams = {
 //   //This is where path request params go. 
 //   item: 'img_12072019-180625.jpg'
