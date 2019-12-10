@@ -298,7 +298,7 @@ function getOneRecord() {
         default:
           // clear out test messages
           console.log(parsedRecord.message)
-          if (parsedRecord.message.localCompare('Hello from AWS IoT console')) {
+          if (parsedRecord.message == 'Hello from AWS IoT console') {
             console.log("Removing test record")
             deleteOneRecord(receivedRecord.ReceiptHandle)
           }
@@ -314,9 +314,8 @@ function getOneRecord() {
     })
 }
 
-while (1) {
-  getOneRecord()
-}
+getOneRecord()
+
 // var pathParams = {
 //   //This is where path request params go. 
 //   item: 'img_12072019-180625.jpg'
