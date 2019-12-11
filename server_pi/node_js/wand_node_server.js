@@ -350,7 +350,7 @@ function getOneImage(imageFilename) {
       // console.log(result.data)
       let buf = new Buffer.from(result.data, 'base64')
       fs.writeFileSync('/home/pi/superproject_images/' + imageFilename, buf)
-      const query = 'UPDATE images SET downloaded=1 WHERE filename=' + imageFilename
+      const query = 'UPDATE images SET downloaded=1 WHERE filename=\'' + imageFilename + '\''
       mysqlCon.query(query, function (err, result, fields) {
           if (err) {
             console.log("ERROR: NodeJS server failed to update data in MySQL DB")
