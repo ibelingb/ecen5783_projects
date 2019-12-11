@@ -167,7 +167,7 @@ function deleteOneRecord(receiptHandle) {
     .then(function(result) {
       console.log(result.data.DeleteMessageResponse)
     }).catch(function(result){
-      console.log('ERROR')
+      console.log('ERROR deleting SQS record.')
       console.log(result)
     })
 }
@@ -191,99 +191,51 @@ function getOneRecord() {
   
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      var receivedRecord = result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0]
-      var parsedRecord
-
-      
-      // Deal with bug in some old tag and label JSONs
-      var regex = '.jpg,'
-      var found = receivedRecord.Body.match(regex)
-      if (found) {
-        receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
-        console.log('fixed JSON')
-      }
-
-      // Deal with possibility of new Lambda records and old records
-      if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
-        parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
-        console.log(parsedRecord)
-        const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
-        recordTimestamp = Math.round(then.getTime() / 1000)
-        console.log(recordTimestamp)
+      if (0 == result.data.ReceiveMessageResponse.ReceiveMessageResult.messages.length)
+      {
+        console.log('SQS is apparently empty.')
       }
       else {
-        parsedRecord = JSON.parse(receivedRecord.Body)
-        console.log(parsedRecord)
-        // since these early-dev records have no creation timestamp, use the current time
-        const now = new Date()
-        recordTimestamp = Math.round(now.getTime() / 1000)
-        console.log(recordTimestamp)
-      }
+        var receivedRecord = result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0]
+        var parsedRecord
 
-      var query = ''
-      var boolToInt
-      var correctnessInt
-      switch (parsedRecord.recordType) {
-        case 'imageLink':
-          // imageLink records are vestigial (thanks to imageLabel) so delete them
-          deleteOneRecord(receivedRecord.ReceiptHandle)
-        break
+        
+        // Deal with bug in some old tag and label JSONs
+        var regex = '.jpg,'
+        var found = receivedRecord.Body.match(regex)
+        if (found) {
+          receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
+          console.log('fixed JSON')
+        }
 
-        case 'imageLabel':
-          query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
-          mysqlCon.query(query, function (err, result, fields) {
-              if (err) {
-                console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
-                console.log(err)
-              }
-              else {
-                deleteOneRecord(receivedRecord.ReceiptHandle)
-              }
-            }
-          )
-        break
+        // Deal with possibility of new Lambda records and old records
+        if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
+          parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
+          console.log(parsedRecord)
+          const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
+          recordTimestamp = Math.round(then.getTime() / 1000)
+          console.log(recordTimestamp)
+        }
+        else {
+          parsedRecord = JSON.parse(receivedRecord.Body)
+          console.log(parsedRecord)
+          // since these early-dev records have no creation timestamp, use the current time
+          const now = new Date()
+          recordTimestamp = Math.round(now.getTime() / 1000)
+          console.log(recordTimestamp)
+        }
 
-        case 'cmdRecognized':
-          if (parsedRecord.cmdRecognized == 'true') {
-            boolToInt = '1'
-          }
-          else {
-            boolToInt = '0'
-          }
-          query = 'INSERT INTO recognizedCmds VALUES(' + recordTimestamp + ', ' + boolToInt + ')'
-          mysqlCon.query(query, function (err, result, fields) {
-              if (err) {
-                console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
-                console.log(err)
-              }
-              else {
-                deleteOneRecord(receivedRecord.ReceiptHandle)
-              }
-            }
-          )
+        var query = ''
+        var boolToInt
+        var correctnessInt
+        switch (parsedRecord.recordType) {
+          case 'imageLink':
+            // imageLink records are vestigial (thanks to imageLabel) so delete them
+            deleteOneRecord(receivedRecord.ReceiptHandle)
+          break
 
-        break
-
-        case 'imageTag':
-            switch (parsedRecord.tag) {
-              case 'unknown':
-                correctnessInt = 2
-              break
-
-              case 'correct':
-                correctnessInt = 0
-              break
-
-              case 'incorrect':
-                correctnessInt = 1
-              break
-
-              default:
-                correctnessInt = 3
-              break
-            }
-             
-            query = 'INSERT INTO images (filename, correctness) VALUES (\'' + parsedRecord.image + '\', \'' + correctnessInt + '\') ON DUPLICATE KEY UPDATE correctness=\'' + correctnessInt + '\''
+          case 'imageLabel':
+            query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
             mysqlCon.query(query, function (err, result, fields) {
                 if (err) {
                   console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
@@ -294,22 +246,75 @@ function getOneRecord() {
                 }
               }
             )
-        break
+          break
 
-        default:
-          // clear out test messages
-          if (parsedRecord.message == 'Hello from AWS IoT console') {
-            console.log("Removing test record")
-            deleteOneRecord(receivedRecord.ReceiptHandle)
-          }
-          else {
-            console.log("ERROR: Unknown recordType received from SQS.")
-          }
-        break
+          case 'cmdRecognized':
+            if (parsedRecord.cmdRecognized == 'true') {
+              boolToInt = '1'
+            }
+            else {
+              boolToInt = '0'
+            }
+            query = 'INSERT INTO recognizedCmds VALUES(' + recordTimestamp + ', ' + boolToInt + ')'
+            mysqlCon.query(query, function (err, result, fields) {
+                if (err) {
+                  console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                  console.log(err)
+                }
+                else {
+                  deleteOneRecord(receivedRecord.ReceiptHandle)
+                }
+              }
+            )
+
+          break
+
+          case 'imageTag':
+              switch (parsedRecord.tag) {
+                case 'unknown':
+                  correctnessInt = 2
+                break
+
+                case 'correct':
+                  correctnessInt = 0
+                break
+
+                case 'incorrect':
+                  correctnessInt = 1
+                break
+
+                default:
+                  correctnessInt = 3
+                break
+              }
+              
+              query = 'INSERT INTO images (filename, correctness) VALUES (\'' + parsedRecord.image + '\', \'' + correctnessInt + '\') ON DUPLICATE KEY UPDATE correctness=\'' + correctnessInt + '\''
+              mysqlCon.query(query, function (err, result, fields) {
+                  if (err) {
+                    console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                    console.log(err)
+                  }
+                  else {
+                    deleteOneRecord(receivedRecord.ReceiptHandle)
+                  }
+                }
+              )
+          break
+
+          default:
+            // clear out test messages
+            if (parsedRecord.message == 'Hello from AWS IoT console') {
+              console.log("Removing test record")
+              deleteOneRecord(receivedRecord.ReceiptHandle)
+            }
+            else {
+              console.log("ERROR: Unknown recordType received from SQS.")
+            }
+          break
+        }
       }
-
     }).catch(function(result){
-      console.log('ERROR')
+      console.log('ERROR getting record from SQS.')
       console.log(result)
     })
 }
