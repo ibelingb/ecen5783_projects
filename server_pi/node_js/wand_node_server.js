@@ -319,28 +319,49 @@ function getOneRecord() {
 }
 
 //-----------------------------------------------------------------------------------
+// Grab an image from S3 via the AWS API Gateway
+getOneImage(imageFilename) {
+  var pathParams = {
+    item: imageFilename
+  }
+  var resource = '/v1/image/' + imageFilename
+  var method = 'GET'
+  var additionalParams = {
+    headers: '',
+    queryParams: ''
+  }
+  var body = ''
+
+  apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
+    .then(function(result) {
+      console.log(result)
+    }).catch(function(result){
+      console.log('ERROR getting ' + imageFilename + ' from API Gateway.')
+      console.log(result)
+    })
+}
+
+//-----------------------------------------------------------------------------------
 // Check if any images need to be grabbed from S3, if so grab them
 function getNeededImage() {
   const fs = require('fs')
-  var imageFilename = ''
 
   const query = 'SELECT filename FROM images WHERE downloaded=0 ORDER BY timestamp DESC LIMIT 1'
-  imageFilename = mysqlCon.query(query, function (err, result, fields) {
+  mysqlCon.query(query, function (err, result, fields) {
       if (err) {
         console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
         console.log(err)
-        return ''
       }
       else {
         if (result.length) {
-          return result[0].filename
+          getOneImage(result[0].filename)
+        }
+        else {
+          // Nothing to do!
         }
       }
     }
   )
-
-  console.log(imageFilename)
-
 }
 
 
