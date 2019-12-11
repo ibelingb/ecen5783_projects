@@ -335,9 +335,9 @@ function getOneImage(imageFilename) {
 
   /* API Gateway params */
   var pathParams = {
-    item: "base64" + imageFilename
+    item: 'b64_' + imageFilename
   }
-  var resource = '/v1/image/base64' + imageFilename
+  var resource = '/v1/image/b64_' + imageFilename
   var method = 'GET'
   var additionalParams = {
     headers: '',
