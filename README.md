@@ -8,7 +8,7 @@ Date: 12/11/2019
 ### Required Python Libraries
 Before running the client-pi and AWS applications, the following packages must be installed on the Rpi in use via pip3:
   > sudo pip install AWSIoTPythonSDK  
-  > sudo pip install pyzmq
+  > sudo pip install pyzmq  
   > sudo pip install boto3
 
 ### Starting and Stopping the Application
@@ -37,14 +37,13 @@ Prior to running the downloaded application, it is required that a MySQL server 
 
 ### Required Node.js Packages
 Before running the server-pi and AWS applications, the following packages must be installed on the Rpi in use via npm:
-  > sudo npm install aws-api-gateway-client
-  > sudo npm install express
-  > sudo npm install http
-  > sudo npm install mysql
+  > sudo npm install aws-api-gateway-client  
+  > sudo npm install express  
+  > sudo npm install http  
+  > sudo npm install mysql  
   > sudo npm install websocket
 
 ### Application Startup
 The server-pi application starts automatically, so long as the wand_node_startup systemd service is installed:
-  > sudo cp ./wand_node_startup.service /etc/systemd/system/
-  
+  > sudo cp ./wand_node_startup.service /etc/systemd/system/  
   > sudo systemctl enable wand_node_startup
