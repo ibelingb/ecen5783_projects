@@ -89,12 +89,10 @@ async function gatherMetrics() {
   )
   getImageMetrics(1, function(quantity) {
       metricsPacket.numIncorrect = quantity
-      metricsCallsRemaining--
     }
   )
   getImageMetrics(2, function(quantity) {
       metricsPacket.numUnknown = quantity
-      metricsCallsRemaining--
     }
   )
   getAudioMetrics(function(data) {
@@ -105,7 +103,6 @@ async function gatherMetrics() {
         else if (0 == data[i].cmdRecognized)
           metricsPacket.numUnrecognized += 1
       }
-      metricsCallsRemaining--
     }
   )
 }
