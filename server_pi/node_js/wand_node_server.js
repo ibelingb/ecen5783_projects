@@ -383,5 +383,5 @@ function getNeededImage() {
 // Main Loop
 
 /* Attempt to grab SQS records and any undownloaded images at fixed intervals */
-setInterval(getNeededImage, 20 * 1000)
-setInterval(getOneRecord, 15 * 1000)
+setInterval(getNeededImage, 7 * 1000)
+setInterval(getOneRecord, 4 * 1000)
