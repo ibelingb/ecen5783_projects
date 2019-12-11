@@ -30,15 +30,16 @@ function getImages(numImages, index, callback) {
   var query = ("SELECT * FROM images ORDER BY timestamp LIMIT " + index + ", " + numImages)
   
   mysqlCon.query(query, function (err, result, fields) {
-    // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
-    if (err) {
-      console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
-      return callback(result, 0)
+      // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
+      if (err) {
+        console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+        return callback(result, 0)
+      }
+      else {
+        return callback(result, result.length)
+      }
     }
-    else {
-      return callback(result, result.length)
-    }
-  });
+  )
 }
 
 //-----------------------------------------------------------------------------------
@@ -278,16 +279,22 @@ function getNeededImage() {
 //-----------------------------------------------------------------------------
 // @@@@@@@@  MAIN LOOP
 //
+
+/* Global (inter-module) Variables *******************************************/
+var page = 0  // Used to track which set of 10 images the images page is on
+
 /* MySQL Setup ***************************************************************/
 //-----------------------------------------------------------------------------
 // Variables for MySQL
 var mysql = require('mysql')
-var mysqlCon = mysql.createConnection({
-  host: "localhost",
-  user: "piuser",
-  password: "BestPasswordEver",
-  database: "superproject"
-})
+var mysqlCon = mysql.createConnection(
+  {
+    host: "localhost",
+    user: "piuser",
+    password: "BestPasswordEver",
+    database: "superproject"
+  }
+)
 
 
 //-----------------------------------------------------------------------------
@@ -297,13 +304,14 @@ var mysqlCon = mysql.createConnection({
  * SQL queries.
  */
 mysqlCon.connect(function(err) {
-  if (err) {
-    console.log("ERROR: NodeJS Server failed to connect to MySQL DB.")
+    if (err) {
+      console.log("ERROR: NodeJS Server failed to connect to MySQL DB.")
+    }
+    else {
+      console.log("MySQL DB connected")
+    }
   }
-  else {
-    console.log("MySQL DB connected")
-  }
-});
+)
 
 /* HTTP Image Server Setup ***************************************************/
 //-----------------------------------------------------------------------------
@@ -321,28 +329,30 @@ imageServer.listen(50012)
 // Variables for NodeJS WebSocket-Client interaction
 
 // Create empty dataPacket object for client response data
-var dataPacket = {cmdResponse: "", numImages: "0"};
-var key = "images";
-dataPacket[key] = [];
-var i = 0;
+var dataPacket = {cmdResponse: "", numImages: "0"}
+var key = "images"
+dataPacket[key] = []
+var i = 0
 // Initialize Node.js WebSocket server 
-const http = require('http');
-const WebSocketServer = require('websocket').server;
-const server = http.createServer();
-const wsServer = new WebSocketServer({
+const http = require('http')
+const WebSocketServer = require('websocket').server
+const server = http.createServer()
+const wsServer = new WebSocketServer (
+  {
     httpServer: server
-});
+  }
+)
 
 //-----------------------------------------------------------------------------
 // Setup calls for WebSocket
 
-server.listen(9898);
+server.listen(9898)
 
 // The following handles interactions between the WS server and WebSocket clients
 wsServer.on('request', function(request) {
     // Establish new client connection - log event to terminal
-    const connection = request.accept(null, request.origin);
-    console.log("NodeJS Client has connected.");
+    const connection = request.accept(null, request.origin)
+    console.log("NodeJS Client has connected.")
 
     // Data request received from HTML client
     // Read request type and return corresponding data in JSON formatted string
@@ -351,41 +361,51 @@ wsServer.on('request', function(request) {
     //  - the number of SQL data entries retrieved and being returned (numImages)
     //  - An array of the SQL entries requested (images)
     connection.on('message', function(message) {
+        // Clear dataPacket from last request
+        dataPacket.numImages = '0'
+        dataPacket[key] = []
 
-      // Clear dataPacket from last request
-      dataPacket.numImages = '0';
-      dataPacket[key] = [];
-
-      // Client request for latest data entry in SQL DB.
-      if(message.utf8Data == "getLatestImage") 
-      {
-        dataPacket.cmdResponse = "getLatestImage";
-        getImages(1, 0, function(images, numImagesReturned) {
-          dataPacket.numImages = numImagesReturned;
-          if (numImagesReturned > 0)
-            dataPacket[key].push(images[0]);
-          connection.send(JSON.stringify(dataPacket));
-        });
+        // Client request for latest data entry in SQL DB.
+        if (message.utf8Data == "getLatestImage") 
+        {
+          dataPacket.cmdResponse = "getLatestImage"
+          getImages(1, 0, function(images, numImagesReturned) {
+              dataPacket.numImages = numImagesReturned
+              if (numImagesReturned > 0)
+                dataPacket[key].push(images[0])
+              connection.send(JSON.stringify(dataPacket))
+            }
+          )
+        }
+        // Client request for last 10 data entries in SQL DB.
+        else if (message.utf8Data == "get10Images") 
+        {
+          dataPacket.cmdResponse = "get10Images"
+          getImages(10, 10 * page, function(images, numImagesReturned){
+              dataPacket.numImages = numImagesReturned
+              for(i = 0; i < numImagesReturned; i++) {
+                dataPacket[key].push(images[i])
+              }
+              connection.send(JSON.stringify(dataPacket))
+            }
+          )
+        }
       }
-      // Client request for last 10 data entries in SQL DB.
-      else if (message.utf8Data == "getLast10Images") 
-      {
-        dataPacket.cmdResponse = "getLast10Images";
-        getImages(10, 0, function(images, numImagesReturned){
-          dataPacket.numImages = numImagesReturned;
-          for(i = 0; i < numImagesReturned; i++) {
-            dataPacket[key].push(images[i]);
-          }
-          connection.send(JSON.stringify(dataPacket));
-        });
-      }
-    });
+    )
 
     // On client disconnect event - log event to terminal
     connection.on('close', function(reasonCode, description) {
-        console.log('NodeJS Client has disconnected.');
-    });
-});
+      
+        /* Since moving from main page to image page resets the WebSocket,
+         * it's easiest to just reset page to 0 on each connection close.
+         */
+        page = 0 
+
+        console.log('NodeJS Client has disconnected.')
+      }
+    )
+  }
+)
 
 
 /* AWS API Gateway Setup *****************************************************/

@@ -235,7 +235,7 @@ The following resources were used to assist with development of this SW.
     ws.onopen = function() {
       console.log('WebSocket Client Connected');
       if (!serverConnError) {
-        ws.send('getLast10Images');
+        ws.send('get10Images');
       } else {
         alert("Failed to connect to NodeJS Server")
       }
@@ -263,8 +263,8 @@ The following resources were used to assist with development of this SW.
           dataAvailable = false;
       }
       
-      if (serverData.cmdResponse == "getLast10Images")
-      { // Handle getLast10Images event - populate corresponding images and metadata with returned data.
+      if (serverData.cmdResponse == "get10Images")
+      { // Handle get10Images event - populate corresponding images and metadata with returned data.
         if (dataAvailable) {
           for (i = 0; i < serverData.numImages; i++) {
 
@@ -276,11 +276,12 @@ The following resources were used to assist with development of this SW.
             document.getElementById("datestamp" + i).innerHTML = " Image classified on " + stamp.toDateString();
             document.getElementById("timestamp" + i).innerHTML =  "   at " + stamp.toLocaleTimeString()
           }
-          // // If less than 10 MySQL DB values returned my MySQL DB, popualte with "-"
-          // for(i = serverData.numImages; i < 10; i++) {
-          //   document.getElementById("timestamp" + i).innerHTML = "-";
-          //   document.getElementById("nodeHumidity" + i).innerHTML = "-";
-          // }
+
+          // If less than 10 MySQL DB values returned my MySQL DB, popualte with "-"
+          for (i = serverData.numImages; i < 10; i++) {
+            document.getElementById("timestamp" + i).innerHTML = "-";
+            document.getElementById("nodeHumidity" + i).innerHTML = "-";
+          }
         }
       }
     };
