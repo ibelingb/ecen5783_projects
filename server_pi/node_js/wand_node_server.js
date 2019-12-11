@@ -211,7 +211,7 @@ function getOneRecord() {
         if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
           parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
           console.log(parsedRecord)
-          const then = new Date(JSON.parse(receivedRecord.Body).timestamp)
+          var then = new Date(JSON.parse(receivedRecord.Body).timestamp)
           recordTimestamp = Math.round(then.getTime() / 1000)
           console.log(recordTimestamp)
         }
@@ -234,6 +234,16 @@ function getOneRecord() {
           break
 
           case 'imageLabel':
+            /* Get timestamp from image filename, rather than AWS metadata */
+            const year = parsedRecord.image.substr(8,4)
+            const month = parsedRecord.image.substr(4,2) - 1
+            const day = parsedRecord.image.substr(6,2)
+            const hour = parsedRecord.image.substr(13,2)
+            const minute = parsedRecord.image.substr(15,2)
+            const second = parsedRecord.image.substr(17,2)
+            then = new Date(year, month, day, hour, minute, second)
+            recordTimestamp = Math.round(then.getTime() / 1000)
+            
             query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
             mysqlCon.query(query, function (err, result, fields) {
                 if (err) {
