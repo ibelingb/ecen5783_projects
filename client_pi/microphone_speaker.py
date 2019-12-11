@@ -26,7 +26,7 @@ FORM_1 = pyaudio.paInt16 # 16-bit resolution
 CHANNELS = 1 # 1 channel
 SAMPLE_RATE = 44100 # 48kHz sampling rate
 BUFFER_FRAMES = 4096 # 2^12 samples for buffer
-RECORD_SEC = 8 # seconds to record
+RECORD_SEC = 10 # seconds to record
 DEVICE_INDEX = 2 # device index found by p.get_device_info_by_index(ii)
 
 OUTPUT_AUDIO_DIR = "/home/pi/repos/ecen5783_project/client_pi/output_audio/"

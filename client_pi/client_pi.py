@@ -73,6 +73,9 @@ rekognition = boto3.client('rekognition')
 polly = boto3.client('polly')
 sqs = boto3.client('sqs')
 
+# Define array to keep track of audio files sent to Transcribe AWS service
+audioTranscribeArray = []
+
 # Image Filename used to determine image tag received from user (correct vs incorrect)
 imageFile = None
 
@@ -103,13 +106,13 @@ def pushImageToAws(imageFilename):
   # TODO
 
   # Convert image to base64 so it plays nice with API Gateway on server_pi end
-  with open(IMAGEFILE_DIR + "base64" + imageFilename, "w") as fout:
+  with open(IMAGEFILE_DIR + "base64" + imageFilename, "wb") as fout:
     with open(IMAGEFILE_DIR + imageFilename, "rb") as fin:
       fout.write(base64.b64encode(fin.read()))
 
-
-  # Send image to AWS S3 image Bucket
-  s3.upload_file(IMAGEFILE_DIR + "base64" + imageFilename, S3_IMAGE_BUCKET, imageFilename)
+  # Send both original and base64 images to AWS S3 image Bucket
+  s3.upload_file(IMAGEFILE_DIR + "base64" + imageFilename, S3_IMAGE_BUCKET, "b64_" + imageFilename)
+  s3.upload_file(IMAGEFILE_DIR + imageFilename, S3_IMAGE_BUCKET, imageFilename)
 
   # Delete base64 version of image
   os.remove(IMAGEFILE_DIR + "base64" + imageFilename)
@@ -257,12 +260,6 @@ def main(args):
   # Establish connection with AWS IoT
   initAwsIotConnection()
   
-  # TEST
-  #print("test")
-  #sqsWriteCmdRecognized("True")
-  #print("test")
-  #return 0
-
   while True:
     awaitingIdCmd = True
   
@@ -278,14 +275,17 @@ def main(args):
           # Send data to AWS S3 Buckets
           pushAudioToAws(audioFile)
           print("Received Audiofile " + audioFile)
-          break
+
+          # Trigger AWS Transcribe to process audio file
+          print("triggerTranscribeJob")
+          triggerTranscribeJob(audioFile)
+
+          # Add to Array to track transcribe jobs
+          audioTranscribeArray.append(audioFile)
+  
         except zmq.Again as e:
           # recorded audio not yet available
           audioFile = ""
-  
-      # Trigger AWS Transcribe to process audio file
-      print("triggerTranscribeJob")
-      triggerTranscribeJob(audioFile)
   
       # Get text from AWS Transcribe job
       print("getTranscribedAudio")
