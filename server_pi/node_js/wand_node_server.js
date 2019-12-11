@@ -24,7 +24,8 @@ Description: NodeJS WebSocket server instance to provide an interface between
 //
 //-----------------------------------------------------------------------------
 // Query image filenames from Magic Wand SQL image filename DB table based on numImages
-// @quantity - Number of image filename table entries to retrieve and return
+// @numImages - Number of image filename table entries to retrieve and return
+// @index - start (in timestamp order) index of image grabs
 // @return - JSON object with array of SQL sensors table data entries and num table entries returned.
 function getImages(numImages, index, callback) {
   var query = ("SELECT * FROM images ORDER BY timestamp LIMIT " + index + ", " + numImages)
@@ -37,6 +38,45 @@ function getImages(numImages, index, callback) {
       }
       else {
         return callback(result, result.length)
+      }
+    }
+  )
+}
+
+//-----------------------------------------------------------------------------
+// Query image classification metrics from MySQL
+// @correctness - Classification correctness factor
+// @return - number of records matching correctness
+function getImageMetrics(correctness, callback) {
+  var query = ("SELECT * FROM images WHERE correctness=" + correctness)
+  
+  mysqlCon.query(query, function (err, result, fields) {
+      // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
+      if (err) {
+        console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+        return callback(result, 0)
+      }
+      else {
+        return callback(result.length)
+      }
+    }
+  )
+}
+
+//-----------------------------------------------------------------------------
+// Query voice recognition metrics from MySQL
+// @return - number of records matching correctness
+function getAudioMetrics(callback) {
+  var query = ("SELECT * FROM recognizedCmds")
+  
+  mysqlCon.query(query, function (err, result, fields) {
+      // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
+      if (err) {
+        console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+        return callback(result, 0)
+      }
+      else {
+        return callback(result)
       }
     }
   )
@@ -179,7 +219,7 @@ function getOneRecord() {
                 break
 
                 default:
-                  correctnessInt = 3
+                  correctnessInt = 2
                 break
               }
               
@@ -333,6 +373,16 @@ imageServer.listen(50012)
 var dataPacket = {cmdResponse: "", numImages: "0"}
 var key = "images"
 dataPacket[key] = []
+
+var metricsPacket = {
+  cmdResponse: "",
+  numCorrect: "0",
+  numIncorrect: "0",
+  numUnknown: "0",
+  numRecognized: "0",
+  numUnrecognized: "0"
+}
+
 var i = 0
 
 // Initialize Node.js WebSocket server 
@@ -354,7 +404,7 @@ server.listen(9898)
 wsServer.on('request', function(request) {
     // Establish new client connection - log event to terminal
     const connection = request.accept(null, request.origin)
-    console.log("NodeJS Client has connected.")
+    console.log("HTML client has connected.")
 
     // Data request received from HTML client
     // Read request type and return corresponding data in JSON formatted string
@@ -435,6 +485,33 @@ wsServer.on('request', function(request) {
             }
           )
         }
+        // Client request for metrics counts
+        else if (message.utf8Data == "getMetrics")
+        {
+          getImageMetrics(0, function(quantity) {
+              metricsPacket.numCorrect = quantity
+            }
+          )
+          getImageMetrics(1, function(quantity) {
+              metricsPacket.numIncorrect = quantity
+            }
+          )
+          getImageMetrics(2, function(quantity) {
+              metricsPacket.numUnknown = quantity
+            }
+          )
+          getAudioMetrics(function(data) {
+              for (i = 0; i < data.length; i++)
+              {
+                if (1 == data[i].cmdRecognized)
+                  metricsPacket.numRecognized += 1
+                else if (0 == data[i].cmdRecognized)
+                  metricsPacket.numUnrecognized += 1
+              }
+            }
+          )
+          connection.send(JSON.stringify(dataPacket))
+        }
       }
     )
 
@@ -447,7 +524,7 @@ wsServer.on('request', function(request) {
         page = 0
         maxPage = false 
 
-        console.log('NodeJS Client has disconnected.')
+        console.log('HTML client has disconnected.')
       }
     )
   }

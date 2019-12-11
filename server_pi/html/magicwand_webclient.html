@@ -65,6 +65,7 @@ The following resources were used to assist with development of this SW.
       }
 
       .performance {
+        margin-top: 6%;
         width: 50%;
         height: 100%;
         float: right;
@@ -110,7 +111,7 @@ The following resources were used to assist with development of this SW.
           <br>
           <img id="recentImage" src="" title="Most recent image classified by the magic wand." height="260" width="320" class="center">
           <br>
-          <p class="caption" id="imageLabel"></p>
+          <p class="caption" id="imageLabel">Auto-Generated Image Label</p>
         </div>
         <div class="performance">
           <h2>System Performance</h2>
@@ -136,12 +137,13 @@ The following resources were used to assist with development of this SW.
           <input type="button" onclick="window.location.href = 'images_page.html';" value="Click Here">
         </div>
         <div class="performance">
-          <h2>Performance Details</h2>
-          <input type="button" onclick="window.location.href = 'performance_page.html';" value="Click Here">
+          <!-- <h2>Performance Details</h2>
+          <input type="button" onclick="window.location.href = 'performance_page.html';" value="Click Here"> -->
         </div>
       </section>
   </body>
   <script type="text/javascript">
+
     // Load Google charts API for pi charts
     google.charts.load('current', {'packages':['corechart']});
 
@@ -155,6 +157,11 @@ The following resources were used to assist with development of this SW.
       console.log('WebSocket Client Connected');
       if (!serverConnError) {
         ws.send('getLatestImage');
+      } else {
+        alert("Failed to connect to NodeJS Server")
+      }
+      if (!serverConnError) {
+        ws.send('getMetrics');
       } else {
         alert("Failed to connect to NodeJS Server")
       }
@@ -197,6 +204,37 @@ The following resources were used to assist with development of this SW.
           document.getElementById("imageLabel").innerHTML = serverData.images[0].label + correctStr;
         }
       }
+
+      else if (serverData.cmdResponse == "getMetrics") {
+
+        const chartOptions = {
+          height: 296,
+          colors: ['#1E3231', '#485665', '#D0A5C0']
+        };
+        
+        var imageData = google.visualization.arrayToDataTable(
+          [
+            ['Quality', 'Quantity'],
+            ['Correct', 0],
+            ['Incorrect', 0],
+            ['Unconfirmed', 0]
+          ]
+        );
+        var voiceData = google.visualization.arrayToDataTable(
+          [
+            ['Quality', 'Quantity'],
+            ['Recognized', 0],
+            ['Unrecognized', 0]
+          ]
+        );  
+
+        var imageChart = new google.visualization.PieChart(document.getElementById('imagePie'));
+        var voiceChart = new google.visualization.PieChart(document.getElementById('voicePie'));
+        
+        // Populate pi charts
+        imageChart.draw(imageData, chartOptions);
+        voiceChart.draw(voiceData, chartOptions);
+      }
     };
 
 
@@ -205,38 +243,7 @@ The following resources were used to assist with development of this SW.
     // Performance pie charts when the webpage loads
     function startup() {
 
-      var chartOptions = {
-        height: 296, // Right now this is how I am aligning captions
-        colors: ['#1E3231', '#485665', '#D0A5C0']
-      };
 
-      // Gather most recent image w/ label & correctness and populate image div
-      // TODO: Gather from server pi
-
-      document.getElementById("imageLabel").innerHTML = "Auto-Generated Image Label";
-      // TODO: Correctness indicator
-
-      // Gather performance metrics and populate pi charts
-      // TODO: Gather from server pi
-
-      var imageData = google.visualization.arrayToDataTable([
-        ['Quality', 'Quantity'],
-        ['Correct', 20],
-        ['Incorrect', 3],
-        ['Unconfirmed', 2]
-      ]);
-
-      var imageChart = new google.visualization.PieChart(document.getElementById('imagePie'));
-      imageChart.draw(imageData, chartOptions);
-
-      var voiceData = google.visualization.arrayToDataTable([
-        ['Quality', 'Quantity'],
-        ['Valid', 45],
-        ['Recognized', 6],
-        ['Unrecognized', 1]
-      ]);
-      var voiceChart = new google.visualization.PieChart(document.getElementById('voicePie'));
-      voiceChart.draw(voiceData, chartOptions);
       
     }
   </script>
