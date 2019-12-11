@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <meta charset="utf-8"/>
 <!--
-Project 3 HTML page
+The Magic Wand SuperProject HTML page (main page)
 ECEN 5783 - Embedded Interface Design
-10/14/2019
+11/16/2019
 Authors: Brian Ibeling and Connor Shapiro
 
 The project3_webclient.html page provides a browser-based HTML client interface
@@ -215,16 +215,16 @@ The following resources were used to assist with development of this SW.
         var imageData = google.visualization.arrayToDataTable(
           [
             ['Quality', 'Quantity'],
-            ['Correct', 0],
-            ['Incorrect', 0],
-            ['Unconfirmed', 0]
+            ['Correct', serverData.numCorrect],
+            ['Incorrect', serverData.numIncorrect],
+            ['Unconfirmed', serverData.numUnknown]
           ]
         );
         var voiceData = google.visualization.arrayToDataTable(
           [
             ['Quality', 'Quantity'],
-            ['Recognized', 0],
-            ['Unrecognized', 0]
+            ['Recognized', serverData.numRecognized],
+            ['Unrecognized', serverData.numUnrecognized]
           ]
         );  
 
