@@ -27,13 +27,11 @@ Prior to running the downloaded application, it is required that a MySQL server 
 2. Open MySQL by executing the following command and entering needed credentials:
   > sudo /usr/bin/mysql -u root -p
 3. Create the 'piuser' user by exeucting the following commands from MySQL:
-  > mariaDB> CREATE USER 'piuser'@'localhost' IDENTIFIED BY 'BestPasswordEver';
-
-  > mariaDB> GRANT ALL PRIVILEGES ON * . * TO 'piuser'@'localhost';
-
+  > mariaDB> CREATE USER 'piuser'@'localhost' IDENTIFIED BY 'BestPasswordEver';  
+  > mariaDB> GRANT ALL PRIVILEGES ON * . * TO 'piuser'@'localhost';  
   > mariaDB> FLUSH PRIVILEGES;
-4. Create the 'project1' database by executing the following command from MySQL:
-  > mariaDB> CREATE DATABASE project1;
+4. Create the 'superproject' database by executing the following command from MySQL:
+  > mariaDB> CREATE DATABASE superproject;
 
 ### Required Node.js Packages
 Before running the server-pi and AWS applications, the following packages must be installed on the Rpi in use via npm:
