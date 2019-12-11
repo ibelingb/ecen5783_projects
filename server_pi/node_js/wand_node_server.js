@@ -100,9 +100,9 @@ async function gatherMetrics() {
       for (i = 0; i < data.length; i++)
       {
         if (1 == data[i].cmdRecognized)
-          metricsPacket.numRecognized += 1
+          metricsPacket.numRecognized++
         else if (0 == data[i].cmdRecognized)
-          metricsPacket.numUnrecognized += 1
+          metricsPacket.numUnrecognized++
       }
     }
   )
