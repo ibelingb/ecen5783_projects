@@ -83,19 +83,19 @@ async function getAudioMetrics(callback) {
 //-----------------------------------------------------------------------------
 // Async helper function to get metrics gathered with a promise.
 async function gatherMetrics() {
-  getImageMetrics(0, function(quantity) {
+  await getImageMetrics(0, function(quantity) {
       metricsPacket.numCorrect = quantity
     }
-  ).then(
-  getImageMetrics(1, function(quantity) {
+  )
+  await getImageMetrics(1, function(quantity) {
       metricsPacket.numIncorrect = quantity
     }
-  )).then(
-  getImageMetrics(2, function(quantity) {
+  )
+  await getImageMetrics(2, function(quantity) {
       metricsPacket.numUnknown = quantity
     }
-  )).then(
-  getAudioMetrics(function(data) {
+  )
+  await getAudioMetrics(function(data) {
       for (i = 0; i < data.length; i++)
       {
         if (1 == data[i].cmdRecognized)
@@ -104,7 +104,7 @@ async function gatherMetrics() {
           metricsPacket.numUnrecognized += 1
       }
     }
-  ))
+  )
 }
 
 //-----------------------------------------------------------------------------------
