@@ -83,6 +83,7 @@ async function getAudioMetrics(callback) {
 //-----------------------------------------------------------------------------
 // Async helper function to get metrics gathered with a promise.
 async function gatherMetrics() {
+  metricsPacket.cmdResponse = 'getMetrics'
   await getImageMetrics(0, function(quantity) {
       metricsPacket.numCorrect = quantity
     }
@@ -105,6 +106,7 @@ async function gatherMetrics() {
       }
     }
   )
+  return metricsPacket
 }
 
 //-----------------------------------------------------------------------------------
@@ -511,8 +513,8 @@ wsServer.on('request', function(request) {
         else if (message.utf8Data == "getMetrics")
         {
           metricsPacket.cmdResponse = message.utf8Data
-          gatherMetrics().then(function() {
-              connection.send(JSON.stringify(metricsPacket))
+          gatherMetrics().then(function(packet) {
+              connection.send(JSON.stringify(packet))
             }
           )
         }
