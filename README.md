@@ -1,7 +1,7 @@
 # ECEN 5783 - Embedded Interface Design Superproject
 Title: ECEN 5783 Embedded Interface Design Superproject
 Author: Brian Ibeling and Connor Shapiro  
-Date: 11/14/2019  
+Date: 12/11/2019  
 
 # Install and Execution Instructions
 ## Database Install and User Creation
@@ -23,27 +23,12 @@ Prior to running the downloaded application, it is required that a MySQL server 
 Before running the server-side and AWS applications, the following packages must be installed on the Rpi in use via pip3:
   > sudo pip install AWSIoTPythonSDK  
   > sudo pip install pyzmq
-
-## HTML Web Client Authentication
-Before running the webclient, user must get the file 'credentials.js' from developers and place it in the 'html/' directory.
-This file is not distributed through git for security.
+  > sudo pip install boto3
 
 ## Starting and Stopping the Application
-To start the server-side applications and connect to AWS, simply type the following from the cloned project repository directory.
-  > ./startApp.sh
+To start the client-pi application , simply type the following from the cloned project repository directory.
+  > ./startClientPi.sh
 
-To launch the web-based client, simply open the following file from a browser on a RPi/PC remotely connected to server RPi.
-  > project3_webclient.html
-NOTE: Server-side RPi server applications required to be started before launching web-based client.
+To stop the client-pi application, simply type the following from the cloned project repository directory.
+  > ./stopClientPi.sh
 
-To stop the server-side applications, simply type the following from the cloned project repository directory.
-  > ./stopApp.sh
-
-# Project Work
-Brian Ibeling
-
-Connor Shapiro
-
-# Project Additions
-
-# Project Issues
