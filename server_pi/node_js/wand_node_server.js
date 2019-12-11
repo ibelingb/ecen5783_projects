@@ -106,7 +106,6 @@ async function gatherMetrics() {
       }
     }
   )
-  return metricsPacket
 }
 
 //-----------------------------------------------------------------------------------
@@ -512,11 +511,7 @@ wsServer.on('request', function(request) {
         // Client request for metrics counts
         else if (message.utf8Data == "getMetrics")
         {
-          metricsPacket.cmdResponse = message.utf8Data
-          gatherMetrics().then(function(packet) {
-              connection.send(JSON.stringify(packet))
-            }
-          )
+          connection.send(JSON.stringify(metricsPacket))
         }
       }
     )
@@ -556,3 +551,4 @@ var apigClient = apigClientFactory.newClient(apigConfig)
 /* Attempt to grab SQS records and any undownloaded images at fixed intervals */
 setInterval(getNeededImage, 7 * 1000)
 setInterval(getOneRecord, 4 * 1000)
+gatherMetrics()
