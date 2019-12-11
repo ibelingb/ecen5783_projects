@@ -97,6 +97,8 @@ async function gatherMetrics() {
     }
   )
   await getAudioMetrics(function(data) {
+      metricsPacket.numRecognized = 0
+      metricsPacket.numUnrecognized = 0
       for (i = 0; i < data.length; i++)
       {
         if (1 == data[i].cmdRecognized)
@@ -548,7 +550,10 @@ var apigClient = apigClientFactory.newClient(apigConfig)
 
 //-----------------------------------------------------------------------------
 // Setup calls for AWS API Gateway
-/* Attempt to grab SQS records and any undownloaded images at fixed intervals */
+
+/* Attempt to grab new SQS records, undownloaded images, and re-build the
+ * metrics JSON at fixed intervals
+ */
 setInterval(getNeededImage, 7 * 1000)
 setInterval(getOneRecord, 4 * 1000)
-gatherMetrics()
+setInterval(gatherMetrics, 60 * 1000)
