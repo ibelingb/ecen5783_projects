@@ -13,6 +13,9 @@ The following resources were used to assist with development of this SW.
   - https://makersportal.com/blog/2018/8/23/recording-audio-on-the-raspberry-pi-with-python-and-a-usb-microphone
   - http://wiki.sunfounder.cc/index.php?title=To_use_USB_mini_microphone_on_Raspbian
   - https://forum.core-electronics.com.au/t/awful-sound-to-noise-ratio-with-mini-usb-microphone/4079
+  - https://learn.sparkfun.com/tutorials/python-programming-tutorial-getting-started-with-the-raspberry-pi/experiment-2-play-sounds
+  - https://stackoverflow.com/questions/14845896/pygame-cannot-open-sound-file
+  - https://stackoverflow.com/questions/34668981/pygame-unable-to-open-mp3-file
 """
 import sys
 import time
@@ -90,6 +93,9 @@ def main(args):
     # Write to msgQueue to client_pi to process recorded audio via AWS
     recordSocket.send_string(audioFilename)
 
+    # Was running into a SegFault issue if both the speaker and microphone
+    #   were running/initialized at the same time. Combining here to run 
+    #   one at a time, disabling the speaker between ZMQ audio output requests
     # Output speaker audio if signal received from client_pi
     try:
       # Receive signal from client_pi process to output audio
