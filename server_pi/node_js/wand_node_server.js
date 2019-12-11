@@ -7,17 +7,14 @@ Description: NodeJS WebSocket server instance to provide an interface between
              webpage.
 
   + Resources and Citations +
-  The following resources were used to 
-  
-  assist with development of this SW.
+  The following resources were used to assist with development of this SW.
     - https://www.w3schools.com/nodejs/nodejs_mysql_select.asp
     - https://www.pubnub.com/blog/nodejs-websocket-programming-examples/
     - https://stackoverflow.com/questions/31875621/how-to-properly-return-a-result-from-mysql-with-node
     - https://stackoverflow.com/questions/11151632/passing-an-object-to-client-in-node-express-ejs/18106721
     - https://stackoverflow.com/questions/34385499/how-to-create-json-object-node-js
-    - https://expressjs.com/en/4x/api.html
+    - https://expressjs.com/en/starter/static-files.html
     - https://dzone.com/articles/creating-aws-service-proxy-for-amazon-sqs
-    - https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-generate-sdk-javascript.html
     - https://www.npmjs.com/package/aws-api-gateway-client
     - https://stackoverflow.com/questions/13304471/javascript-get-code-to-run-every-minute
 */
