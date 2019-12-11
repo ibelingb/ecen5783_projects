@@ -34,5 +34,5 @@ To stop the client-pi application, simply type the following from the cloned pro
 
 The server-pi application starts automatically, so long as the wand_node_startup systemd service is installed:
   
-  First copy wand_node_startup.service to /etc/systemd/system/
+First copy wand_node_startup.service to /etc/systemd/system/
   > systemctl enable wande_node_startup.service
