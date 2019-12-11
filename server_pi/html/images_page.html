@@ -108,8 +108,8 @@ The following resources were used to assist with development of this SW.
       <div class="topButtons">
         <input type="button" onclick="window.location.href = 'magicwand_webclient.html';" value="Back to Main Page">
         <br><br>
-        <button disabled="true" class="button unavailable" id="previous">&lt;  Previous 10 Images</button>
-        <button disabled="true" class="button unavailable" id="previous">Next 10 Images  &gt;</button>
+        <button disabled onclick="loadPrevTenImages()" class="button unavailable" id="previous">&lt;  Previous 10 Images</button>
+        <button onclick="loadNextTenImages()" class="button available" id="next">Next 10 Images  &gt;</button>
       </div>
       <br>
       <div class="imageHolder">
@@ -226,6 +226,10 @@ The following resources were used to assist with development of this SW.
 
   </body>
   <script type="text/javascript">
+
+    // Global page count variable
+    var pageCount = 0
+
     // WebSocket stuff
     var serverConnError = false
     const ws = new WebSocket('ws://raspberrypi:9898/');
@@ -274,15 +278,24 @@ The following resources were used to assist with development of this SW.
             document.getElementById("image" + i).src = "http://raspberrypi:50012/" + serverData.images[i].filename;
             document.getElementById("label" + i).innerHTML = serverData.images[i].label;
             document.getElementById("datestamp" + i).innerHTML = " Image classified on " + stamp.toDateString();
-            document.getElementById("timestamp" + i).innerHTML =  "   at " + stamp.toLocaleTimeString()
+            document.getElementById("timestamp" + i).innerHTML =  "   at " + stamp.toLocaleTimeString();
           }
 
           // If less than 10 MySQL DB values returned my MySQL DB, popualte with "-"
           if (serverData.numImages < 10) {
-            for (i = serverData.numImages - 1; i < 10; i++) {
+
+            /* Reached end, no more next */
+            next.setAttribute('disabled', 'disabled')
+            if (document.getElementById("next").classList.contains("available")) {
+              document.getElementById("next").classList.add("unavailable")
+              document.getElementById("next").classList.remove("available")
+            }
+
+            for (i = serverData.numImages; i < 10; i++) {
               document.getElementById("image" + i).src = "http://raspberrypi:50012/maxresdefault.jpg";
               document.getElementById("label" + i).innerHTML = "End of oldest images.";
               document.getElementById("datestamp" + i).innerHTML = " End of oldest images.";
+              document.getElementById("timestamp" + i).innerHTML =  "";
             }
           }
         }
@@ -294,6 +307,12 @@ The following resources were used to assist with development of this SW.
     function loadNextTenImages() {
       if (!serverConnError) {
         ws.send('next10Images');
+        pageCount += 1
+        previous.removeAttribute('disabled')
+        if (document.getElementById("previous").classList.contains("unavailable")) {
+          document.getElementById("previous").classList.add("available")
+          document.getElementById("previous").classList.remove("unavailable")
+        }
       } else {
         alert("Failed to connect to NodeJS Server");
       }
@@ -301,9 +320,26 @@ The following resources were used to assist with development of this SW.
 
     // ------------------------------------------------------------------------
     // Function for "Next 10 Images button"
-    function prevNextTenImages() {
+    function loadPrevTenImages() {
       if (!serverConnError) {
         ws.send('prev10Images');
+        next.removeAttribute('disabled')
+        if (document.getElementById("next").classList.contains("unavailable")) {
+          document.getElementById("next").classList.add("available")
+          document.getElementById("next").classList.remove("unavailable")
+        }
+
+        if (pageCount < 2) {
+          previous.setAttribute('disabled', 'disabled')
+          if (document.getElementById("previous").classList.contains("available")) {
+            document.getElementById("previous").classList.add("unavailable")
+            document.getElementById("previous").classList.remove("available")
+          }
+        }
+        if (pageCount > 0) {
+          pageCount -= 1
+        }
+
       } else {
         alert("Failed to connect to NodeJS Server");
       }  

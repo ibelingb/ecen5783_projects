@@ -334,6 +334,7 @@ var dataPacket = {cmdResponse: "", numImages: "0"}
 var key = "images"
 dataPacket[key] = []
 var i = 0
+
 // Initialize Node.js WebSocket server 
 const http = require('http')
 const WebSocketServer = require('websocket').server
@@ -406,7 +407,7 @@ wsServer.on('request', function(request) {
               if (10 > numImagesReturned) {
                 maxPage = true
               }
-              
+
               dataPacket.numImages = numImagesReturned
               for(i = 0; i < numImagesReturned; i++) {
                 dataPacket[key].push(images[i])
