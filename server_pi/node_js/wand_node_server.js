@@ -247,7 +247,7 @@ function getOneRecord() {
             query = 'INSERT INTO images (filename, timestamp, label, downloaded) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\', 0) ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
             mysqlCon.query(query, function (err, result, fields) {
                 if (err) {
-                  console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                  console.log("ERROR: NodeJS server failed to insert data into MySQL DB")
                   console.log(err)
                 }
                 else {
@@ -267,7 +267,7 @@ function getOneRecord() {
             query = 'INSERT INTO recognizedCmds VALUES(' + recordTimestamp + ', ' + boolToInt + ')'
             mysqlCon.query(query, function (err, result, fields) {
                 if (err) {
-                  console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                  console.log("ERROR: NodeJS server failed to insert data into MySQL DB")
                   console.log(err)
                 }
                 else {
@@ -300,7 +300,7 @@ function getOneRecord() {
               query = 'INSERT INTO images (filename, correctness, downloaded) VALUES (\'' + parsedRecord.image + '\', \'' + correctnessInt + '\', 0) ON DUPLICATE KEY UPDATE correctness=\'' + correctnessInt + '\''
               mysqlCon.query(query, function (err, result, fields) {
                   if (err) {
-                    console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+                    console.log("ERROR: NodeJS server failed to insert data into MySQL DB")
                     console.log(err)
                   }
                   else {
@@ -350,6 +350,17 @@ function getOneImage(imageFilename) {
       // console.log(result.data)
       let buf = new Buffer.from(result.data, 'base64')
       fs.writeFileSync('/home/pi/superproject_images/' + imageFilename, buf)
+      const query = 'UPDATE images SET downloaded=1 WHERE filename=\'' + imageFilename + '\''
+      mysqlCon.query(query, function (err, result, fields) {
+          if (err) {
+            console.log("ERROR: NodeJS server failed to update data in MySQL DB")
+            console.log(err)
+          }
+          else {
+            console.log ("Success: " + result)
+          }
+        }
+      )
     }).catch(function(result){
       console.log('ERROR getting ' + imageFilename + ' from API Gateway.')
       console.log(result)
