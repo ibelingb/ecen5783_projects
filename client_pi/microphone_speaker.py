@@ -4,7 +4,9 @@
 # Author: Brian Ibeling
 # 11/14/2019
 
-""" microphone_speaker.py: TODO
+""" microphone_speaker.py: This file provides the microphone and speaker functionality for the Magic Wand
+                           SuperProject. Also has ZMQ socket interfaces to send recorded audio filenames to
+                           the client_pi process, and to output speaker audio received from client_pi.
 
 + Resources and Citations +
 The following resources were used to assist with development of this SW.
