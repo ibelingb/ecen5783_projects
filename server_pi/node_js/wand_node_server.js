@@ -243,7 +243,7 @@ function getOneRecord() {
             const second = parsedRecord.image.substr(17,2)
             then = new Date(year, month, day, hour, minute, second)
             recordTimestamp = Math.round(then.getTime() / 1000)
-            
+
             query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
             mysqlCon.query(query, function (err, result, fields) {
                 if (err) {
@@ -347,9 +347,9 @@ function getOneImage(imageFilename) {
 
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      console.log(result.data)
-      let buff = new Buffer(result.data, 'base64')
-      fs.writeFileSync('/home/pi/superproject_images/' + imageFilename, buff)
+      // console.log(result.data)
+      let buf = new Buffer.from(result.data, 'base64')
+      fs.writeFileSync('/home/pi/superproject_images/' + imageFilename, buf)
     }).catch(function(result){
       console.log('ERROR getting ' + imageFilename + ' from API Gateway.')
       console.log(result)
