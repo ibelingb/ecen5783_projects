@@ -42,8 +42,8 @@ mysqlCon.connect(function(err) {
 // Query image filenames from Magic Wand SQL image filename DB table based on numImages
 // @quantity - Number of image filename table entries to retrieve and return
 // @return - JSON object with array of SQL sensors table data entries and num table entries returned.
-function getImages(numImages, callback) {
-  var query = ("SELECT * FROM images ORDER BY uuid DESC LIMIT " + numImages)
+function getImages(numImages, index, callback) {
+  var query = ("SELECT * FROM images ORDER BY timestamp LIMIT " + index + ", " + numImages)
   
   mysqlCon.query(query, function (err, result, fields) {
     // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
@@ -105,7 +105,7 @@ wsServer.on('request', function(request) {
       if(message.utf8Data == "getLatestImage") 
       {
         dataPacket.cmdResponse = "getLatestImage";
-        getImages(1, function(images, numImagesReturned) {
+        getImages(1, 0, function(images, numImagesReturned) {
           dataPacket.numImages = numImagesReturned;
           if (numImagesReturned > 0)
             dataPacket[key].push(images[0]);
@@ -116,7 +116,7 @@ wsServer.on('request', function(request) {
       else if (message.utf8Data == "getLast10Images") 
       {
         dataPacket.cmdResponse = "getLast10Images";
-        getImages(10, function(images, numImagesReturned){
+        getImages(10, 0, function(images, numImagesReturned){
           dataPacket.numImages = numImagesReturned;
           for(i = 0; i < numImagesReturned; i++) {
             dataPacket[key].push(images[i]);
