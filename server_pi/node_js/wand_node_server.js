@@ -49,7 +49,7 @@ function getImages(numImages, index, callback) {
 // @return - number of records matching correctness
 function getImageMetrics(correctness, callback) {
   var query = ("SELECT * FROM images WHERE correctness=" + correctness)
-  
+  console.log(query)
   mysqlCon.query(query, function (err, result, fields) {
       // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
       if (err) {
@@ -57,6 +57,7 @@ function getImageMetrics(correctness, callback) {
         return callback(result, 0)
       }
       else {
+        console.log(result)
         return callback(result.length)
       }
     }
@@ -68,6 +69,7 @@ function getImageMetrics(correctness, callback) {
 // @return - number of records matching correctness
 function getAudioMetrics(callback) {
   var query = ("SELECT * FROM recognizedCmds")
+  console.log(query)
   
   mysqlCon.query(query, function (err, result, fields) {
       // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
@@ -76,6 +78,7 @@ function getAudioMetrics(callback) {
         return callback(result, 0)
       }
       else {
+        console.log(result)
         return callback(result)
       }
     }
