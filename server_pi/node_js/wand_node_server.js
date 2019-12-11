@@ -511,7 +511,10 @@ wsServer.on('request', function(request) {
         else if (message.utf8Data == "getMetrics")
         {
           metricsPacket.cmdResponse = message.utf8Data
-          gatherMetrics().then(connection.send(JSON.stringify(metricsPacket)))
+          gatherMetrics().then(function() {
+              connection.send(JSON.stringify(metricsPacket))
+            }
+          )
         }
       }
     )
