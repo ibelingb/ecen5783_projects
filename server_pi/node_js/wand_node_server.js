@@ -372,6 +372,7 @@ var dataPacket = {cmdResponse: "", numImages: "0"}
 var key = "images"
 dataPacket[key] = []
 
+var metricsCallsRemaining = 4
 var metricsPacket = {
   cmdResponse: "",
   numCorrect: "0",
