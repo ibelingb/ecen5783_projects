@@ -172,6 +172,7 @@ The following resources were used to assist with development of this SW.
     // Handle JSON formatted string passed from NodeJS WebSocket server to HTML client.
     // Based on serverData.cmdResponse field, update corresponding HTML client webpage fields/tables.
     ws.onmessage = function(e) {
+      var correctStr
       var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
       console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
       serverData = JSON.parse(e.data);
@@ -184,7 +185,16 @@ The following resources were used to assist with development of this SW.
       if (serverData.cmdResponse == "getLatestImage") {
         if (dataAvailable) {
           document.getElementById("recentImage").src = "http://raspberrypi:50012/" + serverData.images[0].filename;
-          document.getElementById("imageLabel").innerHTML = serverData.images[0].label;
+          if (0 == serverData.images[0].correctness) {
+            correctStr = " (Classification Correct)";
+          }
+          else if (1 == serverData.images[0].correctness) {
+            correctStr = " (Classification Incorrect)";
+          }
+          else {
+            correctStr = " (Classification Unconfirmed)";
+          }
+          document.getElementById("imageLabel").innerHTML = serverData.images[0].label + correctStr;
         }
       }
     };

@@ -75,7 +75,7 @@ The following resources were used to assist with development of this SW.
       p.caption {
         text-align: right;
         font-size: 18px;
-        margin-right: 10%;
+        margin-right: 5%;
       }
 
       .timestamp {
@@ -257,8 +257,8 @@ The following resources were used to assist with development of this SW.
     // Handle JSON formatted string passed from NodeJS WebSocket server to HTML client.
     // Based on serverData.cmdResponse field, update corresponding HTML client webpage fields/tables.
     ws.onmessage = function(e) {
-      // var date[]
-      var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
+      var correctStr  // Used to show classification correctness in label string
+      var dataAvailable = true;  // Boolean flag to check if data received from NodsJS/SQL DB.
       console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
       serverData = JSON.parse(e.data);
       // Check if data received from Server Pi SQL DB - used for error handling in message types below.
@@ -276,7 +276,16 @@ The following resources were used to assist with development of this SW.
             // Some JS string operations will require an object for the timestamp
 
             document.getElementById("image" + i).src = "http://raspberrypi:50012/" + serverData.images[i].filename;
-            document.getElementById("label" + i).innerHTML = serverData.images[i].label;
+            if (0 == serverData.images[i].correctness) {
+              correctStr = " (Classification Correct)";
+            }
+            else if (1 == serverData.images[i].correctness) {
+              correctStr = " (Classification Incorrect)";
+            }
+            else {
+              correctStr = " (Classification Unconfirmed)";
+            }
+            document.getElementById("label" + i).innerHTML = serverData.images[i].label + correctStr;
             document.getElementById("datestamp" + i).innerHTML = " Image classified on " + stamp.toDateString();
             document.getElementById("timestamp" + i).innerHTML =  "   at " + stamp.toLocaleTimeString();
           }
