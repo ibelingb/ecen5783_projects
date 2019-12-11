@@ -489,14 +489,17 @@ wsServer.on('request', function(request) {
           metricsPacket.cmdResponse = message.utf8Data
           getImageMetrics(0, function(quantity) {
               metricsPacket.numCorrect = quantity
+              console.log("Correct" + quantity)
             }
           )
           getImageMetrics(1, function(quantity) {
               metricsPacket.numIncorrect = quantity
+              console.log("Incorrect" + quantity)
             }
           )
           getImageMetrics(2, function(quantity) {
               metricsPacket.numUnknown = quantity
+              console.log("Unknown" + quantity)
             }
           )
           getAudioMetrics(function(data) {
@@ -507,6 +510,7 @@ wsServer.on('request', function(request) {
                 else if (0 == data[i].cmdRecognized)
                   metricsPacket.numUnrecognized += 1
               }
+              // console.log("Recog" + quantity)
             }
           )
           console.log(metricsPacket)
