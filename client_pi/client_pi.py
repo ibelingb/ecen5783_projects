@@ -34,6 +34,8 @@ import time
 import boto3
 import json
 import zmq
+import base64
+import os
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
 #-----------------------------------------------------------------------
@@ -100,8 +102,17 @@ def pushImageToAws(imageFilename):
   # Verify image file exists
   # TODO
 
-  # Send audio to AWS S3 audio Bucket
-  s3.upload_file(IMAGEFILE_DIR + imageFilename, S3_IMAGE_BUCKET, imageFilename)
+  # Convert image to base64 so it plays nice with API Gateway on server_pi end
+  with open(IMAGEFILE_DIR + "base64" + imageFilename, "w") as fout:
+    with open(IMAGEFILE_DIR + imageFilename, "rb") as fin:
+      fout.write(base64.b64encode(fin.read()))
+
+
+  # Send image to AWS S3 image Bucket
+  s3.upload_file(IMAGEFILE_DIR + "base64" + imageFilename, S3_IMAGE_BUCKET, imageFilename)
+
+  # Delete base64 version of image
+  os.remove(IMAGEFILE_DIR + "base64" + imageFilename)
 
   return 0
 
