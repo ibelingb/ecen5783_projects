@@ -164,7 +164,8 @@ function deleteOneRecord(receiptHandle) {
   
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      console.log(result.data.DeleteMessageResponse)
+      console.log('Successfully deleted SQS record.')
+      // console.log(result.data.DeleteMessageResponse)
     }).catch(function(result){
       console.log('ERROR deleting SQS record.')
       console.log(result)
@@ -192,36 +193,27 @@ function getOneRecord() {
     .then(function(result) {
       if (null == result.data.ReceiveMessageResponse.ReceiveMessageResult.messages)
       {
-        console.log('SQS is apparently empty.')
+        // console.log('SQS is apparently empty.')
       }
       else {
         var receivedRecord = result.data.ReceiveMessageResponse.ReceiveMessageResult.messages[0]
         var parsedRecord
 
-        
-        // Deal with bug in some old tag and label JSONs
-        var regex = '.jpg,'
-        var found = receivedRecord.Body.match(regex)
-        if (found) {
-          receivedRecord.Body = receivedRecord.Body.substr(0, found.index + 4) + "\"" + receivedRecord.Body.substr(found.index + 4, receivedRecord.Body.length)
-          console.log('fixed JSON')
-        }
-
         // Deal with possibility of new Lambda records and old records
         if (JSON.parse(receivedRecord.Body).hasOwnProperty('version')) {
           parsedRecord = JSON.parse(receivedRecord.Body).requestPayload
-          console.log(parsedRecord)
+          // console.log(parsedRecord)
           var then = new Date(JSON.parse(receivedRecord.Body).timestamp)
           recordTimestamp = Math.round(then.getTime() / 1000)
-          console.log(recordTimestamp)
+          // console.log(recordTimestamp)
         }
         else {
           parsedRecord = JSON.parse(receivedRecord.Body)
-          console.log(parsedRecord)
+          // console.log(parsedRecord)
           // since these early-dev records have no creation timestamp, use the current time
           const now = new Date()
           recordTimestamp = Math.round(now.getTime() / 1000)
-          console.log(recordTimestamp)
+          // console.log(recordTimestamp)
         }
 
         var query = ''
@@ -357,7 +349,7 @@ function getOneImage(imageFilename) {
             console.log(err)
           }
           else {
-            console.log ("Success: " + result)
+            // console.log("Success: " + result)
           }
         }
       )
