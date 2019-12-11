@@ -248,7 +248,7 @@ function getOneRecord() {
           break
 
           case 'cmdRecognized':
-            if (parsedRecord.cmdRecognized == 'true') {
+            if (parsedRecord.cmdRecognized == 'True') {
               boolToInt = '1'
             }
             else {
