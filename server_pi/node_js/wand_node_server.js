@@ -141,11 +141,11 @@ const fs = require('fs')
 var apigClientFactory = require('aws-api-gateway-client').default
 var apigCredentials = require('./credentials.js')  // Hardcoded apiKey is not distributed via git
 var apigConfig = {
-  invokeUrl:'https://l8htk90vrb.execute-api.us-east-1.amazonaws.com/testDecNinth',
+  invokeUrl:'https://l8htk90vrb.execute-api.us-east-1.amazonaws.com/production',
   region: 'us-east-1',
-  accessKey: 'ASIAYPIUZPZ4OZYEEOP3',
-  secretKey: 'rb/0JrCU0tpCPUKryJzZZ5CbgD6v4ZjdIm73VUHN',
-  sessionToken: 'FwoGZXIvYXdzEJf//////////wEaDO4lXsB1wW/egMPzdCLKAbkpFM0/TGAuuyoJUbotvPC58oTVT6GdqE7jDt6Z1gd3fWjUYkdHcH7ETQZZXhtYLfenae6tijPFWgAbYcyIn0TaycZg07GUvmv+CTzxZZh2I9yP2Wu+otB38zDbC36GdSbyD/4DCRGKSA7rHPvq5L032G4/ySkrxbQXp71nX3Q3bp92j0GU+RVIe39oGzzJe2swzd9DFLyeDNdJpANapyqUpRDhWqUKaue5Gu4hh+7bF0b+JDZkLZ6EQP7vK8RXrkrcTd5qdVnFYpYoj9a87wUyLTC4k/0lpfFqdC4fzoTYvtmM20eMB0aZEOYEFHbVUEmGVjnDEZHLkjT6nJ0CwQ=='
+  accessKey: apigCredentials.credKey,
+  secretKey: apigCredentials.credSecret,
+  sessionToken: apigCredentials.credToken
 }
 var apigClient = apigClientFactory.newClient(apigConfig)
 
@@ -319,37 +319,16 @@ function getOneRecord() {
     })
 }
 
-/* Attempt to process SQS on bootup and then again every fifteen seconds */
-getOneRecord()
+//-----------------------------------------------------------------------------------
+// Check if any images need to be grabbed from S3, if so grab them
+function getNeededImage() {
+  
+}
+
+
+//-----------------------------------------------------------------------------
+// Main Loop
+
+/* Attempt to grab SQS records and any undownloaded images at fixed intervals */
+setInterval(getNeededImage, 20 * 1000)
 setInterval(getOneRecord, 15 * 1000)
-
-// var pathParams = {
-//   //This is where path request params go. 
-//   item: 'img_12072019-180625.jpg'
-// };
-// // Template syntax follows url-template https://www.npmjs.com/package/url-template
-// var pathTemplate = '/v1/image/{item}'
-// var method = 'GET';
-// var additionalParams = {
-//   //If there are query parameters or headers that need to be sent with the request you can add them here
-//   headers: {
-//       param0: '',
-//       param1: ''
-//   },
-//   queryParams: {
-//       param0: '',
-//       param1: ''
-//   }
-// };
-// var body = {
-//   //This is where you define the body of the request
-// };
-
-// apigClient.invokeApi(pathParams, pathTemplate, method, additionalParams, body)
-//   .then(function(result){
-//       //This is where you would put a success callback
-//       console.log("SUCCESS")
-//       fs.writeFileSync(pathParams.item, result.message)
-//   }).catch( function(result){
-//     console.log(result.message)
-//   });
