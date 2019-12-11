@@ -19,6 +19,7 @@ Description: NodeJS WebSocket server instance to provide an interface between
     - https://dzone.com/articles/creating-aws-service-proxy-for-amazon-sqs
     - https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-generate-sdk-javascript.html
     - https://www.npmjs.com/package/aws-api-gateway-client
+    - https://stackoverflow.com/questions/13304471/javascript-get-code-to-run-every-minute
 */
 
 //-----------------------------------------------------------------------------------
@@ -297,7 +298,6 @@ function getOneRecord() {
 
         default:
           // clear out test messages
-          console.log(parsedRecord.message)
           if (parsedRecord.message == 'Hello from AWS IoT console') {
             console.log("Removing test record")
             deleteOneRecord(receivedRecord.ReceiptHandle)
@@ -314,7 +314,9 @@ function getOneRecord() {
     })
 }
 
+/* Attempt to process SQS on bootup and then again every fifteen seconds */
 getOneRecord()
+setInterval(getOneRecord, 15 * 1000)
 
 // var pathParams = {
 //   //This is where path request params go. 
