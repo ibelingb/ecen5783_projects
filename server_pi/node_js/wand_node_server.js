@@ -282,6 +282,7 @@ function getNeededImage() {
 
 /* Global (inter-module) Variables *******************************************/
 var page = 0  // Used to track which set of 10 images the images page is on
+var maxPage = false  // Used to prevent advancing set of 10 images past end
 
 /* MySQL Setup ***************************************************************/
 //-----------------------------------------------------------------------------
@@ -377,9 +378,52 @@ wsServer.on('request', function(request) {
             }
           )
         }
-        // Client request for last 10 data entries in SQL DB.
+        // Client request for 10 images
         else if (message.utf8Data == "get10Images") 
         {
+          dataPacket.cmdResponse = "get10Images"
+          getImages(10, 10 * page, function(images, numImagesReturned){
+              dataPacket.numImages = numImagesReturned
+              for(i = 0; i < numImagesReturned; i++) {
+                dataPacket[key].push(images[i])
+              }
+              connection.send(JSON.stringify(dataPacket))
+            }
+          )
+        }
+        // Client request to increase image index by 10
+        else if (message.utf8Data == "next10Images") 
+        {
+
+          /* Guard against access non-existent image index */
+          if (!maxPage) {
+            page += 1
+          }
+
+          dataPacket.cmdResponse = "get10Images"
+          getImages(10, 10 * page, function(images, numImagesReturned) {
+            
+              if (10 > numImagesReturned) {
+                maxPage = true
+              }
+              
+              dataPacket.numImages = numImagesReturned
+              for(i = 0; i < numImagesReturned; i++) {
+                dataPacket[key].push(images[i])
+              }
+              connection.send(JSON.stringify(dataPacket))
+            }
+          )
+        }
+        // Client request to decrease image index by 10
+        else if (message.utf8Data == "prev10Images") 
+        {
+          /* Prevent accessing negative image index */
+          if (page > 0) {
+            page -= 1
+            maxPage = false
+          }
+
           dataPacket.cmdResponse = "get10Images"
           getImages(10, 10 * page, function(images, numImagesReturned){
               dataPacket.numImages = numImagesReturned
@@ -399,7 +443,8 @@ wsServer.on('request', function(request) {
         /* Since moving from main page to image page resets the WebSocket,
          * it's easiest to just reset page to 0 on each connection close.
          */
-        page = 0 
+        page = 0
+        maxPage = false 
 
         console.log('NodeJS Client has disconnected.')
       }
