@@ -488,6 +488,7 @@ wsServer.on('request', function(request) {
         // Client request for metrics counts
         else if (message.utf8Data == "getMetrics")
         {
+          metricsPacket.cmdResponse = message.utf8Data
           getImageMetrics(0, function(quantity) {
               metricsPacket.numCorrect = quantity
             }
@@ -510,7 +511,7 @@ wsServer.on('request', function(request) {
               }
             }
           )
-          connection.send(JSON.stringify(dataPacket))
+          connection.send(JSON.stringify(metricsPacket))
         }
       }
     )
