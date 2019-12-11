@@ -137,7 +137,6 @@ wsServer.on('request', function(request) {
 
 //-----------------------------------------------------------------------------------
 // Variables for AWS API Gateway
-const fs = require('fs')
 var apigClientFactory = require('aws-api-gateway-client').default
 var apigCredentials = require('./credentials.js')  // Hardcoded apiKey is not distributed via git
 var apigConfig = {
@@ -322,7 +321,19 @@ function getOneRecord() {
 //-----------------------------------------------------------------------------------
 // Check if any images need to be grabbed from S3, if so grab them
 function getNeededImage() {
-  
+  const fs = require('fs')
+  const query = 'SELECT filename FROM images WHERE downloaded=1 ORDER BY timestamp DESC LIMIT 1'
+  mysqlCon.query(query, function (err, result, fields) {
+      if (err) {
+        console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
+        console.log(err)
+      }
+      else {
+        console.log("SUCCESS")
+        console.log(result)
+      }
+    }
+  )
 }
 
 
