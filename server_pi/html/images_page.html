@@ -267,9 +267,10 @@ The following resources were used to assist with development of this SW.
         alert("Failed to retrieve data from Server Pi");
           dataAvailable = false;
       }
-      
+
+      // Handle get10Images event - populate corresponding images and metadata with returned data.
       if (serverData.cmdResponse == "get10Images")
-      { // Handle get10Images event - populate corresponding images and metadata with returned data.
+      { 
         if (dataAvailable) {
           for (i = 0; i < serverData.numImages; i++) {
 
@@ -291,10 +292,10 @@ The following resources were used to assist with development of this SW.
             document.getElementById("timestamp" + i).innerHTML =  "   at " + stamp.toLocaleTimeString();
           }
 
-          // If less than 10 MySQL DB values returned my MySQL DB, popualte with "-"
+          // If less than 10 MySQL DB values returned my MySQL DB, populate empties with generic image & message.
           if (serverData.numImages < 10) {
 
-            /* Reached end, no more next */
+            /* Reached end, disable next button */
             next.setAttribute('disabled', 'disabled')
             if (document.getElementById("next").classList.contains("available")) {
               document.getElementById("next").classList.add("unavailable")
@@ -318,11 +319,14 @@ The following resources were used to assist with development of this SW.
       if (!serverConnError) {
         ws.send('next10Images');
         pageCount += 1
+
+        /* Enable previous button */
         previous.removeAttribute('disabled')
         if (document.getElementById("previous").classList.contains("unavailable")) {
           document.getElementById("previous").classList.add("available")
           document.getElementById("previous").classList.remove("unavailable")
         }
+
       } else {
         alert("Failed to connect to NodeJS Server");
       }
@@ -333,6 +337,8 @@ The following resources were used to assist with development of this SW.
     function loadPrevTenImages() {
       if (!serverConnError) {
         ws.send('prev10Images');
+
+        /* Enable next button */
         next.removeAttribute('disabled')
         if (document.getElementById("next").classList.contains("unavailable")) {
           document.getElementById("next").classList.add("available")
@@ -340,11 +346,14 @@ The following resources were used to assist with development of this SW.
         }
 
         if (pageCount < 2) {
+
+          /* Disable previous button */
           previous.setAttribute('disabled', 'disabled')
           if (document.getElementById("previous").classList.contains("available")) {
             document.getElementById("previous").classList.add("unavailable")
             document.getElementById("previous").classList.remove("available")
           }
+
         }
         if (pageCount > 0) {
           pageCount -= 1

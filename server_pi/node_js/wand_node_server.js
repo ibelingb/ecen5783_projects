@@ -549,7 +549,9 @@ var apigConfig = {
 var apigClient = apigClientFactory.newClient(apigConfig)
 
 //-----------------------------------------------------------------------------
-// Setup calls for AWS API Gateway
+// Setup calls for main program
+
+gatherMetrics()  // Build the metrics JSON
 
 /* Attempt to grab new SQS records, undownloaded images, and re-build the
  * metrics JSON at fixed intervals
