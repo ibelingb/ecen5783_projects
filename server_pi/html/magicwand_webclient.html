@@ -183,25 +183,10 @@ The following resources were used to assist with development of this SW.
       // Handle getLatestDbData event - populate latestDbData string on webpage with received data.
       if (serverData.cmdResponse == "getLatestImage") {
         if (dataAvailable) {
-          document.getElementById("recentImage").src = serverData.images[0].url;
+          document.getElementById("recentImage").src = "http://raspberrypi:50012/" + serverData.images[0].filename;
+          document.getElementById("imageLabel").innerHTML = serverData.images[0].label;
         }
       }
-      // else if(serverData.cmdResponse == "getLast10Images")
-      // { // Handle getLast10Samples event - populate corresponding tables with returned data.
-      //   // Populate Speed Test Humidity Table with values returned from MySQL via NodeJS WebSocket
-      //   for(i=0; i<serverData.numImages; i++) {
-      //     document.getElementById("timestamp" + i).innerHTML = serverData.sensorSamples[i].timestamp;
-      //     document.getElementById("nodeHumidity" + i).innerHTML = serverData.sensorSamples[i].humidity;
-      //   }
-      //   // If less than 10 MySQL DB values returned my MySQL DB, popualte table entries with "-"
-      //   for(i=serverData.numImages; i<10; i++) {
-      //     document.getElementById("timestamp" + i).innerHTML = "-";
-      //     document.getElementById("nodeHumidity" + i).innerHTML = "-";
-      //   }
-      //   // Capture end time of NodeJS speed test and populate Server Speed Test Summary accordingly.
-      //   nodeTestEndtime = new Date();
-      //   populateNodeSpeedTestTable(dataAvailable);
-      // }
     };
 
 

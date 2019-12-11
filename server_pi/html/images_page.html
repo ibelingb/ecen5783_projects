@@ -84,9 +84,16 @@ The following resources were used to assist with development of this SW.
         float: right;
       }
 
+      p.datestamp {
+        margin-bottom: 0%;
+        padding-left: 3px;
+      }
+
       p.timestamp {
         width: 100%;
-        text-align: left;
+        float: left;
+        padding-left: 5px;
+        margin-top: 0%;
       }
 
     </style>
@@ -112,7 +119,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label0"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp0"></p>
+          <br><p class="datestamp" id="datestamp0"></p>
+          <p class="timestamp" id="timestamp0"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -122,7 +130,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label1"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp1"></p>
+          <br><p class="datestamp" id="datestamp1"></p>
+          <p class="timestamp" id="timestamp1"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -132,7 +141,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label2"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp2"></p>
+          <br><p class="datestamp" id="datestamp2"></p>
+          <p class="timestamp" id="timestamp2"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -142,7 +152,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label3"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp3"></p>
+          <br><p class="datestamp" id="datestamp3"></p>
+          <p class="timestamp" id="timestamp3"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -152,7 +163,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label4"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp4"></p>
+          <br><p class="datestamp" id="datestamp4"></p>
+          <p class="timestamp" id="timestamp4"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -162,7 +174,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label5"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp5"></p>
+          <br><p class="datestamp" id="datestamp5"></p>
+          <p class="timestamp" id="timestamp5"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -172,7 +185,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label6"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp6"></p>
+          <br><p class="datestamp" id="datestamp6"></p>
+          <p class="timestamp" id="timestamp6"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -182,7 +196,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label7"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp7"></p>
+          <br><p class="datestamp" id="datestamp7"></p>
+          <p class="timestamp" id="timestamp7"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -192,7 +207,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label8"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp8"></p>
+          <br><p class="datestamp" id="datestamp8"></p>
+          <p class="timestamp" id="timestamp8"></p>
         </div>
       </div>
       <div class="imageHolder">
@@ -202,7 +218,8 @@ The following resources were used to assist with development of this SW.
           <p class="caption" id="label9"></p>
         </div>
         <div class="timestamp">
-          <br><p class="timestamp" id="timestamp9"></p>
+          <br><p class="datestamp" id="datestamp9"></p>
+          <p class="timestamp" id="timestamp9"></p>
         </div>
       </div>
 
@@ -236,6 +253,7 @@ The following resources were used to assist with development of this SW.
     // Handle JSON formatted string passed from NodeJS WebSocket server to HTML client.
     // Based on serverData.cmdResponse field, update corresponding HTML client webpage fields/tables.
     ws.onmessage = function(e) {
+      // var date[]
       var dataAvailable = true; // Boolean flag to check if data received from NodsJS/SQL DB.
       console.log(JSON.parse(e.data)); // Allows user to view/debug data from webpage console.
       serverData = JSON.parse(e.data);
@@ -249,11 +267,14 @@ The following resources were used to assist with development of this SW.
       { // Handle getLast10Images event - populate corresponding images and metadata with returned data.
         if (dataAvailable) {
           for (i = 0; i < serverData.numImages; i++) {
-            document.getElementById("image" + i).src = serverData.images[i].url;
-            document.getElementById("label" + i).innerHTML = "Auto-Generated Image Label";
-            document.getElementById("timestamp" + i).innerHTML = "Time of classification.";
-            // TODO: Labels from MySQL
-            // TODO: Timestamps from MySQL
+
+            var stamp = new Date(1000 * serverData.images[i].timestamp);
+            // Some JS string operations will require an object for the timestamp
+
+            document.getElementById("image" + i).src = "http://raspberrypi:50012/" + serverData.images[i].filename;
+            document.getElementById("label" + i).innerHTML = serverData.images[i].label;
+            document.getElementById("datestamp" + i).innerHTML = " Image classified on " + stamp.toDateString();
+            document.getElementById("timestamp" + i).innerHTML =  "   at " + stamp.toLocaleTimeString()
           }
           // // If less than 10 MySQL DB values returned my MySQL DB, popualte with "-"
           // for(i = serverData.numImages; i < 10; i++) {
