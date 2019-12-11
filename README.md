@@ -1,6 +1,6 @@
 # ECEN 5783 - Embedded Interface Design Superproject
-Title: ECEN 5783 Embedded Interface Design Superproject
-Author: Brian Ibeling and Connor Shapiro  
+Authors: Brian Ibeling and Connor Shapiro  
+Project: The Magic Wand  
 Date: 12/11/2019  
 
 # Install and Execution Instructions
