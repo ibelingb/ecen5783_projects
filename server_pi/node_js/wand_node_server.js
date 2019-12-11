@@ -191,7 +191,7 @@ function getOneRecord() {
   
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      if (0 == result.data.ReceiveMessageResponse.ReceiveMessageResult.messages.length)
+      if (null == result.data.ReceiveMessageResponse.ReceiveMessageResult.messages)
       {
         console.log('SQS is apparently empty.')
       }
