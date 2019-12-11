@@ -22,7 +22,9 @@
                   Data to the Server webpage is done via MQTT with AWS IoT Core. Data fed to this is then passed
                   to the shared SQS between the client_pi and server_pi, which is then processed and served onto
                   the server_pi webpage.
-                  
+
+    NOTE: To help understand the current state of the client_pi process during system demonstration, print 
+          statements were intentially added.
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
