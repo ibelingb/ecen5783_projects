@@ -320,7 +320,10 @@ function getOneRecord() {
 
 //-----------------------------------------------------------------------------------
 // Grab an image from S3 via the AWS API Gateway
-getOneImage(imageFilename) {
+function getOneImage(imageFilename) {
+  const fs = require('fs')
+
+  /* API Gateway params */
   var pathParams = {
     item: imageFilename
   }
@@ -334,7 +337,9 @@ getOneImage(imageFilename) {
 
   apigClient.invokeApi(pathParams, resource, method, additionalParams, body)
     .then(function(result) {
-      console.log(result)
+      console.log(result.data)
+      let buff = new Buffer(result.data, 'base64')
+      fs.writeFileSync('/home/pi/superproject_images/' + imageFilename, buff)
     }).catch(function(result){
       console.log('ERROR getting ' + imageFilename + ' from API Gateway.')
       console.log(result)
@@ -344,7 +349,6 @@ getOneImage(imageFilename) {
 //-----------------------------------------------------------------------------------
 // Check if any images need to be grabbed from S3, if so grab them
 function getNeededImage() {
-  const fs = require('fs')
 
   const query = 'SELECT filename FROM images WHERE downloaded=0 ORDER BY timestamp DESC LIMIT 1'
   mysqlCon.query(query, function (err, result, fields) {
