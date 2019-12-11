@@ -86,15 +86,15 @@ async function gatherMetrics() {
   getImageMetrics(0, function(quantity) {
       metricsPacket.numCorrect = quantity
     }
-  )
+  ).then(
   getImageMetrics(1, function(quantity) {
       metricsPacket.numIncorrect = quantity
     }
-  )
+  )).then(
   getImageMetrics(2, function(quantity) {
       metricsPacket.numUnknown = quantity
     }
-  )
+  )).then(
   getAudioMetrics(function(data) {
       for (i = 0; i < data.length; i++)
       {
@@ -104,7 +104,7 @@ async function gatherMetrics() {
           metricsPacket.numUnrecognized += 1
       }
     }
-  )
+  ))
 }
 
 //-----------------------------------------------------------------------------------
