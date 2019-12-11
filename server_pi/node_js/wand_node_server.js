@@ -244,7 +244,7 @@ function getOneRecord() {
             then = new Date(year, month, day, hour, minute, second)
             recordTimestamp = Math.round(then.getTime() / 1000)
 
-            query = 'INSERT INTO images (filename, timestamp, label) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
+            query = 'INSERT INTO images (filename, timestamp, label, downloaded) VALUES (\'' + parsedRecord.image + '\', ' + recordTimestamp + ', \'' + parsedRecord.label + '\', 0') ON DUPLICATE KEY UPDATE timestamp =' + recordTimestamp + ', label=\'' + parsedRecord.label + '\''
             mysqlCon.query(query, function (err, result, fields) {
                 if (err) {
                   console.log("ERROR: NodeJS server failed to retrieve data from MySQL DB")
