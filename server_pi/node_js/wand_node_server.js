@@ -47,7 +47,7 @@ function getImages(numImages, index, callback) {
 // Query image classification metrics from MySQL
 // @correctness - Classification correctness factor
 // @return - number of records matching correctness
-function getImageMetrics(correctness, callback) {
+async function getImageMetrics(correctness, callback) {
   var query = ("SELECT * FROM images WHERE correctness=" + correctness)
   mysqlCon.query(query, function (err, result, fields) {
       // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
@@ -65,7 +65,7 @@ function getImageMetrics(correctness, callback) {
 //-----------------------------------------------------------------------------
 // Query voice recognition metrics from MySQL
 // @return - number of records matching correctness
-function getAudioMetrics(callback) {
+async function getAudioMetrics(callback) {
   var query = ("SELECT * FROM recognizedCmds")
   mysqlCon.query(query, function (err, result, fields) {
       // If error occurs, return resulting JSON object with num entries return set to 0 for client error handling.
@@ -80,15 +80,34 @@ function getAudioMetrics(callback) {
   )
 }
 
-//-----------------------------------------------------------------------------------
-// Handle async metrics calls
-function handleMetrics() {
-    if (metricsCallsRemaining <= 0) {
-      console.log(metricsPacket)
-      connection.send(JSON.stringify(metricsPacket))
-      metricsCallsRemaining = 4
-      clearInterval(handleMetrics)
-  }
+//-----------------------------------------------------------------------------
+// Async helper function to get metrics gathered with a promise.
+async function gatherMetrics() {
+  getImageMetrics(0, function(quantity) {
+      metricsPacket.numCorrect = quantity
+    }
+  )
+  getImageMetrics(1, function(quantity) {
+      metricsPacket.numIncorrect = quantity
+      metricsCallsRemaining--
+    }
+  )
+  getImageMetrics(2, function(quantity) {
+      metricsPacket.numUnknown = quantity
+      metricsCallsRemaining--
+    }
+  )
+  getAudioMetrics(function(data) {
+      for (i = 0; i < data.length; i++)
+      {
+        if (1 == data[i].cmdRecognized)
+          metricsPacket.numRecognized += 1
+        else if (0 == data[i].cmdRecognized)
+          metricsPacket.numUnrecognized += 1
+      }
+      metricsCallsRemaining--
+    }
+  )
 }
 
 //-----------------------------------------------------------------------------------
@@ -215,10 +234,6 @@ function getOneRecord() {
 
           case 'imageTag':
               switch (parsedRecord.tag) {
-                case 'unknown':
-                  correctnessInt = 2
-                break
-
                 case 'correct':
                   correctnessInt = 0
                 break
@@ -383,7 +398,7 @@ var dataPacket = {cmdResponse: "", numImages: "0"}
 var key = "images"
 dataPacket[key] = []
 
-var metricsCallsRemaining = 4
+
 var metricsPacket = {
   cmdResponse: "",
   numCorrect: "0",
@@ -393,8 +408,6 @@ var metricsPacket = {
   numUnrecognized: "0"
 }
 
-// Handle async nature of the metricsPacket here
-var doOnce = true
 var i = 0
 
 // Initialize Node.js WebSocket server 
@@ -500,34 +513,8 @@ wsServer.on('request', function(request) {
         // Client request for metrics counts
         else if (message.utf8Data == "getMetrics")
         {
-          metricsCallsRemaining = 4
           metricsPacket.cmdResponse = message.utf8Data
-          getImageMetrics(0, function(quantity) {
-              metricsPacket.numCorrect = quantity
-              metricsCallsRemaining--
-            }
-          )
-          getImageMetrics(1, function(quantity) {
-              metricsPacket.numIncorrect = quantity
-              metricsCallsRemaining--
-            }
-          )
-          getImageMetrics(2, function(quantity) {
-              metricsPacket.numUnknown = quantity
-              metricsCallsRemaining--
-            }
-          )
-          getAudioMetrics(function(data) {
-              for (i = 0; i < data.length; i++)
-              {
-                if (1 == data[i].cmdRecognized)
-                  metricsPacket.numRecognized += 1
-                else if (0 == data[i].cmdRecognized)
-                  metricsPacket.numUnrecognized += 1
-              }
-              metricsCallsRemaining--
-            }
-          )
+          gatherMetrics().then(connection.send(JSON.stringify(metricsPacket)))
         }
       }
     )
@@ -567,4 +554,3 @@ var apigClient = apigClientFactory.newClient(apigConfig)
 /* Attempt to grab SQS records and any undownloaded images at fixed intervals */
 setInterval(getNeededImage, 7 * 1000)
 setInterval(getOneRecord, 4 * 1000)
-setInterval(handleMetrics, 333)
