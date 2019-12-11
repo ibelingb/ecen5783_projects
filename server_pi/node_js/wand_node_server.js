@@ -83,13 +83,11 @@ function getAudioMetrics(callback) {
 //-----------------------------------------------------------------------------------
 // Handle async metrics calls
 function handleMetrics() {
-  while (doOnce) {
-      if (metricsCallsRemaining <= 0) {
-        console.log(metricsPacket)
-        connection.send(JSON.stringify(metricsPacket))
-        metricsCallsRemaining = 4
-        doOnce = false
-    }
+    if (metricsCallsRemaining <= 0) {
+      console.log(metricsPacket)
+      connection.send(JSON.stringify(metricsPacket))
+      metricsCallsRemaining = 4
+      clearInterval(handleMetrics)
   }
 }
 
@@ -569,4 +567,4 @@ var apigClient = apigClientFactory.newClient(apigConfig)
 /* Attempt to grab SQS records and any undownloaded images at fixed intervals */
 setInterval(getNeededImage, 7 * 1000)
 setInterval(getOneRecord, 4 * 1000)
-setInterval(handleMetrics, 2 * 1000)
+setInterval(handleMetrics, 333)
