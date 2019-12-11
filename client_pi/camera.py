@@ -4,8 +4,10 @@
 # Author: Brian Ibeling
 # 11/14/2019
 
-""" camera.py: 
-                  TODO
+""" camera.py: Camera process used to access camera peripheral connected to raspberry pi.
+               Process also receives signals from client_pi to determine when to capture images.
+               Image is then saved to raspberry pi filesystem and the filename is passed back to
+               client_pi for processing. IPC is completed with ZMQ socket.
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.

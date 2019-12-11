@@ -6,7 +6,22 @@
 
 """ client_pi.py: Main python file for EID SuperProject Client Pi to handle embedded devices for 
                   the Magic Wand Superproject. This client_pi acts as the main controller for
-                  embedded peripherals 
+                  embedded peripherals and acts as the intermediary to all AWS components. 
+
+                  Data is passed between various software components using Zero Message Queue in
+                  a PubSub configuration. This allows data to be pushed between python processes
+                  without needing a response from the receiving process and allows messages/data/signals
+                  to be queued up.
+
+                  Main loops begins by receiving audio filenames from the microphone_speaker.py process.
+                  As filenames are received, they're passed to AWS Transcribe to be converted to text. Based
+                  on the text received, an action will be taken if the "identifio/correcto/wrongo" command 
+                  is recognized. Then an image is captured, sent to AWS Rekognition and the image is then 
+                  saved to AWS S3 to be accessed by the server_pi application.
+
+                  Data to the Server webpage is done via MQTT with AWS IoT Core. Data fed to this is then passed
+                  to the shared SQS between the client_pi and server_pi, which is then processed and served onto
+                  the server_pi webpage.
                   
 
     + Resources and Citations +
@@ -81,6 +96,8 @@ audioTranscribeArray = []
 imageFile = None
 
 #-----------------------------------------------------------------------
+# client_pi Methods
+#-----------------------------------------------------------------------
 def initAwsIotConnection():
   # Establish AWS IoT certificate based connection
   myMQTTClient.configureEndpoint("a376p1vo77mjsi-ats.iot.us-east-1.amazonaws.com", 8883)
@@ -116,7 +133,7 @@ def pushImageToAws(imageFilename):
 
 #-----------------------------------------------------------------------
 def triggerTranscribeJob(audioFilename):
-
+  # Kick off an AWS Transcribe job with the received Audio File
   response = transcribe.start_transcription_job(
     TranscriptionJobName = audioFilename,
     LanguageCode = "en-US",
@@ -128,7 +145,7 @@ def triggerTranscribeJob(audioFilename):
 
 #-----------------------------------------------------------------------
 def getTranscribedAudio(jobName):
-  # Read current job status
+  # Read current job status from AWS Transcribe
   status = transcribe.get_transcription_job(TranscriptionJobName=jobName)
   if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED']:
     # Get transcribed text from audio file
@@ -138,13 +155,13 @@ def getTranscribedAudio(jobName):
     transcribedAudioJson = json.loads(transcribedAudioStr)
     transcribedAudio = transcribedAudioJson["results"]["transcripts"][0]["transcript"]
 
-    # pop first element from transcript array
+    # Audiofile processed, pop first element from transcript array
     print("Transcribe job " + jobName + " complete")
     audioTranscribeArray.pop(0)
 
     return transcribedAudio
   elif status['TranscriptionJob']['TranscriptionJobStatus'] in ['FAILED']:
-    # Transcribe job failed to complete successfully
+    # Transcribe job failed to complete successfully, remove audiofile from processing list
     print("Transcribe job " + jobName + " failed")
     audioTranscribeArray.pop(0)
     return -1
@@ -154,6 +171,7 @@ def getTranscribedAudio(jobName):
 
 #-----------------------------------------------------------------------
 def handleCommand(cmd):
+  # Handle the various voice commands available to the client_pi system
   global imageFile
 
   # If no command received from user audio, ignore message
@@ -259,15 +277,17 @@ def main(args):
 
   # Establish connection with AWS IoT
   initAwsIotConnection()
-  
+ 
+  # Main loop to continuously run
   while True:
     awaitingIdCmd = True
   
     # Loop until identifio command received from user
+    # Also send any received audio files to AWS Transcribe to be processed
+    # Then monitor the earliest process sent from audioTranscribeArray[] to determine 
+    # actions needed in order they're received
     while (awaitingIdCmd):
-  
       # Receive audioFilename from microphone process
-      #while True:
       try:
         # Receive audioFilename from microphone process
         audioFile = recordSocket.recv_string(flags=zmq.NOBLOCK)
@@ -284,26 +304,27 @@ def main(args):
         audioTranscribeArray.append(audioFile)
   
       except zmq.Again as e:
-        # recorded audio not yet available
+        # recorded audio not yet available, no action needed
         temp = ""
 
-      # Get text from AWS Transcribe job
+      # Get status and transcribed text from top of AWS Transcribe job queue
       if(len(audioTranscribeArray) > 0):
-        print("getTranscribedAudio")
         command = getTranscribedAudio(str(audioTranscribeArray[0]))
-        
+       
+        # Continue if any audio received
         if(command != -1):
-          # Determine if recognizable command received from user
+          # Audio received; Determine if recognizable command received from user
           print("handleCommand")
           receivedCmd = handleCommand(command)
-  
+          
+          # Primary command trigger received - capture image and associated metadata
           if(receivedCmd == "identifio"):
             awaitingIdCmd = False
 
       time.sleep(1)
   
-    print("Send takePic signal")
     # Trigger image to be captured by camera.py process
+    print("Send takePic signal")
     takePicSocket.send_string("takePic")
   
     # Receive imageFilename from camera process
@@ -316,11 +337,12 @@ def main(args):
       except zmq.Again as e:
         # image not yet available
         imageFile = ""
-  
+ 
+    # Send image to AWS S3 bucket for server_pi to access
     print("pushImageToAws")
     pushImageToAws(imageFile)
   
-    # Send image link to SQS
+    # Send image link to SQS for server_pi to access
     print("sqsWriteImageLink")
     sqsWriteImageLink(imageFile)
   
@@ -335,7 +357,7 @@ def main(args):
     # Request speech synthesis and output mp3 into file
     print("sendToPolly")
     response = polly.synthesize_speech(Text=str(label), OutputFormat="mp3", VoiceId="Joanna")
-  
+    # Writing capturing sound file to filesystem for speaker process to access
     print("writeOutputAudioFile")
     soundfile = open(OUTPUT_AUDIO_DIR + 'sound.mp3', 'wb')
     soundBytes = response['AudioStream'].read()
