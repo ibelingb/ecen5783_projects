@@ -5,8 +5,9 @@
 # 11/14/2019
 
 """ client_pi.py: Main python file for EID SuperProject Client Pi to handle embedded devices for 
-                  the Magic Wand Superproject.
-                  TODO
+                  the Magic Wand Superproject. This client_pi acts as the main controller for
+                  embedded peripherals 
+                  
 
     + Resources and Citations +
     The following resources were used to assist with development of this SW.
@@ -93,18 +94,12 @@ def initAwsIotConnection():
   return 0
 #-----------------------------------------------------------------------
 def pushAudioToAws(audioFilename):
-  # Verify audio file exists
-  # TODO
-
   # Send audio to AWS S3 audio Bucket
   s3.upload_file(AUDIOFILE_DIR + audioFilename, S3_AUDIO_BUCKET, audioFilename)
 
   return 0
 #-----------------------------------------------------------------------
 def pushImageToAws(imageFilename):
-  # Verify image file exists
-  # TODO
-
   # Convert image to base64 so it plays nice with API Gateway on server_pi end
   with open(IMAGEFILE_DIR + "base64" + imageFilename, "wb") as fout:
     with open(IMAGEFILE_DIR + imageFilename, "rb") as fin:
@@ -133,24 +128,29 @@ def triggerTranscribeJob(audioFilename):
 
 #-----------------------------------------------------------------------
 def getTranscribedAudio(jobName):
-  # Loop until transcribe job is completed
-  while True:
-    status = transcribe.get_transcription_job(TranscriptionJobName=audioFile)
-    if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED']:
-      break
-    elif status['TranscriptionJob']['TranscriptionJobStatus'] in ['FAILED']:
-      print("Transcribe job " + jobName + " failed")
-      return -1 
-    time.sleep(2)
+  # Read current job status
+  status = transcribe.get_transcription_job(TranscriptionJobName=jobName)
+  if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED']:
+    # Get transcribed text from audio file
+    fileObj = s3.get_object(Bucket=S3_TRANSCRIBE_BUCKET, Key=jobName+".json")
+    fileData = fileObj['Body'].read()
+    transcribedAudioStr = fileData.decode('utf-8')
+    transcribedAudioJson = json.loads(transcribedAudioStr)
+    transcribedAudio = transcribedAudioJson["results"]["transcripts"][0]["transcript"]
 
-  # Get transcribed text from audio file
-  fileObj = s3.get_object(Bucket=S3_TRANSCRIBE_BUCKET, Key=jobName+".json")
-  fileData = fileObj['Body'].read()
-  transcribedAudioStr = fileData.decode('utf-8')
-  transcribedAudioJson = json.loads(transcribedAudioStr)
-  transcribedAudio = transcribedAudioJson["results"]["transcripts"][0]["transcript"]
+    # pop first element from transcript array
+    print("Transcribe job " + jobName + " complete")
+    audioTranscribeArray.pop(0)
 
-  return transcribedAudio
+    return transcribedAudio
+  elif status['TranscriptionJob']['TranscriptionJobStatus'] in ['FAILED']:
+    # Transcribe job failed to complete successfully
+    print("Transcribe job " + jobName + " failed")
+    audioTranscribeArray.pop(0)
+    return -1
+  else:
+    # Transcribe job still in progress
+    return -1
 
 #-----------------------------------------------------------------------
 def handleCommand(cmd):
@@ -267,36 +267,40 @@ def main(args):
     while (awaitingIdCmd):
   
       # Receive audioFilename from microphone process
-      while True:
-        try:
-          # Receive audioFilename from microphone process
-          audioFile = recordSocket.recv_string(flags=zmq.NOBLOCK)
+      #while True:
+      try:
+        # Receive audioFilename from microphone process
+        audioFile = recordSocket.recv_string(flags=zmq.NOBLOCK)
     
-          # Send data to AWS S3 Buckets
-          pushAudioToAws(audioFile)
-          print("Received Audiofile " + audioFile)
+        # Send data to AWS S3 Buckets
+        pushAudioToAws(audioFile)
+        print("Received Audiofile " + audioFile)
 
-          # Trigger AWS Transcribe to process audio file
-          print("triggerTranscribeJob")
-          triggerTranscribeJob(audioFile)
+        # Trigger AWS Transcribe to process audio file
+        print("triggerTranscribeJob")
+        triggerTranscribeJob(audioFile)
 
-          # Add to Array to track transcribe jobs
-          audioTranscribeArray.append(audioFile)
+        # Add to Array to track transcribe jobs
+        audioTranscribeArray.append(audioFile)
   
-        except zmq.Again as e:
-          # recorded audio not yet available
-          audioFile = ""
-  
+      except zmq.Again as e:
+        # recorded audio not yet available
+        temp = ""
+
       # Get text from AWS Transcribe job
-      print("getTranscribedAudio")
-      command = getTranscribedAudio(audioFile)
+      if(len(audioTranscribeArray) > 0):
+        print("getTranscribedAudio")
+        command = getTranscribedAudio(str(audioTranscribeArray[0]))
+        
+        if(command != -1):
+          # Determine if recognizable command received from user
+          print("handleCommand")
+          receivedCmd = handleCommand(command)
   
-      # Determine if recognizable command received from user
-      print("handleCommand")
-      receivedCmd = handleCommand(command)
-  
-      if(receivedCmd == "identifio"):
-        awaitingIdCmd = False
+          if(receivedCmd == "identifio"):
+            awaitingIdCmd = False
+
+      time.sleep(1)
   
     print("Send takePic signal")
     # Trigger image to be captured by camera.py process
