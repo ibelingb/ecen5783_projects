@@ -81,6 +81,19 @@ function getAudioMetrics(callback) {
 }
 
 //-----------------------------------------------------------------------------------
+// Handle async metrics calls
+function handleMetrics() {
+  while (doOnce) {
+      if (metricsCallsRemaining <= 0) {
+        console.log(metricsPacket)
+        connection.send(JSON.stringify(metricsPacket))
+        metricsCallsRemaining = 4
+        doOnce = false
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------------
 // Delete one record from SQS via API Gateway
 function deleteOneRecord(receiptHandle) {
   var pathParams = ''
@@ -382,6 +395,8 @@ var metricsPacket = {
   numUnrecognized: "0"
 }
 
+// Handle async nature of the metricsPacket here
+var doOnce = true
 var i = 0
 
 // Initialize Node.js WebSocket server 
@@ -554,14 +569,4 @@ var apigClient = apigClientFactory.newClient(apigConfig)
 /* Attempt to grab SQS records and any undownloaded images at fixed intervals */
 setInterval(getNeededImage, 7 * 1000)
 setInterval(getOneRecord, 4 * 1000)
-
-// Handle async nature of the metricsPacket here
-var doOnce = true
-while (doOnce) {
-    if (metricsCallsRemaining <= 0) {
-      console.log(metricsPacket)
-      connection.send(JSON.stringify(metricsPacket))
-      metricsCallsRemaining = 4
-      doOnce = false
-  }
-}
+setInterval(handleMetrics, 2 * 1000)
